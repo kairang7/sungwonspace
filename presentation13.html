@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SUNGWONSPACE | 부동산·정책 인사이트 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#07080a; --white:#f0f2f5; --gold:#c9a84c;
+  --red:#e03838; --blue:#1e5fa8; --sky:#3fa0d8;
+  --teal:#0ea88a; --orange:#e87820; --purple:#7c3aed;
+  --navy:#0b1a2e; --green:#1a7a4a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);font-family:'Noto Sans KR',sans-serif;color:var(--white)}
+
+/* ── DECK & SLIDE ── */
+#deck{position:fixed;inset:0;overflow:hidden}
+.slide{
+  position:absolute;inset:0;width:100%;height:100%;
+  overflow:hidden;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  transform:translateY(100%);visibility:hidden;
+  opacity:1!important;
+  transition:transform .62s cubic-bezier(.4,0,.2,1),visibility 0s .62s;
+  will-change:transform;
+}
+.slide.active{transform:translateY(0);visibility:visible;transition:transform .62s cubic-bezier(.4,0,.2,1),visibility 0s 0s}
+
+/* ── 애니메이션 ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.1)}}
+@keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
+.slide.active .fu {animation:fadeUp .7s both}
+.slide.active .fu2{animation:fadeUp .7s .12s both}
+.slide.active .fu3{animation:fadeUp .7s .24s both}
+.slide.active .fu4{animation:fadeUp .7s .36s both}
+.slide.active .fu5{animation:fadeUp .7s .48s both}
+.slide.active .fi {animation:fadeIn .8s both}
+.slide.active .sx {animation:scaleX .9s .2s both;transform-origin:left}
+.slide.active .gu {animation:growUp .8s .3s both}
+
+/* ── 공통 BG ── */
+.bg-grid{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.04) 1px,transparent 1px);
+  background-size:52px 52px}
+.glow{position:absolute;border-radius:50%;pointer-events:none}
+
+/* ── UI ── */
+#progress{position:fixed;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08);z-index:500}
+#pfill{height:100%;background:var(--gold);width:0%;transition:width .4s ease}
+#nav{position:fixed;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:7px;z-index:500}
+.ndot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:background .3s,transform .3s}
+.ndot.active{background:var(--gold);transform:scale(1.5)}
+.nsep{width:14px;height:1px;background:rgba(255,255,255,.2);margin:3px 0}
+#playWrap{position:fixed;bottom:24px;right:18px;z-index:500;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+#timerArc{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:113.1;stroke-dashoffset:0}
+#playBtn{position:absolute;z-index:1;background:rgba(255,255,255,.07);border:none;color:var(--white);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:12px;transition:background .2s}
+#playBtn:hover{background:rgba(201,168,76,.3)}
+
+/* ── 공통 컴포넌트 ── */
+.tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;margin-bottom:12px}
+.big-h{font-family:'Noto Serif KR',serif;font-size:clamp(20px,2.8vw,36px);font-weight:900;line-height:1.4;margin-bottom:24px}
+.body-text{font-size:clamp(14px,1.8vw,17px);line-height:2.1;color:rgba(255,255,255,.8)}
+.body-text .hl{color:#fff;font-weight:700}
+.body-text .red{color:var(--red);font-weight:700}
+.body-text .blue{color:var(--sky);font-weight:700}
+.news-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:20px}
+.nb-logo{font-size:18px;font-weight:900;padding:4px 10px;border-radius:4px}
+.nb-date{font-size:12px;color:rgba(255,255,255,.4)}
+.callout{margin-top:24px;padding:16px 20px;border-radius:0 10px 10px 0;font-size:clamp(14px,1.8vw,17px);font-weight:700;line-height:1.7}
+.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.info-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px}
+.stat-big{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.5vw,52px);line-height:1}
+.stat-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:6px;line-height:1.6}
+
+/* ════ S1: 인트로 ════ */
+#s1{background:var(--black)}
+#s1 .g1{width:600px;height:600px;background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 68%);top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 5s ease-in-out infinite}
+#s1 .inner{position:relative;z-index:2;text-align:center}
+#s1 h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,100px);letter-spacing:8px;line-height:1}
+#s1 .line{width:72px;height:1px;background:var(--gold);margin:18px auto}
+#s1 .sub{font-size:clamp(12px,1.6vw,16px);color:rgba(255,255,255,.45);letter-spacing:4px}
+
+/* ════ S2: 농지 전수조사 헤드라인 ════ */
+#s2{background:#0a0c10}
+#s2 .glow1{width:600px;height:300px;background:radial-gradient(ellipse,rgba(46,125,82,.1) 0%,transparent 65%);top:20%;left:50%;transform:translateX(-50%)}
+#s2 .inner{position:relative;z-index:2;width:86%;max-width:900px}
+#s2 .nb-logo{background:#1a7a4a;color:#fff}
+#s2 .news-hl{font-family:'Noto Serif KR',serif;font-size:clamp(24px,4vw,48px);font-weight:900;line-height:1.35;margin-bottom:32px}
+#s2 .news-hl .accent{color:var(--green)}
+#s2 .bullets{display:flex;flex-direction:column;gap:14px}
+#s2 .bullet{display:flex;align-items:flex-start;gap:14px;font-size:clamp(14px,1.8vw,17px);color:rgba(255,255,255,.75);border-left:3px solid rgba(46,125,82,.6);padding-left:16px}
+
+/* ════ S3: 농지 본문 ════ */
+#s3{background:#090b0f}
+#s3 .inner{width:84%;max-width:860px}
+#s3 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+#s3 .stat-box{background:rgba(46,125,82,.08);border:1px solid rgba(46,125,82,.25);border-radius:10px;padding:18px}
+#s3 .sv{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,3.5vw,38px);color:var(--teal);line-height:1}
+#s3 .sd{font-size:12px;color:rgba(255,255,255,.45);margin-top:6px;line-height:1.6}
+
+/* ════ S4: AI 국민배당금 인물 ════ */
+#s4{background:#0c0e14}
+#s4 .inner{width:86%;max-width:960px;display:grid;grid-template-columns:auto 1fr;gap:48px;align-items:center}
+#s4 .person-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 24px;text-align:center;width:220px}
+#s4 .person-avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#2a3f6a,#1a2840);border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 14px}
+#s4 .person-name{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:900;margin-bottom:4px}
+#s4 .person-hanja{font-size:14px;color:rgba(255,255,255,.4);margin-bottom:16px}
+#s4 .profile-table{width:100%;font-size:13px;border-collapse:collapse}
+#s4 .profile-table td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07)}
+#s4 .profile-table .key{color:var(--sky);font-weight:700;white-space:nowrap;padding-right:12px}
+#s4 .right-info .tag{color:var(--sky)}
+#s4 .right-info h2{font-family:'Noto Serif KR',serif;font-size:clamp(20px,2.8vw,34px);font-weight:900;line-height:1.4;margin-bottom:18px}
+#s4 .right-info p{font-size:14px;line-height:1.9;color:rgba(255,255,255,.7)}
+
+/* ════ S5: 한겨레 사설 ════ */
+#s5{background:#0a0c10}
+#s5 .inner{width:86%;max-width:900px}
+#s5 .nb-logo{background:#111;color:#fff;border:1px solid rgba(255,255,255,.3)}
+#s5 .news-hl{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.5vw,44px);font-weight:900;line-height:1.35;margin-bottom:12px}
+
+/* ════ S6: AI 국민배당금 본문 ════ */
+#s6{background:#090c12}
+#s6 .inner{width:84%;max-width:900px}
+#s6 .use-list{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#s6 .use-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:12px 14px;font-size:13px;color:rgba(255,255,255,.75)}
+#s6 .use-icon{font-size:18px;flex-shrink:0}
+#s6 .norway-box{margin-top:20px;background:rgba(59,130,196,.08);border:1px solid rgba(59,130,196,.25);border-radius:10px;padding:14px 18px;font-size:14px;color:rgba(255,255,255,.75);line-height:1.8}
+#s6 .norway-box strong{color:var(--sky)}
+
+/* ════ S7: 머니투데이 ════ */
+#s7{background:#0a0c10}
+#s7 .inner{width:86%;max-width:900px}
+#s7 .nb-logo{background:var(--red);color:#fff}
+#s7 .news-hl{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.8vw,46px);font-weight:900;line-height:1.35;margin-bottom:20px}
+#s7 .impact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px}
+#s7 .impact-box{background:rgba(224,56,56,.07);border:1px solid rgba(224,56,56,.2);border-radius:10px;padding:16px}
+#s7 .impact-icon{font-size:22px;margin-bottom:8px}
+#s7 .impact-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px}
+#s7 .impact-body{font-size:12px;color:rgba(255,255,255,.55);line-height:1.7}
+
+/* ════ S8: 조선일보 ════ */
+#s8{background:#0a0c10}
+#s8 .inner{width:86%;max-width:900px}
+#s8 .cho-logo{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:900;letter-spacing:3px;color:var(--white);border-bottom:2px solid var(--white);padding-bottom:4px;margin-bottom:6px;display:inline-block}
+#s8 .news-hl{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.5vw,42px);font-weight:900;line-height:1.35;margin-bottom:28px}
+#s8 .reaction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+#s8 .react-box{border-radius:10px;padding:18px}
+#s8 .react-box.gov{background:rgba(30,95,168,.12);border:1px solid rgba(30,95,168,.3)}
+#s8 .react-box.opp{background:rgba(224,56,56,.08);border:1px solid rgba(224,56,56,.25)}
+#s8 .react-box.media{background:rgba(63,160,216,.08);border:1px solid rgba(63,160,216,.2)}
+#s8 .react-tag{font-size:10px;letter-spacing:2px;margin-bottom:8px;font-weight:700}
+#s8 .react-box.gov .react-tag{color:var(--sky)}
+#s8 .react-box.opp .react-tag{color:var(--red)}
+#s8 .react-box.media .react-tag{color:var(--sky)}
+#s8 .react-body{font-size:13px;color:rgba(255,255,255,.7);line-height:1.7}
+
+/* ════ S9: 삼성전자 차트 ════ */
+#s9{background:#090e18}
+#s9 .glow1{width:500px;height:250px;background:radial-gradient(ellipse,rgba(30,95,168,.15) 0%,transparent 65%);top:15%;left:50%;transform:translateX(-50%)}
+#s9 .inner{position:relative;z-index:2;width:90%;max-width:1060px}
+#s9 .chart-wrap{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:28px 24px}
+#s9 .ch-title{font-family:'Noto Serif KR',serif;font-size:clamp(18px,2.5vw,28px);font-weight:900;text-align:center;margin-bottom:6px}
+#s9 .ch-unit{font-size:11px;color:rgba(255,255,255,.4);text-align:right;margin-bottom:24px}
+#s9 .bars{display:flex;align-items:flex-end;gap:8px;height:180px;margin-bottom:8px}
+#s9 .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+#s9 .dual-bar{width:100%;display:flex;gap:3px;align-items:flex-end;height:160px}
+#s9 .b-invest{background:linear-gradient(to top,#1e5fa8,#4899e8);border-radius:3px 3px 0 0;flex:1;animation:growUp .8s ease both}
+#s9 .b-profit{background:linear-gradient(to top,#8b1a1a,#e03838);border-radius:3px 3px 0 0;flex:1;animation:growUp .8s .1s ease both}
+#s9 .bar-year{font-size:10px;color:rgba(255,255,255,.4);text-align:center}
+#s9 .legend{display:flex;gap:20px;justify-content:center;margin-top:12px}
+#s9 .leg{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,.6)}
+#s9 .leg-dot{width:10px;height:10px;border-radius:2px}
+#s9 .highlight-box{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+#s9 .hl-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:14px;text-align:center}
+#s9 .hl-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,2.8vw,30px);line-height:1}
+#s9 .hl-label{font-size:11px;color:rgba(255,255,255,.4);margin-top:5px}
+
+/* ════ S10: 반도체 성과보상 표 ════ */
+#s10{background:#08090f}
+#s10 .inner{width:90%;max-width:1060px}
+#s10 .comp-table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.4vw,14px);margin-top:8px}
+#s10 .comp-table th,#s10 .comp-table td{border:1px solid rgba(255,255,255,.1);padding:10px 12px;text-align:center;vertical-align:middle}
+#s10 .comp-table thead tr:first-child th{background:rgba(255,255,255,.08);font-weight:700;font-size:13px}
+#s10 .comp-table .col-sam{background:rgba(30,95,168,.15);border-color:rgba(30,95,168,.4)!important}
+#s10 .comp-table .col-sk{background:rgba(224,56,56,.1);border-color:rgba(224,56,56,.4)!important}
+#s10 .comp-table .cat{background:rgba(255,255,255,.04);font-weight:700;color:rgba(255,255,255,.6);font-size:12px}
+#s10 .good{color:var(--teal);font-size:18px;font-weight:700}
+#s10 .bad{color:var(--red);font-size:18px;font-weight:700}
+#s10 .tri{color:rgba(255,255,255,.6);font-size:16px}
+#s10 .source{font-size:11px;color:rgba(255,255,255,.3);text-align:right;margin-top:10px}
+
+/* ════ S11: 서울시 보도자료 (농지규제 철폐) ════ */
+#s11{background:#0a0f1a}
+#s11 .inner{width:86%;max-width:1000px}
+#s11 .press-header{background:rgba(0,100,180,.1);border:1px solid rgba(0,100,180,.25);border-radius:10px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+#s11 .press-date{font-size:12px;color:var(--sky);font-weight:700}
+#s11 .press-dept{font-size:13px;color:rgba(255,255,255,.6)}
+#s11 .headline-box{background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.15);border-radius:10px;padding:20px 22px;margin-bottom:20px}
+#s11 .hl-main{font-family:'Noto Serif KR',serif;font-size:clamp(16px,2.2vw,24px);font-weight:900;line-height:1.5;margin-bottom:14px}
+#s11 .hl-items{display:flex;flex-direction:column;gap:8px}
+#s11 .hl-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(255,255,255,.75);line-height:1.6}
+#s11 .hl-num{color:var(--sky);font-weight:700;flex-shrink:0}
+
+/* ════ S12: 도시정비 규제 철폐 본문 ════ */
+#s12{background:#090d16}
+#s12 .inner{width:84%;max-width:900px}
+#s12 .callout-main{background:rgba(224,56,56,.08);border-left:4px solid var(--red);border-radius:0 10px 10px 0;padding:18px 22px;font-size:clamp(16px,2vw,20px);font-weight:700;line-height:1.7;margin-top:20px}
+#s12 .callout-main .new{color:var(--sky);font-weight:900}
+#s12 .area-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+#s12 .area-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px}
+#s12 .ab-type{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+#s12 .ab-list{font-size:13px;color:rgba(255,255,255,.7);line-height:1.8}
+#s12 .ab-new{color:var(--red);font-weight:700}
+
+/* ════ S13: 現→변경 도시계획 비교 ════ */
+#s13{background:#08101a}
+#s13 .inner{width:90%;max-width:1060px}
+#s13 .compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s13 .cmp-box{border-radius:12px;padding:22px}
+#s13 .cmp-now{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+#s13 .cmp-new{background:rgba(224,56,56,.06);border:1px solid rgba(224,56,56,.25)}
+#s13 .cmp-title{font-size:14px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.1)}
+#s13 .cmp-title.now-t{color:rgba(255,255,255,.6)}
+#s13 .cmp-title.new-t{color:var(--red)}
+#s13 .zone-list{display:flex;flex-direction:column;gap:10px}
+#s13 .zone-row{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+#s13 .zone-type{font-weight:700;color:var(--gold);font-size:12px;margin-right:8px}
+#s13 .zone-new{color:var(--red);font-weight:700}
+#s13 .zone-add{color:var(--sky);font-weight:700}
+
+/* ════ S14: 높이규제 현→변경 ════ */
+#s14{background:#08101a}
+#s14 .inner{width:90%;max-width:1060px}
+#s14 .height-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s14 .ht-box{border-radius:12px;padding:22px}
+#s14 .ht-now{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+#s14 .ht-new{background:rgba(59,130,196,.06);border:1px solid rgba(59,130,196,.25)}
+#s14 .ht-title{font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)}
+#s14 .ht-now .ht-title{color:rgba(255,255,255,.6)}
+#s14 .ht-new .ht-title{color:var(--sky)}
+#s14 .ht-table{width:100%;border-collapse:collapse;font-size:12px}
+#s14 .ht-table td,#s14 .ht-table th{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle}
+#s14 .ht-table th{font-size:11px;color:rgba(255,255,255,.45);font-weight:400}
+#s14 .area-name{font-weight:700;color:rgba(255,255,255,.7);font-size:12px}
+#s14 .h-before{color:rgba(255,255,255,.5)}
+#s14 .h-after{color:var(--sky);font-weight:700}
+#s14 .h-free{color:var(--teal);font-weight:700}
+#s14 .h-del{color:rgba(255,255,255,.35);text-decoration:line-through}
+
+/* ════ S15: 서울시 역세권 보도자료 ════ */
+#s15{background:#07111f}
+#s15 .inner{width:86%;max-width:1000px}
+#s15 .press-header{background:rgba(14,168,138,.08);border:1px solid rgba(14,168,138,.25);border-radius:10px;padding:14px 18px;margin-bottom:20px}
+#s15 .ph-date{font-size:12px;color:var(--teal);font-weight:700;margin-bottom:4px}
+#s15 .ph-dept{font-size:12px;color:rgba(255,255,255,.5)}
+#s15 .headline-box{background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.15);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+#s15 .hl-main{font-family:'Noto Serif KR',serif;font-size:clamp(16px,2.2vw,24px);font-weight:900;line-height:1.5;margin-bottom:12px}
+#s15 .hl-items{display:flex;flex-direction:column;gap:7px}
+#s15 .hl-item{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;padding-left:14px;position:relative}
+#s15 .hl-item::before{content:'–';position:absolute;left:0;color:var(--teal)}
+#s15 .hl-item .hl-key{color:var(--teal);font-weight:700}
+
+/* ════ S16: 역세권 장기전세주택 ════ */
+#s16{background:#07121e}
+#s16 .inner{width:88%;max-width:1060px}
+#s16 .supply-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s16 .sb{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:22px}
+#s16 .sb-title{font-size:14px;font-weight:700;color:var(--sky);margin-bottom:16px}
+#s16 .flow{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+#s16 .fn{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,3.5vw,40px);color:var(--sky);line-height:1}
+#s16 .fl{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px}
+#s16 .fa{font-size:22px;color:var(--teal)}
+#s16 .fsub{font-size:12px;color:rgba(255,255,255,.5);line-height:1.7;margin-top:10px}
+#s16 .tl{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+#s16 .tl-blk{background:rgba(63,160,216,.1);border:1px solid rgba(63,160,216,.25);border-radius:4px;padding:5px 9px;font-size:11px;color:rgba(255,255,255,.7)}
+#s16 .tl-blk.hi{background:rgba(63,160,216,.25);border-color:var(--sky);color:#fff;font-weight:700}
+#s16 .save-badge{margin-top:14px;background:rgba(63,160,216,.12);border:1px solid rgba(63,160,216,.3);border-radius:8px;padding:10px 14px;font-size:14px;font-weight:700;color:var(--sky)}
+
+/* ════ S17: 도심복합개발 ════ */
+#s17{background:#0d0818}
+#s17 .inner{width:88%;max-width:1060px}
+#s17 .dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+#s17 .dev-list{display:flex;flex-direction:column;gap:12px}
+#s17 .dev-item{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px}
+#s17 .di-icon{font-size:20px;flex-shrink:0}
+#s17 .di-title{font-size:13px;font-weight:700;margin-bottom:4px}
+#s17 .di-body{font-size:12px;color:rgba(255,255,255,.5);line-height:1.6}
+#s17 .dev-stats{display:flex;flex-direction:column;gap:12px}
+#s17 .ds-box{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:16px 18px}
+#s17 .ds-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.5vw,50px);color:#c084fc;line-height:1}
+#s17 .ds-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:5px}
+
+/* ════ S18: 보행 일상권 ════ */
+#s18{background:#07101e}
+#s18 .inner{width:88%;max-width:1060px}
+#s18 .steps{display:flex;gap:0;margin-bottom:24px}
+#s18 .step{flex:1;padding:18px 14px;text-align:center;position:relative}
+#s18 .step:not(:last-child)::after{content:'→';position:absolute;right:-13px;top:50%;transform:translateY(-50%);font-size:18px;z-index:1}
+#s18 .step-a{background:#555;border-radius:8px 0 0 8px}
+#s18 .step-b{background:var(--blue)}
+#s18 .step-c{background:var(--orange);border-radius:0 8px 8px 0}
+#s18 .sh{font-size:14px;font-weight:700;color:#fff;margin-bottom:6px}
+#s18 .sb-text{font-size:12px;color:rgba(255,255,255,.75);line-height:1.6}
+#s18 .zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+#s18 .zc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px}
+#s18 .zd{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--sky)}
+#s18 .zn{font-size:12px;color:rgba(255,255,255,.45);margin-top:4px}
+#s18 .zt{font-size:13px;color:rgba(255,255,255,.7);margin-top:8px;line-height:1.6}
+
+/* ════ S19 & S20: 아웃트로 ════ */
+#s19,#s20{background:var(--black)}
+#s19 .g1,#s20 .g1{width:650px;height:650px;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 6s ease-in-out infinite}
+#s19 .inner,#s20 .inner{position:relative;z-index:2;text-align:center}
+#s19 .logo-sm,#s20 .logo-sm{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:6px;color:var(--gold);margin-bottom:24px}
+#s19 h2,#s20 h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.8vw,50px);font-weight:900;line-height:1.55;margin-bottom:20px}
+#s19 p,#s20 p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.9;max-width:500px;margin:0 auto 32px}
+.outro-tel{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,58px);color:var(--gold);letter-spacing:4px;margin-bottom:8px}
+.outro-addr{font-size:12px;letter-spacing:1px;color:rgba(255,255,255,.3)}
+
+@media(max-width:700px){
+  #s4 .inner{grid-template-columns:1fr}
+  #s4 .person-box{width:100%}
+  .card-grid-3,#s7 .impact-grid,#s8 .reaction-grid,#s9 .highlight-box,
+  #s10 .comp-table{font-size:11px}
+  .card-grid-2,#s11 .area-list,#s12 .area-list,#s13 .compare,
+  #s14 .height-compare,#s16 .supply-grid,#s17 .dev-grid,#s18 .zone-grid,
+  #s3 .stat-row,#s6 .use-list{grid-template-columns:1fr}
+  #s18 .steps{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="pfill"></div></div>
+<div id="nav"></div>
+<div id="playWrap">
+  <svg width="44" height="44" viewBox="0 0 44 44" style="position:absolute;inset:0">
+    <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2.5"/>
+    <circle id="timerArc" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/>
+  </svg>
+  <button id="playBtn" onclick="togglePlay()">⏸</button>
+</div>
+
+<div id="deck">
+
+<!-- S1: 인트로 -->
+<section class="slide active" id="s1">
+  <div class="bg-grid"></div>
+  <div class="glow g1"></div>
+  <div class="inner">
+    <svg viewBox="0 0 64 64" fill="none" width="56" height="56" class="fu" style="margin-bottom:24px">
+      <rect x="10" y="10" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="1.5"/>
+      <rect x="34" y="10" width="20" height="20" rx="2" stroke="rgba(201,168,76,.5)" stroke-width="1.5"/>
+      <rect x="10" y="34" width="20" height="20" rx="2" stroke="rgba(201,168,76,.3)" stroke-width="1.5"/>
+      <rect x="34" y="34" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="1.5"/>
+    </svg>
+    <h1 class="fu2">SUNGWONSPACE</h1>
+    <div class="line sx"></div>
+    <div class="sub fu3">부동산·정책 인사이트 · 2026.05</div>
+  </div>
+</section>
+
+<!-- S2: 농지 전수조사 헤드라인 -->
+<section class="slide" id="s2">
+  <div class="bg-grid"></div>
+  <div class="glow glow1"></div>
+  <div class="inner">
+    <div class="news-badge fu">
+      <span class="nb-logo">뉴스1</span>
+      <span class="nb-date">2026.05.10 오전 11:00</span>
+    </div>
+    <div class="news-hl fu2">
+      사상 첫 농지 전수조사 18일부터 스타트…<br>경기도부터 <span class="accent">'정조준'</span>
+    </div>
+    <div class="bullets">
+      <div class="bullet fu3">96년 이후 취득 농지 115만ha 대상, <strong style="color:#fff">10대 투기 위험군</strong> 점검</div>
+      <div class="bullet fu4">'전수조사 근거' <strong style="color:#fff">농지법 개정안 입법</strong>… '엄정 제재' 강조</div>
+      <div class="bullet fu5">경기도 평당 <strong style="color:#1a7a4a">60만 7,000원</strong> — 전국 최고가 · 전남(8만 2천원) 대비 <strong style="color:#fff">7배 이상</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- S3: 농지 전수조사 본문 -->
+<section class="slide" id="s3">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu" style="color:var(--teal)">농지 시장 현황</div>
+    <div class="body-text fu2">
+      정부는 수도권의 높은 생활 여건을 고려하더라도 <span class="hl">경기도 농지 가격이 과도한 수준</span>으로 보고 있으며,
+      <span class="red">투기 수요가 가격 상승을 견인했을 가능성</span>에 무게를 두고 있습니다.<br><br>
+      현장 집행력도 대폭 강화됩니다. 지방자치단체와 국립농산물품질관리원을 중심으로
+      <span class="hl">약 5,000명의 조사 인력</span>을 투입하고, 특별사법경찰(특사경)까지 현장에 배치합니다.
+    </div>
+    <div class="stat-row fu3">
+      <div class="stat-box">
+        <div class="sv">115만ha</div>
+        <div class="sd">96년 이후 취득 농지<br>전수조사 대상 면적</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv">60만 7천원</div>
+        <div class="sd">경기도 평균 농지 실거래가<br>(전국 최고, 평당 기준)</div>
+      </div>
+      <div class="stat-box">
+        <div class="sv">5,000명</div>
+        <div class="sd">조사 투입 인력<br>+ 특별사법경찰 배치</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S4: 김용범 인물 소개 -->
+<section class="slide" id="s4">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="person-box fu">
+      <div class="person-avatar">👤</div>
+      <div class="person-name">김용범</div>
+      <div class="person-hanja">金容範</div>
+      <table class="profile-table">
+        <tr><td class="key">출생</td><td>1962.02.05 (64세)</td></tr>
+        <tr><td class="key">출신</td><td>전남 무안군</td></tr>
+        <tr><td class="key">학력</td><td>서울대 경제학·행정학<br>조지워싱턴대 경제학 박사</td></tr>
+        <tr><td class="key">경력</td><td>기획재정부 제1차관</td></tr>
+        <tr><td class="key">직업</td><td>공무원</td></tr>
+      </table>
+    </div>
+    <div class="right-info">
+      <div class="tag fu2" style="color:var(--sky)">정책 키맨 분석</div>
+      <h2 class="fu3">대통령실 정책실장<br>김용범의 AI 국민배당금 제안</h2>
+      <p class="fu4">
+        기획재정부 제1차관 출신의 경제 전문가. 인공지능 인프라 시대의 과실은 특정 기업만의 결과가 아니라 전 국민이 함께 쌓아온 산업 기반 위에서 나온다는 논리로,
+        AI 초과세수를 <strong style="color:#fff">'국민배당금'</strong>으로 돌려줘야 한다고 주장해 시장에 큰 파장을 일으켰습니다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- S5: 한겨레 사설 헤드라인 -->
+<section class="slide" id="s5">
+  <div class="bg-grid"></div>
+  <div class="inner" style="width:86%;max-width:900px">
+    <div class="news-badge fu">
+      <span class="nb-logo" style="background:#111;border:1px solid rgba(255,255,255,.3)">한겨레</span>
+      <span class="nb-date">수정 2026.05.12 19:34</span>
+    </div>
+    <div class="news-hl fu2" style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.5vw,44px);font-weight:900;line-height:1.35;margin-bottom:24px">
+      [사설] 김용범 "국민배당금 필요",<br>AI 이익 공유 방안 공론화를
+    </div>
+    <div class="body-text fu3">
+      <span class="hl">인공지능 인프라 시대의 과실은 특정 기업만의 결과가 아니다.</span> 반세기에 걸쳐 전 국민이 함께 쌓아온 산업 기반 위에서 나온다. 그렇다면 그 과실의 일부는 전 국민에게 구조적으로 환원되어야 한다.
+    </div>
+    <div class="callout fu4" style="background:rgba(255,255,255,.05);border-left:4px solid rgba(255,255,255,.3);border-radius:0 10px 10px 0;padding:16px 20px;margin-top:20px;font-size:14px;color:rgba(255,255,255,.7);line-height:1.8">
+      노르웨이의 석유 기금처럼 <strong style="color:#fff">장기 자산화해 운용 수익을 사회 전체 안전망의 재원</strong>으로 활용하자는 논리
+    </div>
+  </div>
+</section>
+
+<!-- S6: 국민배당금 세부 내용 -->
+<section class="slide" id="s6">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu" style="color:var(--sky)">AI 국민배당금 구체 내용</div>
+    <div class="big-h fu2">초과 세수의 구체적 용처로<br>6가지 분야를 거론</div>
+    <div class="use-list fu3">
+      <div class="use-item"><div class="use-icon">🚀</div>청년 창업 자산 지원</div>
+      <div class="use-item"><div class="use-icon">🌾</div>농어촌 기본소득</div>
+      <div class="use-item"><div class="use-icon">👴</div>노령연금 강화</div>
+      <div class="use-item"><div class="use-icon">🎨</div>예술인 지원</div>
+      <div class="use-item"><div class="use-icon">🤖</div>AI 시대 전환 교육 계좌</div>
+      <div class="use-item"><div class="use-icon">📊</div>백가쟁명식 사회적 합의</div>
+    </div>
+    <div class="norway-box fu4">
+      💡 <strong>노르웨이 모델 벤치마킹:</strong> AI 산업에서 발생하는 막대한 초과 세수를 일회성 예산으로 소진하지 말고,
+      노르웨이의 석유 기금처럼 장기 자산화해 사회 전체 안전망의 재원으로 활용하자는 구상
+    </div>
+  </div>
+</section>
+
+<!-- S7: 머니투데이 — 코스피 급락 -->
+<section class="slide" id="s7">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="news-badge fu">
+      <span class="nb-logo" style="background:var(--red)">머니투데이</span>
+      <span class="nb-date">2026.05.12 오후 2:21</span>
+    </div>
+    <div class="news-hl fu2">
+      블룸버그 "코스피 5%대 급락 원인은<br>김용범 AI 국민배당금 제안"
+    </div>
+    <div class="impact-grid fu3">
+      <div class="impact-box">
+        <div class="impact-icon">📉</div>
+        <div class="impact-title">코스피 급락</div>
+        <div class="impact-body">발표 직후 코스피 5%대 급락. 삼성전자 등 대형 기술주 중심으로 외국인 매도 집중.</div>
+      </div>
+      <div class="impact-box">
+        <div class="impact-icon">🌍</div>
+        <div class="impact-title">블룸버그 보도</div>
+        <div class="impact-body">"AI 국민배당금 제안이 한국 기업 과세 우려를 키워 외국인 투자 심리 냉각"</div>
+      </div>
+      <div class="impact-box">
+        <div class="impact-icon">⚠️</div>
+        <div class="impact-title">시장 반응</div>
+        <div class="impact-body">반도체·IT 섹터 전반 하락. 법인세 인상 우려로 이어지며 기업 투자 심리 위축.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S8: 조선일보 — 청 "개인의견" -->
+<section class="slide" id="s8">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="news-badge fu">
+      <div>
+        <div class="cho-logo">朝 鮮 日 報</div>
+        <div class="nb-date" style="margin-top:4px">업데이트 2026.05.12. 18:00</div>
+      </div>
+    </div>
+    <div class="news-hl fu2">
+      靑, 김용범 '국민배당금' 논란 커지자<br>"정책실장 개인의견"
+    </div>
+    <div class="reaction-grid fu3">
+      <div class="react-box gov">
+        <div class="react-tag">청와대 반응</div>
+        <div class="react-body">김 실장, 전날 소셜미디어로 '국민 배당금' 제안. 논란 확산되자 청와대 "정책실장 개인의견"으로 선 긋기.</div>
+      </div>
+      <div class="react-box opp">
+        <div class="react-tag">야당 비판</div>
+        <div class="react-body">"공산당 본색", "반기업정책"으로 강하게 비판. 법인세 인상·기업 옥죄기 정책과 연결해 공세.</div>
+      </div>
+      <div class="react-box media">
+        <div class="react-tag">외신·시장</div>
+        <div class="react-body">증시 출렁이고, 블룸버그 등 외신은 "국민 배당금 영향"으로 보도. 외국인 투자자 불안 심리 확산.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S9: 삼성전자 차트 -->
+<section class="slide" id="s9">
+  <div class="glow glow1"></div>
+  <div class="inner">
+    <div class="chart-wrap fu">
+      <div class="ch-title fu2">삼성전자 연간실적 및 투자규모 추이</div>
+      <div class="ch-unit fu3">단위: 조원</div>
+      <div class="bars fu4">
+        <!-- 투자액(파랑) vs 영업이익(빨강) 비율 기반 -->
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:60%"></div>
+            <div class="b-profit" style="height:54%"></div>
+          </div>
+          <div class="bar-year">2017</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:59%"></div>
+            <div class="b-profit" style="height:48%"></div>
+          </div>
+          <div class="bar-year">2018</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:47%"></div>
+            <div class="b-profit" style="height:28%"></div>
+          </div>
+          <div class="bar-year">2019</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:60%"></div>
+            <div class="b-profit" style="height:36%"></div>
+          </div>
+          <div class="bar-year">2020</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:71%"></div>
+            <div class="b-profit" style="height:52%"></div>
+          </div>
+          <div class="bar-year">2021</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:78%"></div>
+            <div class="b-profit" style="height:43%"></div>
+          </div>
+          <div class="bar-year">2022</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:81%"></div>
+            <div class="b-profit" style="height:7%"></div>
+          </div>
+          <div class="bar-year">2023</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:89%"></div>
+            <div class="b-profit" style="height:33%"></div>
+          </div>
+          <div class="bar-year">2024</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:90%"></div>
+            <div class="b-profit" style="height:44%"></div>
+          </div>
+          <div class="bar-year">2025</div>
+        </div>
+        <div class="bar-col">
+          <div class="dual-bar">
+            <div class="b-invest" style="height:100%;opacity:.6;border:1px dashed rgba(72,153,232,.6)"></div>
+            <div class="b-profit" style="height:100%;opacity:.5;border:1px dashed rgba(224,56,56,.5)"></div>
+          </div>
+          <div class="bar-year">2026E</div>
+        </div>
+      </div>
+      <div class="legend fu5">
+        <div class="leg"><div class="leg-dot" style="background:linear-gradient(to top,#1e5fa8,#4899e8)"></div>투자액 (R&D+CAPEX)</div>
+        <div class="leg"><div class="leg-dot" style="background:linear-gradient(to top,#8b1a1a,#e03838)"></div>영업이익</div>
+      </div>
+    </div>
+    <div class="highlight-box fu5">
+      <div class="hl-box"><div class="hl-val" style="color:#4899e8">354.18조</div><div class="hl-label">2017~2025 누적 영업이익</div></div>
+      <div class="hl-box"><div class="hl-val" style="color:var(--red)">622.88조</div><div class="hl-label">동기간 총 투자액</div></div>
+      <div class="hl-box"><div class="hl-val" style="color:#f59e0b">-268.7조</div><div class="hl-label">영업이익 대비 투자 초과</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- S10: 반도체 성과보상 표 -->
+<section class="slide" id="s10">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu" style="color:var(--sky)">글로벌 비교</div>
+    <div class="big-h fu2">세계 반도체 업체 성과보상 방식 비교</div>
+    <table class="comp-table fu3">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="col-sam">삼성전자</th>
+          <th class="col-sk">SK하이닉스</th>
+          <th>엔비디아</th>
+          <th>마이크론</th>
+          <th>AMD</th>
+          <th>인텔</th>
+          <th>TSMC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cat">현금보상</td>
+          <td class="col-sam" style="font-size:12px">노조 영업이익<br>15% 요구</td>
+          <td class="col-sk" style="font-size:12px">영업이익 10%</td>
+          <td style="font-size:12px">임원에 한해<br>일부 지급</td>
+          <td style="font-size:12px">회사·개인성과<br>기반 연 1회</td>
+          <td style="font-size:12px">회사·개인성과<br>기반 연 1회</td>
+          <td style="font-size:12px">연간실적<br>운영목표 달성률</td>
+          <td style="font-size:12px">매년 이사회가<br>전년 순이익의<br>10%</td>
+        </tr>
+        <tr>
+          <td class="cat">주식보상</td>
+          <td class="col-sam"><span class="tri">△</span></td>
+          <td class="col-sk"><span class="bad">✕</span></td>
+          <td><span class="good">○</span></td>
+          <td><span class="good">○</span></td>
+          <td><span class="good">○</span></td>
+          <td><span class="good">○</span></td>
+          <td><span class="tri">△</span></td>
+        </tr>
+        <tr>
+          <td class="cat">노조여부</td>
+          <td class="col-sam">있음</td>
+          <td class="col-sk">있음</td>
+          <td>없음</td>
+          <td>없음</td>
+          <td>없음</td>
+          <td>없음</td>
+          <td>없음</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="source fu5">자료 : 각사</div>
+  </div>
+</section>
+
+<!-- S11: 서울시 규제 철폐 보도자료 -->
+<section class="slide" id="s11">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="press-header fu">
+      <div>
+        <div class="press-date">2025. 8. 14.(목) 조간용</div>
+        <div class="press-dept">서울특별시 · 기획조정실 규제개선담당관 / 도시공간본부 도시재창조과 / 주택실 임대주택과</div>
+      </div>
+    </div>
+    <div class="headline-box fu2">
+      <div class="hl-main">서울시, 주택·건설 분야 규제 철폐 3건 추가 발표<br>…민생경제 활성화에 총력</div>
+      <div class="hl-items">
+        <div class="hl-item"><span class="hl-num">(139호)</span>도시정비형 재개발사업 규제 개선, <span style="color:var(--sky)">사업 가능 구역 확대 및 높이규제 철폐</span></div>
+        <div class="hl-item"><span class="hl-num">(140호)</span>SH신축약정 매입임대주택사업 피해 개선해 사업자의 피해 요인 사전 차단</div>
+        <div class="hl-item"><span class="hl-num">(141호)</span>조경공사 시 물값, 살수차 경비 원가에 포함…폭염 속 건설업계 부담 경감</div>
+      </div>
+    </div>
+    <div class="body-text fu3" style="font-size:13px">
+      대규모·복합개발을 유도하고 공공공간을 확충해 노후화되어가는 도시 중심지가 활성화될 수 있도록
+      <span class="hl">동북권의 창동·상계 광역중심</span>, <span class="hl">동남권의 강남 도심과 잠실 광역중심</span>을
+      도시정비형 재개발사업 대상으로 <span style="color:var(--red);font-weight:700">추가</span>합니다.
+    </div>
+  </div>
+</section>
+
+<!-- S12: 도시정비형 재개발 구역 변경 -->
+<section class="slide" id="s12">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu" style="color:var(--red)">도시정비형 재개발 — 구역 변경</div>
+    <div class="big-h fu2">現 기본계획 → 변경(안)<br>강남·잠실·창동·상계 신규 추가</div>
+    <div class="compare fu3">
+      <div class="cmp-box cmp-now">
+        <div class="cmp-title now-t">現 기본계획</div>
+        <div class="zone-list">
+          <div class="zone-row"><span class="zone-type">도심</span>영등포</div>
+          <div class="zone-row"><span class="zone-type">광역중심</span>가산·대림, 용산, 청량리·왕십리</div>
+          <div class="zone-row"><span class="zone-type">지역중심</span>신촌, 연신내·불광, 사당·이수, 성수, 봉천, 천호·길동, 동대문</div>
+        </div>
+      </div>
+      <div class="cmp-box cmp-new">
+        <div class="cmp-title new-t">변경(안)</div>
+        <div class="zone-list">
+          <div class="zone-row"><span class="zone-type">도심</span>영등포, <span class="zone-new">강남(추가)</span></div>
+          <div class="zone-row"><span class="zone-type">광역중심</span>가산·대림, 용산, 청량리·왕십리, <span class="zone-add">잠실, 창동·상계(추가)</span></div>
+          <div class="zone-row"><span class="zone-type">지역중심</span>신촌, 연신내·불광, 사당·이수, 성수, 봉천, 천호·길동, 동대문 <span style="color:rgba(255,255,255,.4)">(변경 없음)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S13: 높이규제 철폐 비교 -->
+<section class="slide" id="s13">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu" style="color:var(--sky)">높이규제 개선 — 현행 vs 변경(안)</div>
+    <div class="big-h fu2">사실상 모든 도심권 높이 제한<br>철폐 또는 대폭 완화</div>
+    <div class="height-compare fu3">
+      <div class="ht-box ht-now">
+        <div class="ht-title">現 기준높이 규제</div>
+        <table class="ht-table">
+          <tr><th>구분</th><th>기준높이</th><th>최고높이</th></tr>
+          <tr><td class="area-name">영등포 역세권</td><td class="h-before">150m</td><td class="h-before">200m</td></tr>
+          <tr><td class="area-name">영등포 일반상업</td><td class="h-before">100m</td><td class="h-before">200m</td></tr>
+          <tr><td class="area-name">용산</td><td class="h-before">80~150m</td><td class="h-before">—</td></tr>
+          <tr><td class="area-name">청량리 일반업무</td><td class="h-before">70m</td><td class="h-before">—</td></tr>
+          <tr><td class="area-name">마포·공덕 역세권</td><td class="h-before">110m</td><td class="h-before">—</td></tr>
+          <tr><td class="area-name">연신내·불광</td><td class="h-before">지구단위</td><td class="h-before">—</td></tr>
+        </table>
+      </div>
+      <div class="ht-box ht-new">
+        <div class="ht-title">변경(안) — 규제 완화</div>
+        <table class="ht-table">
+          <tr><th>구분</th><th>기준높이</th><th>비고</th></tr>
+          <tr><td class="area-name">영등포 역세권</td><td class="h-free">제한 없음</td><td class="h-del">200m 삭제</td></tr>
+          <tr><td class="area-name">영등포 일반상업</td><td class="h-free">제한 없음</td><td class="h-del">200m 삭제</td></tr>
+          <tr><td class="area-name">용산</td><td class="h-after">150m</td><td>—</td></tr>
+          <tr><td class="area-name">청량리</td><td class="h-after">150m</td><td>광역중심</td></tr>
+          <tr><td class="area-name">마포·공덕</td><td class="h-after">150m</td><td>지역중심</td></tr>
+          <tr><td class="area-name">연신내·불광</td><td class="h-after">130m</td><td>지역중심</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S14: 서울시 역세권 보도자료 -->
+<section class="slide" id="s14">
+  <div class="bg-grid"></div>
+  <div class="inner" style="width:86%;max-width:1000px">
+    <div class="press-header fu" style="background:rgba(14,168,138,.08);border:1px solid rgba(14,168,138,.25);border-radius:10px;padding:14px 18px;margin-bottom:20px">
+      <div>
+        <div style="font-size:12px;color:var(--teal);font-weight:700;margin-bottom:4px">자료제공: 2026. 03. 25.(수) · 도시공간본부 도시공간전략과</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">서울특별시 보도자료</div>
+      </div>
+    </div>
+    <div class="headline-box fu2" style="background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.15);border-radius:10px;padding:18px 20px;margin-bottom:14px">
+      <div class="hl-main" style="font-family:'Noto Serif KR',serif;font-size:clamp(16px,2.2vw,24px);font-weight:900;line-height:1.5;margin-bottom:12px">
+        '325개 全 역세권 복합개발 대상지로'…<br>서울시 이동중심→ 생활거점 개발 본격화
+      </div>
+      <div class="hl-items fu3" style="display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:13px;color:rgba(255,255,255,.75);padding-left:14px;position:relative">
+          <span style="position:absolute;left:0;color:var(--teal)">–</span>일터·주거·여가 한곳에… <span style="color:var(--teal);font-weight:700">「역세권 활성화 사업」 확대</span> 버전, '31년까지 본격 가동
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);padding-left:14px;position:relative">
+          <span style="position:absolute;left:0;color:var(--teal)">–</span>역세권 활성화 통해 업무·상업시설 대폭↑ 성과, <span style="color:var(--teal);font-weight:700">장기전세주택 12만호 공급</span>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);padding-left:14px;position:relative">
+          <span style="position:absolute;left:0;color:var(--teal)">–</span>사실상 모든 역세권 복합개발 허용, <span style="color:var(--teal);font-weight:700">공공 기여 부담 대폭 완화</span>… 사업 문턱 낮춰
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);padding-left:14px;position:relative">
+          <span style="position:absolute;left:0;color:var(--teal)">–</span>역세권 장기전세주택 입지 범위 확장, <span style="color:var(--teal);font-weight:700">인허가 절차 간소화로 5개월 이상 기간 단축</span>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);padding-left:14px;position:relative">
+          <span style="position:absolute;left:0;color:var(--teal)">–</span>환승역 개발 확대용적률 최대 <span style="color:var(--teal);font-weight:700">1,300%</span>, 간선도로변도 용도상향·공공기여 완화로 개발속도 ↑
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S15: 역세권 장기전세주택 공급 확대 -->
+<section class="slide" id="s15">
+  <div class="bg-grid"></div>
+  <div class="inner" style="width:88%;max-width:1060px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px" class="fu">
+      <span style="background:var(--sky);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:4px">확대·강화</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.5)">역세권 장기전세주택</span>
+    </div>
+    <div class="big-h fu2">역세권 외 지역까지, 속도는 더 빠르게<br>더 많은 곳에서 장기전세주택을 신속하게 공급</div>
+    <div class="supply-grid fu3">
+      <div class="sb">
+        <div class="sb-title">📐 더 넓게 — 역세권 외 지역까지 확대</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:14px">역세권 500m + 20m 이상 간선도로 교차지 200m</div>
+        <div class="flow">
+          <div><div class="fn">127개소</div><div class="fl">기존 (12만호)</div></div>
+          <div class="fa">+</div>
+          <div><div class="fn" style="color:var(--teal)">239개소</div><div class="fl">신규 추가</div></div>
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--white);margin-top:10px">9만 2천호 <span style="font-size:18px;color:rgba(255,255,255,.4)">추가 공급</span></div>
+        <div class="fsub">서북권 +14곳 · 동북권 +73곳 · 도심권 +2곳<br>서남권 +83곳 · 동남권 +67곳</div>
+      </div>
+      <div class="sb">
+        <div class="sb-title">⚡ 더 빨리 — 절차 간소화</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:14px">통합검토(사전+계획) 일원화로 심의 기간 단축</div>
+        <div class="tl">
+          <div class="tl-blk">5개월<br>사전검토</div>
+          <div class="tl-blk">12개월<br>주민제안·공람·구의회</div>
+          <div class="tl-blk">5개월<br>도시계획위원회</div>
+          <div class="tl-blk">2개월<br>구의회</div>
+        </div>
+        <div style="text-align:center;font-size:20px;color:var(--teal);margin:8px 0">↓</div>
+        <div class="save-badge" style="margin-top:6px">24개월 → 5개월 이상 단축</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S16: 도심복합개발 -->
+<section class="slide" id="s16">
+  <div class="bg-grid"></div>
+  <div class="inner" style="width:88%;max-width:1060px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px" class="fu">
+      <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:4px">신규도입</span>
+      <span style="font-size:13px;color:rgba(255,255,255,.5)">성장거점형 도심복합개발</span>
+    </div>
+    <div class="big-h fu2">더 큰 잠재력이 있는 환승역에는<br>용적률 1,300%까지 대규모 복합개발 유도</div>
+    <div class="dev-grid fu3">
+      <div class="dev-list">
+        <div class="dev-item"><div class="di-icon">🏙️</div><div><div class="di-title">환승역에 대규모 생활거점 조성</div><div class="di-body">교통 결절점 중심으로 업무·주거·상업·문화 집약된 복합 생활거점 개발.</div></div></div>
+        <div class="dev-item"><div class="di-icon">📐</div><div><div class="di-title">환승역 500m 이내, 5,000㎡ 이상</div><div class="di-body">용적률 최대 1,300% 적용. 2026년 6월 대상지 공모 예정.</div></div></div>
+        <div class="dev-item"><div class="di-icon">📅</div><div><div class="di-title">향후 5년간 35개소 추진</div><div class="di-body">주거 20,000세대, 비주거 연면적 260만㎡ 공급.</div></div></div>
+        <div class="dev-item"><div class="di-icon">🗺️</div><div><div class="di-title">도심복합개발 대상 환승역세권</div><div class="di-body">11개 자치구 공공기여 환화 (증가한 용적률 5/10 → 3/10).</div></div></div>
+      </div>
+      <div class="dev-stats fu4">
+        <div class="ds-box"><div class="ds-val">1,300%</div><div class="ds-label">용적률 최대 (환승역 500m · 5,000㎡↑)</div></div>
+        <div class="ds-box"><div class="ds-val">22.7㎢</div><div class="ds-label">도심복합개발 대상 환승역세권 면적</div></div>
+        <div class="ds-box"><div class="ds-val">35개소</div><div class="ds-label">5년간 추진 목표 · 2026.6 공모 시작</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S17: 보행 일상권 -->
+<section class="slide" id="s17">
+  <div class="bg-grid"></div>
+  <div class="inner" style="width:88%;max-width:1060px">
+    <div class="tag fu" style="color:var(--sky)">2040 서울도시기본계획 · 보행 일상권 조성</div>
+    <div class="big-h fu2">지역현황을 고려한<br><strong>복합적 기능배치</strong> 및 <strong>유연한 용도지역</strong> 계획</div>
+    <div class="steps fu3">
+      <div class="step step-a"><div class="sh">지역현황</div><div class="sb-text">생활편의시설이 부족한<br>주거밀집 지역</div></div>
+      <div class="step step-b"><div class="sh">지역 공간구조 분석</div><div class="sb-text">필요 기능 분석 및<br>적정 배치 등 검토</div></div>
+      <div class="step step-c"><div class="sh">용도복합계획 수립</div><div class="sb-text">'보행 일상권' 조성을 위한<br><strong>복합적인 용도계획으로 전환</strong></div></div>
+    </div>
+    <div class="zone-grid fu4">
+      <div class="zc"><div class="zd">250m</div><div class="zn">역세권 활성화</div><div class="zt">역 중심 상업·업무 기능 강화. 용도지역 상향 및 용적률 인센티브</div></div>
+      <div class="zc"><div class="zd">350m</div><div class="zn">장기전세주택 1차 역세권</div><div class="zt">역세권 장기전세주택 우선 공급 대상 구역</div></div>
+      <div class="zc"><div class="zd">500m</div><div class="zn">장기전세주택 2차 역세권</div><div class="zt">간선도로 교차지역 200m 이내 포함. 확장 공급 대상</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- S18: 투자 시사점 -->
+<section class="slide" id="s18">
+  <div class="bg-grid"></div>
+  <div class="inner" style="width:88%;max-width:1060px">
+    <div class="tag fu" style="color:var(--gold)">성원스페이스 투자 시사점</div>
+    <div class="big-h fu2">지금 알아야 할 3가지<br>부동산·정책 투자 포인트</div>
+    <div class="card-grid-3 fu3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="info-card" style="border-color:rgba(46,125,82,.3);background:rgba(46,125,82,.06)">
+        <div style="font-size:28px;margin-bottom:12px">🌾</div>
+        <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:10px">농지 전수조사</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.8">경기도 농지 투기 집중 단속. 비경작 농지 보유 리스크 증가. 도시지역 내 토지로 관심 이동 예상.</div>
+      </div>
+      <div class="info-card" style="border-color:rgba(224,56,56,.3);background:rgba(224,56,56,.06)">
+        <div style="font-size:28px;margin-bottom:12px">🤖</div>
+        <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:10px">AI 국민배당금 논란</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.8">단기 코스피 급락·외국인 이탈 우려. 장기적으로 초과세수 부동산 관련 재원화 가능성 주목.</div>
+      </div>
+      <div class="info-card" style="border-color:rgba(59,130,196,.3);background:rgba(59,130,196,.06)">
+        <div style="font-size:28px;margin-bottom:12px">🏙️</div>
+        <div style="font-size:14px;font-weight:700;color:var(--sky);margin-bottom:10px">서울 도시정비 규제 철폐</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.8"><strong style="color:#fff">강남·잠실·창동·상계</strong> 신규 추가. 높이규제 철폐·용적률 1,300%·역세권 325개 전면 개방.</div>
+      </div>
+    </div>
+    <div class="fu4" style="margin-top:20px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:14px 20px;font-size:14px;color:rgba(255,255,255,.75);line-height:1.8">
+      💡 <strong style="color:var(--gold)">성원스페이스 전문가 의견:</strong> 도시정비구역 내 소액 지분 투자가 가장 주목받는 시점. 강남·잠실 광역중심 추가 지정으로 재개발 사업성 대폭 개선. 전문가 상담 후 진입 권장.
+    </div>
+  </div>
+</section>
+
+<!-- S19: 아웃트로 -->
+<section class="slide" id="s19">
+  <div class="bg-grid"></div>
+  <div class="glow g1" style="width:650px;height:650px;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 6s ease-in-out infinite"></div>
+  <div class="inner" style="position:relative;z-index:2;text-align:center">
+    <div class="logo-sm fu" style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:6px;color:var(--gold);margin-bottom:24px">SUNGWONSPACE</div>
+    <h2 class="fu2" style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.8vw,50px);font-weight:900;line-height:1.55;margin-bottom:20px">
+      당신의 더 나은 미래를<br>성원스페이스가 함께합니다
+    </h2>
+    <p class="fu3" style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.9;max-width:500px;margin:0 auto 32px">
+      12년간 검증된 실적과 투명한 수익률로<br>고객의 자산 가치를 극대화합니다.
+    </p>
+    <div class="outro-tel fu4" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,58px);color:var(--gold);letter-spacing:4px;margin-bottom:8px">010-3781-6068</div>
+    <div class="outro-addr fu5" style="font-size:12px;letter-spacing:1px;color:rgba(255,255,255,.3)">sungwonspace.com &nbsp;|&nbsp; 서울 동작구 동작대로 37, 3층 &nbsp;|&nbsp; 월~목 10:00~16:00</div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const TOTAL  = slides.length;
+const AUTO_DELAY = 6000;
+let cur = 0, animating = false, isPlaying = true;
+let autoTimer = null;
+
+/* 도트 생성 — 파트별 구분선 */
+const nav = document.getElementById('nav');
+const SEP_AFTER = [2, 9, 13]; // 농지(2)/AI국민배당(9)/서울시(13) 이후 구분
+for(let i = 0; i < TOTAL; i++){
+  const d = document.createElement('div');
+  d.className = 'ndot' + (i===0?' active':'');
+  d.onclick = () => manualGoTo(i);
+  nav.appendChild(d);
+  if(SEP_AFTER.includes(i)){
+    const sep = document.createElement('div');
+    sep.className = 'nsep';
+    nav.appendChild(sep);
+  }
+}
+const dots = document.querySelectorAll('.ndot');
+
+function updateUI(i){ document.getElementById('pfill').style.width = ((i+1)/TOTAL*100)+'%'; }
+
+function resetRing(){
+  const arc = document.getElementById('timerArc');
+  arc.style.animation = 'none'; arc.offsetHeight;
+  arc.style.animation = isPlaying ? `arcDrain ${AUTO_DELAY}ms linear forwards` : 'none';
+}
+function startAuto(){ clearTimeout(autoTimer); resetRing(); autoTimer = setTimeout(()=>{ goTo(cur+1<TOTAL?cur+1:0); if(isPlaying) startAuto(); }, AUTO_DELAY); }
+function stopAuto() { clearTimeout(autoTimer); document.getElementById('timerArc').style.animation='none'; }
+function togglePlay(){
+  isPlaying = !isPlaying;
+  document.getElementById('playBtn').textContent = isPlaying ? '⏸' : '▶';
+  isPlaying ? startAuto() : stopAuto();
+}
+function manualGoTo(n){ if(isPlaying){ stopAuto(); startAuto(); } goTo(n); }
+
+function goTo(n){
+  if(animating) return;
+  const next = (n+TOTAL)%TOTAL;
+  if(next===cur) return;
+  animating = true;
+  const down = next > cur || (cur===TOTAL-1 && next===0);
+
+  slides[next].style.transition = 'none';
+  slides[next].style.transform  = down ? 'translateY(100%)' : 'translateY(-100%)';
+  slides[next].style.visibility = 'visible';
+
+  requestAnimationFrame(()=>{
+    slides[cur].style.transition  = 'transform .62s cubic-bezier(.4,0,.2,1)';
+    slides[cur].style.transform   = down ? 'translateY(-100%)' : 'translateY(100%)';
+    slides[next].style.transition = 'transform .62s cubic-bezier(.4,0,.2,1)';
+    slides[next].style.transform  = 'translateY(0)';
+
+    dots[cur].classList.remove('active');
+    dots[next].classList.add('active');
+    const prev = cur; cur = next;
+    updateUI(cur);
+
+    setTimeout(()=>{
+      slides[prev].style.transition = 'none';
+      slides[prev].style.transform  = 'translateY(100%)';
+      slides[prev].style.visibility = 'hidden';
+      slides[prev].classList.remove('active');
+      slides[cur].classList.add('active');
+      slides[cur].querySelectorAll('.fu,.fu2,.fu3,.fu4,.fu5,.fi,.sx,.gu').forEach(el=>{
+        el.style.animation='none'; el.offsetHeight; el.style.animation='';
+      });
+      animating = false;
+    }, 640);
+  });
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight') manualGoTo(cur+1);
+  if(e.key==='ArrowUp'  ||e.key==='ArrowLeft')  manualGoTo(cur-1);
+  if(e.key===' '){ e.preventDefault(); togglePlay(); }
+});
+let ty=0;
+document.addEventListener('touchstart', e=>{ ty=e.touches[0].clientY; }, {passive:true});
+document.addEventListener('touchend',   e=>{ const dy=e.changedTouches[0].clientY-ty; if(Math.abs(dy)>50) manualGoTo(dy<0?cur+1:cur-1); }, {passive:true});
+let wl=false;
+document.addEventListener('wheel', e=>{ if(wl)return; wl=true; manualGoTo(e.deltaY>0?cur+1:cur-1); setTimeout(()=>{wl=false},800); }, {passive:true});
+
+const style = document.createElement('style');
+style.textContent = `@keyframes arcDrain{from{stroke-dashoffset:0}to{stroke-dashoffset:113.1}}`;
+document.head.appendChild(style);
+
+updateUI(0);
+startAuto();
+</script>
+</body>
+</html>

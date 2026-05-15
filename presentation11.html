@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SUNGWONSPACE | 부동산 투자 인사이트</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #070809;
+  --white: #f2f4f7;
+  --gold: #c9a84c;
+  --gold2: #e8c96a;
+  --navy: #0b1a2e;
+  --blue: #1e5fa8;
+  --sky: #3fa0d8;
+  --teal: #0ea88a;
+  --red: #e03838;
+  --orange: #e87820;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--black);
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--white);
+}
+
+/* ── DECK ── */
+#deck { position: fixed; inset: 0; overflow: hidden; }
+
+/* ── SLIDE 공통: 위아래 전환 ── */
+.slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transform: translateY(100%);
+  visibility: hidden;
+  opacity: 1 !important;
+  transition: transform 0.62s cubic-bezier(0.4,0,0.2,1), visibility 0s 0.62s;
+  will-change: transform;
+}
+.slide.active {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 0.62s cubic-bezier(0.4,0,0.2,1), visibility 0s 0s;
+}
+
+/* ── 콘텐츠 애니메이션 ── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes scaleX { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@keyframes countUp { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+@keyframes barGrow { from { height:0; } to { height:var(--h); } }
+
+.slide.active .fu  { animation: fadeUp .7s both; }
+.slide.active .fu2 { animation: fadeUp .7s .12s both; }
+.slide.active .fu3 { animation: fadeUp .7s .24s both; }
+.slide.active .fu4 { animation: fadeUp .7s .36s both; }
+.slide.active .fu5 { animation: fadeUp .7s .48s both; }
+.slide.active .fi  { animation: fadeIn .8s both; }
+.slide.active .sx  { animation: scaleX .9s .2s both; transform-origin: left; }
+
+/* ── 공통 BG 패턴 ── */
+.bg-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+.glow {
+  position: absolute; border-radius: 50%; pointer-events: none;
+}
+
+/* ── UI 오버레이 ── */
+#progress {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 3px; background: rgba(255,255,255,.08); z-index: 500;
+}
+#pfill {
+  height: 100%; background: var(--gold); width: 0%;
+  transition: width .4s ease;
+}
+/* 우측 세로 도트 */
+#nav {
+  position: fixed; right: 14px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 7px; z-index: 500;
+}
+.ndot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,.25); cursor: pointer;
+  transition: background .3s, transform .3s;
+}
+.ndot.active { background: var(--gold); transform: scale(1.5); }
+
+/* 재생 버튼 + 타이머 링 */
+#playWrap {
+  position: fixed; bottom: 24px; right: 18px; z-index: 500;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+}
+#timerArc {
+  fill: none; stroke: var(--gold); stroke-width: 2.5;
+  stroke-linecap: round; stroke-dasharray: 113.1; stroke-dashoffset: 0;
+}
+#playBtn {
+  position: absolute; z-index: 1;
+  background: rgba(255,255,255,.07); border: none;
+  color: var(--white); width: 30px; height: 30px;
+  border-radius: 50%; cursor: pointer; font-size: 12px;
+  transition: background .2s;
+}
+#playBtn:hover { background: rgba(201,168,76,.3); }
+
+/* ════════════════════════════════
+   S1: 인트로
+════════════════════════════════ */
+#s1 { background: var(--black); }
+#s1 .glow1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(201,168,76,.1) 0%, transparent 68%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  animation: breathe 5s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.1)} }
+#s1 .inner { position: relative; z-index: 2; text-align: center; }
+#s1 svg { width: 60px; height: 60px; margin-bottom: 28px; }
+#s1 h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 10vw, 100px);
+  letter-spacing: 8px; color: var(--white); line-height: 1;
+}
+#s1 .line { width: 72px; height: 1px; background: var(--gold); margin: 18px auto; }
+#s1 .sub { font-size: clamp(13px, 1.8vw, 17px); color: rgba(255,255,255,.5); letter-spacing: 4px; }
+
+/* ════════════════════════════════
+   S2: 기사 헤드라인
+════════════════════════════════ */
+#s2 { background: #0d0f13; }
+#s2 .glow1 {
+  width: 700px; height: 400px;
+  background: radial-gradient(ellipse, rgba(224,56,56,.08) 0%, transparent 65%);
+  top: 30%; left: 50%; transform: translateX(-50%);
+}
+#s2 .inner { position: relative; z-index: 2; width: 88%; max-width: 900px; }
+#s2 .news-source {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 36px;
+}
+#s2 .news-logo {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px; font-weight: 900; color: var(--white);
+  border-bottom: 2px solid var(--white); padding-bottom: 3px;
+}
+#s2 .news-date { font-size: 12px; color: rgba(255,255,255,.4); letter-spacing: 1px; }
+#s2 .news-hl {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(26px, 4.5vw, 52px);
+  font-weight: 900; line-height: 1.35;
+  margin-bottom: 40px;
+  color: var(--white);
+}
+#s2 .news-hl .accent { color: var(--red); }
+#s2 .bullets { display: flex; flex-direction: column; gap: 14px; }
+#s2 .bullet {
+  display: flex; align-items: center; gap: 16px;
+  font-size: clamp(14px, 2vw, 18px); color: rgba(255,255,255,.7);
+  border-left: 3px solid rgba(224,56,56,.5); padding-left: 18px;
+}
+#s2 .bullet .num { color: var(--red); font-weight: 700; flex-shrink: 0; }
+
+/* ════════════════════════════════
+   S3: 기사 본문 1
+════════════════════════════════ */
+#s3 { background: #0c0e12; }
+#s3 .inner { position: relative; z-index: 2; width: 84%; max-width: 860px; }
+#s3 .tag {
+  font-size: 11px; letter-spacing: 4px; color: var(--gold);
+  text-transform: uppercase; margin-bottom: 20px;
+}
+#s3 .body-text {
+  font-size: clamp(14px, 1.8vw, 17px); line-height: 2.1;
+  color: rgba(255,255,255,.78);
+}
+#s3 .body-text .hl { color: var(--white); font-weight: 700; }
+#s3 .body-text .hl2 { color: var(--gold); font-weight: 700; }
+#s3 .stat-row {
+  display: flex; gap: 24px; margin-top: 36px;
+}
+#s3 .stat-box {
+  flex: 1; background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 18px;
+}
+#s3 .stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  color: var(--gold); line-height: 1;
+}
+#s3 .stat-desc { font-size: 12px; color: rgba(255,255,255,.45); margin-top: 6px; line-height: 1.6; }
+
+/* ════════════════════════════════
+   S4: 기사 본문 2 — 이중배제
+════════════════════════════════ */
+#s4 { background: #0c0e12; }
+#s4 .inner { position: relative; z-index: 2; width: 84%; max-width: 860px; }
+#s4 .body-text {
+  font-size: clamp(14px, 1.8vw, 17px); line-height: 2.1;
+  color: rgba(255,255,255,.78);
+}
+#s4 .body-text .hl { color: var(--white); font-weight: 700; }
+#s4 .body-text .red { color: var(--red); font-weight: 700; }
+#s4 .callout {
+  margin-top: 32px;
+  background: rgba(224,56,56,.08);
+  border: 1px solid rgba(224,56,56,.25);
+  border-left: 4px solid var(--red);
+  border-radius: 0 10px 10px 0;
+  padding: 18px 22px;
+  font-size: clamp(15px, 2vw, 18px);
+  font-weight: 700; color: var(--white); line-height: 1.7;
+}
+#s4 .callout .sub { font-size: 13px; color: rgba(255,255,255,.5); font-weight: 400; margin-top: 6px; }
+
+/* ════════════════════════════════
+   S5: 차트 슬라이드
+════════════════════════════════ */
+#s5 { background: #0a1220; }
+#s5 .glow1 {
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(30,95,168,.15) 0%, transparent 65%);
+  top: 20%; left: 50%; transform: translateX(-50%);
+}
+#s5 .inner { position: relative; z-index: 2; width: 90%; max-width: 1050px; }
+#s5 .chart-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(20px, 2.8vw, 32px); font-weight: 900;
+  margin-bottom: 36px; text-align: center;
+}
+#s5 .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+#s5 .chart-panel {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px; padding: 22px;
+}
+#s5 .ch-label {
+  font-size: 13px; color: rgba(255,255,255,.55); margin-bottom: 20px;
+}
+#s5 .bars {
+  display: flex; align-items: flex-end; gap: 10px;
+  height: 140px;
+}
+#s5 .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#s5 .bar-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(11px, 1.4vw, 14px); color: var(--white); text-align: center;
+  white-space: nowrap;
+}
+#s5 .bar-body {
+  width: 100%; border-radius: 4px 4px 0 0;
+  animation: growUp .8s ease both;
+}
+@keyframes growUp { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
+#s5 .bar-date { font-size: clamp(9px, 1.1vw, 11px); color: rgba(255,255,255,.4); text-align: center; }
+#s5 .price-bar { background: linear-gradient(to top, #c05a10, #f5a233); }
+#s5 .pir-bar   { background: linear-gradient(to top, #1a5fa8, #48aadc); }
+#s5 .badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(224,56,56,.15); border: 1px solid rgba(224,56,56,.35);
+  color: var(--red); font-size: 13px; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px; margin-top: 14px;
+}
+#s5 .note { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 16px; text-align: center; }
+
+/* ════════════════════════════════
+   S6: 보행 일상권
+════════════════════════════════ */
+#s6 { background: #080f1c; }
+#s6 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; }
+#s6 .tag { font-size: 11px; letter-spacing: 4px; color: var(--sky); text-transform: uppercase; margin-bottom: 12px; }
+#s6 h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(20px, 2.8vw, 34px); font-weight: 900;
+  line-height: 1.4; margin-bottom: 36px;
+}
+#s6 .steps {
+  display: flex; align-items: stretch; gap: 0;
+  margin-bottom: 28px;
+}
+#s6 .step {
+  flex: 1; border-radius: 0; padding: 20px 16px;
+  text-align: center; position: relative;
+}
+#s6 .step:not(:last-child)::after {
+  content: '→'; position: absolute;
+  right: -14px; top: 50%; transform: translateY(-50%);
+  color: var(--white); font-size: 18px; z-index: 1;
+}
+#s6 .step-a { background: #444; border-radius: 8px 0 0 8px; }
+#s6 .step-b { background: var(--blue); }
+#s6 .step-c { background: var(--orange); border-radius: 0 8px 8px 0; }
+#s6 .step-head { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+#s6 .step-body { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.6; }
+#s6 .zone-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+#s6 .zone-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 16px;
+}
+#s6 .zone-dist { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--sky); }
+#s6 .zone-name { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 4px; }
+#s6 .zone-desc { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 8px; line-height: 1.6; }
+
+/* ════════════════════════════════
+   S7: 직·주·락 비전
+════════════════════════════════ */
+#s7 { background: #060c16; }
+#s7 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; }
+#s7 .eyebrow {
+  font-size: 11px; letter-spacing: 5px; color: var(--teal);
+  text-transform: uppercase; margin-bottom: 16px; text-align: center;
+}
+#s7 h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(22px, 3.2vw, 40px); font-weight: 900;
+  text-align: center; margin-bottom: 40px; line-height: 1.4;
+}
+#s7 .cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+#s7 .card {
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+  transition: transform .3s, border-color .3s;
+}
+#s7 .card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,.3); }
+#s7 .card-head {
+  padding: 28px 24px 22px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+#s7 .card-jk {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(44px, 7vw, 72px); font-weight: 900;
+  line-height: 1;
+}
+#s7 .card-title { font-size: clamp(14px, 2vw, 18px); font-weight: 700; }
+#s7 .card-desc { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.7; padding: 0 24px 24px; }
+#s7 .card-jik  { background: linear-gradient(135deg, #1a3a6b 0%, #0d2040 100%); }
+#s7 .card-jik .card-jk  { color: #4899e8; }
+#s7 .card-ju   { background: linear-gradient(135deg, #0e3028 0%, #071b14 100%); }
+#s7 .card-ju .card-jk   { color: var(--teal); }
+#s7 .card-rak  { background: linear-gradient(135deg, #3a1a50 0%, #1e0a30 100%); }
+#s7 .card-rak .card-jk  { color: #c060f0; }
+
+/* ════════════════════════════════
+   S8: 서울 생활거점 정책
+════════════════════════════════ */
+#s8 { background: linear-gradient(135deg, #0b1d35 0%, #071424 100%); }
+#s8 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; text-align: center; }
+#s8 .eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--teal); text-transform: uppercase; margin-bottom: 16px; }
+#s8 h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(20px, 3vw, 38px); font-weight: 900;
+  margin-bottom: 44px; line-height: 1.4;
+}
+#s8 .policy-grid { display: grid; grid-template-columns: repeat(2, 1fr) auto repeat(2,1fr); gap: 0; align-items: center; }
+#s8 .policy-item {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 22px 18px;
+  text-align: center;
+}
+#s8 .pi-icon { font-size: 28px; margin-bottom: 10px; }
+#s8 .pi-label { font-size: 11px; color: var(--teal); letter-spacing: 2px; margin-bottom: 6px; }
+#s8 .pi-name { font-size: clamp(13px, 1.8vw, 16px); font-weight: 700; }
+#s8 .policy-center {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 0 20px;
+}
+#s8 .center-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(14,168,138,.15);
+  border: 2px solid var(--teal);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--teal);
+  text-align: center; line-height: 1.4;
+}
+#s8 .arr { font-size: 20px; color: rgba(255,255,255,.3); }
+#s8 .pi-new { border-color: rgba(14,168,138,.4); background: rgba(14,168,138,.07); }
+
+/* ════════════════════════════════
+   S9: 역세권 활성화 확대
+════════════════════════════════ */
+#s9 { background: linear-gradient(135deg, #091822 0%, #061014 100%); }
+#s9 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; }
+#s9 .tag-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+#s9 .badge-label {
+  background: var(--teal); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  padding: 4px 10px; border-radius: 4px;
+}
+#s9 h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(18px, 2.5vw, 30px); font-weight: 900;
+  line-height: 1.4; margin-bottom: 36px; color: var(--white);
+}
+#s9 .expand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+#s9 .expand-box {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 24px;
+}
+#s9 .eb-title { font-size: 15px; font-weight: 700; color: var(--teal); margin-bottom: 20px; }
+#s9 .flow { display: flex; align-items: center; gap: 10px; }
+#s9 .flow-item { flex: 1; text-align: center; }
+#s9 .flow-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 4vw, 44px); color: var(--sky); line-height: 1;
+}
+#s9 .flow-label { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 4px; }
+#s9 .flow-arr { font-size: 24px; color: var(--teal); flex-shrink: 0; }
+#s9 .flow-sub { font-size: 12px; color: rgba(255,255,255,.55); margin-top: 10px; line-height: 1.6; }
+#s9 .contrib { display: flex; flex-direction: column; gap: 14px; }
+#s9 .contrib-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#s9 .contrib-label { font-size: 13px; color: rgba(255,255,255,.65); }
+#s9 .contrib-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: var(--sky);
+}
+#s9 .arrow-big { font-size: 22px; color: var(--teal); }
+#s9 .note-bar {
+  margin-top: 20px; font-size: 12px; color: rgba(255,255,255,.4);
+  border-top: 1px solid rgba(255,255,255,.08); padding-top: 12px;
+  line-height: 1.7;
+}
+
+/* ════════════════════════════════
+   S10: 장기전세주택 공급 확대
+════════════════════════════════ */
+#s10 { background: linear-gradient(135deg, #091822 0%, #061014 100%); }
+#s10 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; }
+#s10 .tag-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+#s10 .badge-label { background: var(--sky); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 4px; }
+#s10 h2 { font-family: 'Noto Serif KR', serif; font-size: clamp(18px, 2.5vw, 30px); font-weight: 900; line-height: 1.4; margin-bottom: 32px; }
+#s10 .supply-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+#s10 .supply-box { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 22px; }
+#s10 .sb-title { font-size: 15px; font-weight: 700; color: var(--sky); margin-bottom: 18px; }
+#s10 .sb-sub { font-size: 12px; color: rgba(255,255,255,.45); margin-bottom: 14px; }
+#s10 .range-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+#s10 .range-num { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--sky); }
+#s10 .range-label { font-size: 12px; color: rgba(255,255,255,.5); }
+#s10 .supply-num { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 4vw, 44px); color: var(--white); line-height: 1; }
+#s10 .supply-desc { font-size: 12px; color: rgba(255,255,255,.45); margin-top: 6px; }
+#s10 .timeline {
+  display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap;
+}
+#s10 .tl-block {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px;
+}
+#s10 .tl-duration {
+  font-size: 11px; color: var(--sky); font-weight: 700; white-space: nowrap;
+}
+#s10 .tl-steps {
+  display: flex; gap: 4px;
+}
+#s10 .tl-step {
+  background: rgba(63,160,216,.15);
+  border: 1px solid rgba(63,160,216,.3);
+  border-radius: 4px; padding: 4px 8px;
+  font-size: 10px; color: rgba(255,255,255,.7); white-space: nowrap;
+}
+#s10 .tl-step.highlight {
+  background: rgba(63,160,216,.3);
+  border-color: var(--sky); color: #fff;
+}
+#s10 .saving-badge {
+  margin-top: 14px;
+  background: rgba(63,160,216,.12);
+  border: 1px solid rgba(63,160,216,.3);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 14px; font-weight: 700; color: var(--sky);
+}
+
+/* ════════════════════════════════
+   S11: 도심복합개발
+════════════════════════════════ */
+#s11 { background: linear-gradient(135deg, #100a1e 0%, #080614 100%); }
+#s11 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; }
+#s11 .tag-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+#s11 .badge-label { background: #7c3aed; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 4px; }
+#s11 h2 { font-family: 'Noto Serif KR', serif; font-size: clamp(18px, 2.5vw, 30px); font-weight: 900; line-height: 1.4; margin-bottom: 32px; }
+#s11 .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+#s11 .dev-list { display: flex; flex-direction: column; gap: 14px; }
+#s11 .dev-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 16px;
+}
+#s11 .dev-icon { font-size: 22px; flex-shrink: 0; }
+#s11 .dev-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+#s11 .dev-text p { font-size: 12px; color: rgba(255,255,255,.5); line-height: 1.6; }
+#s11 .dev-stats { display: flex; flex-direction: column; gap: 14px; }
+#s11 .dev-stat-box {
+  background: rgba(124,58,237,.08);
+  border: 1px solid rgba(124,58,237,.25);
+  border-radius: 10px; padding: 18px 20px;
+}
+#s11 .ds-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(32px, 5vw, 52px); color: #c084fc; line-height: 1;
+}
+#s11 .ds-label { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 6px; }
+#s11 .dev-note {
+  margin-top: 20px; font-size: 12px; color: rgba(255,255,255,.4);
+  border-top: 1px solid rgba(255,255,255,.08); padding-top: 12px;
+  grid-column: 1 / -1;
+}
+
+/* ════════════════════════════════
+   S12: 아웃트로 성원스페이스
+════════════════════════════════ */
+#s12 { background: var(--black); }
+#s12 .glow1 {
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 65%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  animation: breathe 6s ease-in-out infinite;
+}
+#s12 .inner { position: relative; z-index: 2; text-align: center; }
+#s12 .logo-sm { font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 6px; color: var(--gold); margin-bottom: 28px; }
+#s12 h2 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(22px, 3.8vw, 50px); font-weight: 900;
+  line-height: 1.55; margin-bottom: 24px;
+}
+#s12 p { font-size: 15px; color: rgba(255,255,255,.5); line-height: 1.9; max-width: 520px; margin: 0 auto 36px; }
+#s12 .tel {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(32px, 5.5vw, 60px);
+  color: var(--gold); letter-spacing: 4px; margin-bottom: 10px;
+}
+#s12 .addr { font-size: 12px; letter-spacing: 1px; color: rgba(255,255,255,.3); }
+
+/* ════════════════════════════════
+   S13: 강남 지도 슬라이드
+════════════════════════════════ */
+#s13 { background: #060a10; }
+#s13 .inner { position: relative; z-index: 2; width: 88%; max-width: 1060px; }
+#s13 .tag { font-size: 11px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; }
+#s13 h2 { font-family: 'Noto Serif KR', serif; font-size: clamp(20px, 2.8vw, 34px); font-weight: 900; margin-bottom: 28px; line-height: 1.4; }
+#s13 .map-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+#s13 .map-box {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; padding: 22px;
+}
+#s13 .mb-title { font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 14px; }
+#s13 .station-list { display: flex; flex-direction: column; gap: 10px; }
+#s13 .station-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,.7); }
+#s13 .st-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+#s13 .st-dot.red { background: var(--red); }
+#s13 .st-dot.blue { background: var(--sky); }
+#s13 .st-dot.gold { background: var(--gold); }
+#s13 .st-dist { margin-left: auto; font-size: 11px; color: rgba(255,255,255,.35); }
+#s13 .dev-zones { display: flex; flex-direction: column; gap: 10px; }
+#s13 .dz-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.04); border-radius: 8px;
+  font-size: 13px; color: rgba(255,255,255,.7);
+}
+#s13 .dz-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+#s13 .dz-dot.blue-a { background: rgba(100,180,255,.6); border: 1px solid rgba(100,180,255,.8); }
+#s13 .dz-dot.red-a  { background: rgba(255,80,80,.5); border: 1px solid rgba(255,80,80,.7); }
+
+/* 반응형 */
+@media(max-width:700px){
+  #s5 .charts, #s6 .zone-row, #s7 .cards,
+  #s9 .expand-grid, #s10 .supply-grid,
+  #s11 .dev-grid, #s13 .map-info,
+  #s8 .policy-grid { grid-template-columns: 1fr; }
+  #s8 .policy-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  #s3 .stat-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="pfill"></div></div>
+
+<!-- 우측 세로 도트 -->
+<div id="nav"></div>
+
+<!-- 재생 버튼 + 타이머 링 -->
+<div id="playWrap">
+  <svg width="44" height="44" viewBox="0 0 44 44" style="position:absolute;inset:0">
+    <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2.5"/>
+    <circle id="timerArc" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/>
+  </svg>
+  <button id="playBtn" onclick="togglePlay()">⏸</button>
+</div>
+
+<div id="deck">
+
+<!-- S1: 인트로 -->
+<section class="slide active" id="s1">
+  <div class="bg-grid"></div>
+  <div class="glow glow1"></div>
+  <div class="inner">
+    <svg viewBox="0 0 64 64" fill="none" class="fu">
+      <rect x="10" y="10" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="1.5"/>
+      <rect x="34" y="10" width="20" height="20" rx="2" stroke="rgba(201,168,76,.5)" stroke-width="1.5"/>
+      <rect x="10" y="34" width="20" height="20" rx="2" stroke="rgba(201,168,76,.3)" stroke-width="1.5"/>
+      <rect x="34" y="34" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="1.5"/>
+    </svg>
+    <h1 class="fu2">SUNGWONSPACE</h1>
+    <div class="line sx"></div>
+    <div class="sub fu3">부동산 투자 인사이트 · 2026</div>
+  </div>
+</section>
+
+<!-- S2: 기사 헤드라인 -->
+<section class="slide" id="s2">
+  <div class="bg-grid"></div>
+  <div class="glow glow1"></div>
+  <div class="inner">
+    <div class="news-source fu">
+      <div class="news-logo">매일경제</div>
+      <div class="news-date">업데이트 : 2026.04.23</div>
+    </div>
+    <div class="news-hl fu2">
+      연봉 20년 모아도<br>서울 내집 마련 <span class="accent">'넘사벽'</span>
+    </div>
+    <div class="bullets">
+      <div class="bullet fu3"><span class="num">①</span> 3분위 아파트값 12억원 돌파</div>
+      <div class="bullet fu4"><span class="num">②</span> 年소득 5,805만원 중산층가구 — 단순 계산해도 20년 넘게 걸려</div>
+      <div class="bullet fu5"><span class="num">③</span> 공공아파트 소득기준 걸리고, 청약 당첨기회도 거의 없어<br>&nbsp;&nbsp;&nbsp;&nbsp;→ 중산층 <strong style="color:#e03838">'이중 배제'</strong> 현실화</div>
+    </div>
+  </div>
+</section>
+
+<!-- S3: 기사 본문 1 — PIR 설명 -->
+<section class="slide" id="s3">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu">시장 분석</div>
+    <div class="body-text fu2">
+      서울 아파트 시장에서 중산층의 구매력이 빠르게 약화하고 있습니다.<br>
+      <span class="hl">집값은 빠르게 오르고 대출 규제는 강화되면서,</span> 민간 주택시장 진입도 어렵고
+      공공지원 대상에서도 밀려나는 <span class="hl2">'이중 배제'</span> 현상이 확산하고 있습니다.
+    </div>
+    <div class="stat-row fu3">
+      <div class="stat-box">
+        <div class="stat-num">12억 157만원</div>
+        <div class="stat-desc">2026년 3월 기준<br>서울 아파트 3분위 평균 매매가격<br><span style="color:rgba(255,255,255,.35)">(KB부동산)</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5,805만원</div>
+        <div class="stat-desc">소득 3분위 가구 연 소득<br>(2025년 기준)<br><span style="color:rgba(255,255,255,.35)">(통계청 가계금융복지조사)</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" style="color:#e03838">PIR 20.70</div>
+        <div class="stat-desc">소득대비주택가격배율<br>연 소득 전액 저축해도<br><span style="color:#e03838">20년 이상 소요</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S4: 기사 본문 2 — 이중배제 -->
+<section class="slide" id="s4">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="body-text fu2">
+      실제 통계청 마이크로데이터 분석 결과, 가구 <span class="hl">중위소득은 4,696만원,
+      중위 순자산은 2억 4,625만원</span>으로 나타났습니다.<br><br>
+      소득 기준으로는 중산층이지만, <span class="red">실제 자산 축적 수준과 주택시장 진입 가능성은
+      그에 미치지 못하는 '미스매치'</span>가 확대되고 있습니다.
+    </div>
+    <div class="callout fu3">
+      소득이 높아 공공주택·청약 정책 대상에서 제외되지만,<br>
+      자산 부족으로 민간 시장 진입도 어려운 <span style="color:#e03838">이중 배제</span> 상황
+      <div class="sub">→ 소득 기준 중산층이지만, 실제 시장에서 구매력을 갖추지 못하는 계층이 확대</div>
+    </div>
+  </div>
+</section>
+
+<!-- S5: 차트 — 매매가 & PIR -->
+<section class="slide" id="s5">
+  <div class="glow glow1"></div>
+  <div class="inner">
+    <div class="chart-title fu">서울 아파트 가격 & 소득대비 주택가격배율(PIR) 추이</div>
+    <div class="charts">
+      <div class="chart-panel fu2">
+        <div class="ch-label">서울 3분위 아파트 매매가 (단위: 만원)</div>
+        <div class="bars">
+          <div class="bar-col"><div class="bar-val">10억<br>2660</div><div class="bar-body price-bar" style="height:52%"></div><div class="bar-date">'25.6</div></div>
+          <div class="bar-col"><div class="bar-val">10억<br>3895</div><div class="bar-body price-bar" style="height:57%"></div><div class="bar-date">7월</div></div>
+          <div class="bar-col"><div class="bar-val">10억<br>4784</div><div class="bar-body price-bar" style="height:61%"></div><div class="bar-date">8월</div></div>
+          <div class="bar-col"><div class="bar-val">11억<br>3681</div><div class="bar-body price-bar" style="height:79%"></div><div class="bar-date">'26.1</div></div>
+          <div class="bar-col"><div class="bar-val">11억<br>6400</div><div class="bar-body price-bar" style="height:86%"></div><div class="bar-date">2월</div></div>
+          <div class="bar-col"><div class="bar-val">12억<br>157</div><div class="bar-body price-bar" style="height:100%"></div><div class="bar-date">3월</div></div>
+        </div>
+        <div><span class="badge">▲ 17.04%</span></div>
+      </div>
+      <div class="chart-panel fu3">
+        <div class="ch-label">소득대비주택가격배율 PIR (단위: 배)</div>
+        <div class="bars">
+          <div class="bar-col"><div class="bar-val">17.68</div><div class="bar-body pir-bar" style="height:54%"></div><div class="bar-date">'25.6</div></div>
+          <div class="bar-col"><div class="bar-val">17.90</div><div class="bar-body pir-bar" style="height:57%"></div><div class="bar-date">7월</div></div>
+          <div class="bar-col"><div class="bar-val">18.05</div><div class="bar-body pir-bar" style="height:60%"></div><div class="bar-date">8월</div></div>
+          <div class="bar-col"><div class="bar-val">19.58</div><div class="bar-body pir-bar" style="height:80%"></div><div class="bar-date">'26.1</div></div>
+          <div class="bar-col"><div class="bar-val">20.05</div><div class="bar-body pir-bar" style="height:90%"></div><div class="bar-date">2월</div></div>
+          <div class="bar-col"><div class="bar-val">20.70</div><div class="bar-body pir-bar" style="height:100%"></div><div class="bar-date">3월</div></div>
+        </div>
+        <div><span class="badge" style="background:rgba(63,160,216,.15);border-color:rgba(63,160,216,.4);color:#3fa0d8">▲ 17.08%</span></div>
+      </div>
+    </div>
+    <div class="note fu4">* 2025년 기준 소득 3분위 가구소득 5,805만원으로 계산. 자료=KB부동산·국가데이터처 가계금융복지조사 종합</div>
+  </div>
+</section>
+
+<!-- S6: 보행 일상권 -->
+<section class="slide" id="s6">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu">2040 서울도시기본계획 · 보행 일상권 조성</div>
+    <h2 class="fu2">지역현황을 고려한<br><strong>복합적 기능배치</strong> 및 <strong>유연한 용도지역</strong> 계획</h2>
+    <div class="steps fu3">
+      <div class="step step-a">
+        <div class="step-head">지역현황</div>
+        <div class="step-body">생활편의시설이 부족한<br>주거밀집 지역</div>
+      </div>
+      <div class="step step-b">
+        <div class="step-head">지역 공간구조 분석</div>
+        <div class="step-body">필요 기능 분석 및<br>적정 배치 등 검토</div>
+      </div>
+      <div class="step step-c">
+        <div class="step-head">용도복합계획 수립</div>
+        <div class="step-body">'보행 일상권' 조성을 위한<br><strong>복합적인 용도계획으로 전환</strong></div>
+      </div>
+    </div>
+    <div class="zone-row fu4">
+      <div class="zone-card">
+        <div class="zone-dist">250m</div>
+        <div class="zone-name">역세권 활성화</div>
+        <div class="zone-desc">역 중심 상업·업무 기능 강화. 용도지역 상향 및 용적률 인센티브 부여</div>
+      </div>
+      <div class="zone-card">
+        <div class="zone-dist">350m</div>
+        <div class="zone-name">장기전세주택 1차 역세권</div>
+        <div class="zone-desc">역세권 장기전세주택 우선 공급 대상 구역</div>
+      </div>
+      <div class="zone-card">
+        <div class="zone-dist">500m</div>
+        <div class="zone-name">장기전세주택 2차 역세권</div>
+        <div class="zone-desc">간선도로 교차지역 200m 이내 포함. 확장 공급 대상</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S7: 직·주·락 비전 -->
+<section class="slide" id="s7">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="eyebrow fu">서울시 역세권 생활거점 비전</div>
+    <h2 class="fu2">미래 세대를 위한 직·주·락 중심지로<br>서울 전역이 변화하고 있습니다</h2>
+    <div class="cards">
+      <div class="card card-jik fu3">
+        <div class="card-head">
+          <div class="card-jk">職</div>
+          <div class="card-title">일터와 기회가 연결되는 공간</div>
+        </div>
+        <div class="card-desc">역세권 활성화 사업으로 업무·상업 기능을 강화하고, 일자리와 창업 기회가 모이는 직주근접 환경을 조성합니다.</div>
+      </div>
+      <div class="card card-ju fu4">
+        <div class="card-head">
+          <div class="card-jk">住</div>
+          <div class="card-title">안심하고 머무르는 맞춤형 주거</div>
+        </div>
+        <div class="card-desc">역세권 장기전세주택 확대 공급으로 중산층이 합리적인 비용으로 역세권에 거주할 수 있는 주거 안전망을 제공합니다.</div>
+      </div>
+      <div class="card card-rak fu5">
+        <div class="card-head">
+          <div class="card-jk">樂</div>
+          <div class="card-title">문화와 여가가 있는 보행일상권</div>
+        </div>
+        <div class="card-desc">도보 생활권 내 다양한 편의·문화·여가 시설을 집약하여, 차 없이도 풍요로운 일상을 누릴 수 있는 공간을 만듭니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S8: 서울전역 생활거점 정책 -->
+<section class="slide" id="s8">
+  <div class="inner">
+    <div class="eyebrow fu">서울의 모든 교통거점이 생활거점으로</div>
+    <h2 class="fu2">기존 사업은 더욱 강화하고,<br>새로운 사업을 도입합니다</h2>
+    <div class="policy-grid fu3">
+      <div class="policy-item">
+        <div class="pi-icon">🏢</div>
+        <div class="pi-label">확대·강화</div>
+        <div class="pi-name">역세권<br>활성화</div>
+      </div>
+      <div class="policy-item">
+        <div class="pi-icon">🏠</div>
+        <div class="pi-label">확대·강화</div>
+        <div class="pi-name">역세권<br>장기전세주택</div>
+      </div>
+      <div class="policy-center">
+        <div class="arr">←</div>
+        <div class="center-circle">서울전역<br>생활거점</div>
+        <div class="arr">→</div>
+      </div>
+      <div class="policy-item pi-new">
+        <div class="pi-icon">🏗️</div>
+        <div class="pi-label">신규도입</div>
+        <div class="pi-name">도심복합개발</div>
+      </div>
+      <div class="policy-item pi-new">
+        <div class="pi-icon">📈</div>
+        <div class="pi-label">신규도입</div>
+        <div class="pi-name">성장잠재권<br>활성화</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S9: 역세권 활성화 확대 -->
+<section class="slide" id="s9">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag-row fu">
+      <span class="badge-label">확대·강화</span>
+      <span style="font-size:13px; color:rgba(255,255,255,.5)">역세권 활성화사업</span>
+    </div>
+    <h2 class="fu2">대상지를 확대하고 공공기여는 낮춰<br>더 많은 역세권에서 활성화사업을 지원하겠습니다</h2>
+    <div class="expand-grid">
+      <div class="expand-box fu3">
+        <div class="eb-title">📍 상업지역 상향 가능 대상 확대</div>
+        <div class="flow">
+          <div class="flow-item">
+            <div class="flow-num">153</div>
+            <div class="flow-label">중심지 내 역세권(개역)</div>
+          </div>
+          <div class="flow-arr">→</div>
+          <div class="flow-item">
+            <div class="flow-num">325</div>
+            <div class="flow-label">서울전체 역세권(개역)</div>
+          </div>
+        </div>
+        <div class="flow-sub" style="margin-top:14px">향후 5년간 약 100개 구역<br>주거 32,000세대 / 비주거 연면적 270만㎡</div>
+      </div>
+      <div class="expand-box fu4">
+        <div class="eb-title">🔻 공공기여 완화 (활성화 필요지역)</div>
+        <div class="contrib">
+          <div class="contrib-row">
+            <div class="contrib-label">현재 증가한 용적률의</div>
+            <div class="contrib-val">5/10</div>
+          </div>
+          <div style="text-align:center;font-size:22px;color:var(--teal)">↓</div>
+          <div class="contrib-row">
+            <div class="contrib-label">완화 후 증가한 용적률의</div>
+            <div class="contrib-val">3/10</div>
+          </div>
+        </div>
+        <div class="note-bar">평균 표준지공시지가 60% 이하 우선 검토<br>11개 자치구 (동북 6, 서북 2, 서남 3)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S10: 장기전세주택 공급 -->
+<section class="slide" id="s10">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag-row fu">
+      <span class="badge-label">확대·강화</span>
+      <span style="font-size:13px; color:rgba(255,255,255,.5)">역세권 장기전세주택</span>
+    </div>
+    <h2 class="fu2">역세권 외 지역까지, 속도는 더 빠르게<br>더 많은 곳에서 장기전세주택을 신속하게 공급하겠습니다</h2>
+    <div class="supply-grid">
+      <div class="supply-box fu3">
+        <div class="sb-title">📐 더 넓게 — 역세권 외 지역까지 확대</div>
+        <div class="sb-sub">역세권 500m + 20m 이상 간선도로 교차지 200m</div>
+        <div class="range-row">
+          <div class="range-num">127개소</div>
+          <span style="font-size:20px;color:var(--teal)">+</span>
+          <div style="text-align:center">
+            <div class="range-num">239개소</div>
+            <div class="range-label">9만 2천호 추가 공급 (공급주택 2.7만호)</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:rgba(255,255,255,.4); margin-top:8px">서북권 +14곳, 동북권 +73곳, 도심권 +2곳<br>서남권 +83곳, 동남권 +67곳</div>
+      </div>
+      <div class="supply-box fu4">
+        <div class="sb-title">⚡ 더 빨리 — 불합리한 규제 NO! 절차 간소화 YES!</div>
+        <div class="sb-sub">통합검토(사전+계획) 일원화로 심의 기간 단축</div>
+        <div class="timeline">
+          <div class="tl-block">
+            <div class="tl-duration">5개월</div>
+            <div class="tl-steps">
+              <div class="tl-step">사전검토</div>
+            </div>
+          </div>
+          <div class="tl-block">
+            <div class="tl-duration">12개월</div>
+            <div class="tl-steps">
+              <div class="tl-step">주민제안</div>
+              <div class="tl-step">주민공람</div>
+              <div class="tl-step">구의회</div>
+            </div>
+          </div>
+          <div class="tl-block">
+            <div class="tl-duration">5개월</div>
+            <div class="tl-steps">
+              <div class="tl-step">도시계획위원회</div>
+            </div>
+          </div>
+          <div class="tl-block">
+            <div class="tl-duration">2개월</div>
+            <div class="tl-steps">
+              <div class="tl-step">구의회</div>
+            </div>
+          </div>
+        </div>
+        <div class="saving-badge">24개월 → 5개월 이상 단축</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S11: 도심복합개발 -->
+<section class="slide" id="s11">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag-row fu">
+      <span class="badge-label">신규도입</span>
+      <span style="font-size:13px; color:rgba(255,255,255,.5)">성장거점형 도심복합개발</span>
+    </div>
+    <h2 class="fu2">더 큰 잠재력이 있는 환승역에는<br>용적률 1,300%까지 대규모 복합개발을 유도합니다</h2>
+    <div class="dev-grid">
+      <div class="dev-list fu3">
+        <div class="dev-item">
+          <div class="dev-icon">🏙️</div>
+          <div class="dev-text">
+            <h4>환승역에 대규모 생활거점 조성</h4>
+            <p>교통 결절점을 중심으로 업무·주거·상업·문화가 집약된 복합 생활거점을 개발합니다.</p>
+          </div>
+        </div>
+        <div class="dev-item">
+          <div class="dev-icon">📐</div>
+          <div class="dev-text">
+            <h4>환승역 500m 이내, 5,000㎡ 이상</h4>
+            <p>용적률 최대 1,300% 적용. 2026년 6월 대상지 공모 예정.</p>
+          </div>
+        </div>
+        <div class="dev-item">
+          <div class="dev-icon">📅</div>
+          <div class="dev-text">
+            <h4>향후 5년간 35개소 추진</h4>
+            <p>주거 20,000세대, 비주거 연면적 260만㎡ 공급.</p>
+          </div>
+        </div>
+      </div>
+      <div class="dev-stats fu4">
+        <div class="dev-stat-box">
+          <div class="ds-val">1,300%</div>
+          <div class="ds-label">용적률 최대 (환승역 500m, 5,000㎡↑)</div>
+        </div>
+        <div class="dev-stat-box">
+          <div class="ds-val">22.7㎢</div>
+          <div class="ds-label">도심복합개발 대상 환승역세권 면적</div>
+        </div>
+        <div class="dev-stat-box">
+          <div class="ds-val">35개소</div>
+          <div class="ds-label">5년간 추진 목표 · 2026.6 공모 시작</div>
+        </div>
+      </div>
+      <div class="dev-note">* 11개 자치구 공공기여 환화 (증가한 용적률의 5/10 → 3/10)</div>
+    </div>
+  </div>
+</section>
+
+<!-- S12: 강남구 투자 포인트 -->
+<section class="slide" id="s12">
+  <div class="bg-grid"></div>
+  <div class="inner">
+    <div class="tag fu">강남구 핵심 투자 지역 분석</div>
+    <h2 class="fu2">서초구·강남구 일대<br>역세권 개발 집중 수혜 지역</h2>
+    <div class="map-info">
+      <div class="map-box fu3">
+        <div class="mb-title">📍 주요 역세권 위치</div>
+        <div class="station-list">
+          <div class="station-item"><div class="st-dot red"></div>신사역 (역세권 활성화 + 장기전세)<span class="st-dist">위례신사선 연결</span></div>
+          <div class="station-item"><div class="st-dot red"></div>논현역 (7호선) — 강남구청역 인접<span class="st-dist">도보 70m</span></div>
+          <div class="station-item"><div class="st-dot blue"></div>삼성역 (2호선 + GTX-A·C)<span class="st-dist">광역 허브</span></div>
+          <div class="station-item"><div class="st-dot blue"></div>선정릉역·선릉역 (성장잠재권)<span class="st-dist">도심복합개발</span></div>
+          <div class="station-item"><div class="st-dot gold"></div>강남역 (장기전세 대상)<span class="st-dist">수혜 예정</span></div>
+        </div>
+      </div>
+      <div class="map-box fu4">
+        <div class="mb-title">🗺️ 개발사업 현황</div>
+        <div class="dev-zones">
+          <div class="dz-item"><div class="dz-dot blue-a"></div>봉은사역 일대 — 국제교류복합지구 (GBC 연계)</div>
+          <div class="dz-item"><div class="dz-dot red-a"></div>선릉역~역삼역 일대 — 도심복합개발 후보지</div>
+          <div class="dz-item"><div class="dz-dot red-a"></div>강남역~역삼역 — 역세권 장기전세주택 추진</div>
+          <div class="dz-item" style="border-top:1px solid rgba(255,255,255,.1); padding-top:10px; margin-top:4px">
+            <div style="font-size:13px; color:rgba(255,255,255,.7); line-height:1.7">
+              서초로 지구단위계획 구역 내<br>용적률 상향 + 보행 일상권 조성 동시 추진
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S13: 아웃트로 -->
+<section class="slide" id="s13">
+  <div class="bg-grid"></div>
+  <div class="glow glow1" style="background:radial-gradient(circle,rgba(201,168,76,.09) 0%,transparent 65%);width:700px;height:700px;top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 6s ease-in-out infinite"></div>
+  <div class="inner" style="text-align:center;position:relative;z-index:2">
+    <div class="logo-sm fu" style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:6px;color:var(--gold);margin-bottom:26px">SUNGWONSPACE</div>
+    <h2 class="fu2" style="font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.8vw,50px);font-weight:900;line-height:1.55;margin-bottom:22px">
+      당신의 더 나은 미래를<br>성원스페이스가 함께합니다
+    </h2>
+    <p class="fu3" style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.9;max-width:520px;margin:0 auto 36px">
+      12년간 검증된 실적과 투명한 수익률로<br>고객의 자산 가치를 극대화합니다.
+    </p>
+    <div class="fu4" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5.5vw,60px);color:var(--gold);letter-spacing:4px;margin-bottom:10px">
+      010-3781-6068
+    </div>
+    <div class="fu5" style="font-size:12px;letter-spacing:1px;color:rgba(255,255,255,.3)">
+      sungwonspace.com &nbsp;|&nbsp; 서울 동작구 동작대로 37, 3층 &nbsp;|&nbsp; 월~목 10:00~16:00
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const TOTAL  = slides.length;
+const AUTO_DELAY = 6000;
+let cur = 0, animating = false, isPlaying = true;
+let autoTimer = null;
+
+/* 도트 생성 */
+const nav = document.getElementById('nav');
+for(let i = 0; i < TOTAL; i++){
+  const d = document.createElement('div');
+  d.className = 'ndot' + (i===0?' active':'');
+  d.onclick = () => manualGoTo(i);
+  nav.appendChild(d);
+}
+const dots = document.querySelectorAll('.ndot');
+
+function updateUI(i){
+  document.getElementById('pfill').style.width = ((i+1)/TOTAL*100)+'%';
+}
+
+/* 타이머 링 */
+function resetRing(){
+  const arc = document.getElementById('timerArc');
+  arc.style.animation = 'none';
+  arc.offsetHeight;
+  arc.style.animation = isPlaying ? `arcDrain ${AUTO_DELAY}ms linear forwards` : 'none';
+}
+
+/* 자동재생 */
+function startAuto(){ clearTimeout(autoTimer); resetRing(); autoTimer = setTimeout(()=>{ goTo(cur+1<TOTAL?cur+1:0); if(isPlaying) startAuto(); }, AUTO_DELAY); }
+function stopAuto() { clearTimeout(autoTimer); const a=document.getElementById('timerArc'); a.style.animation='none'; }
+function togglePlay(){
+  isPlaying = !isPlaying;
+  document.getElementById('playBtn').textContent = isPlaying ? '⏸' : '▶';
+  isPlaying ? startAuto() : stopAuto();
+}
+function manualGoTo(n){ if(isPlaying){ stopAuto(); startAuto(); } goTo(n); }
+
+/* 슬라이드 전환 */
+function goTo(n){
+  if(animating) return;
+  const next = (n+TOTAL)%TOTAL;
+  if(next===cur) return;
+  animating = true;
+  const down = next > cur || (cur===TOTAL-1 && next===0);
+
+  slides[next].style.transition = 'none';
+  slides[next].style.transform  = down ? 'translateY(100%)' : 'translateY(-100%)';
+  slides[next].style.visibility = 'visible';
+
+  requestAnimationFrame(()=>{
+    slides[cur].style.transition  = 'transform .62s cubic-bezier(.4,0,.2,1)';
+    slides[cur].style.transform   = down ? 'translateY(-100%)' : 'translateY(100%)';
+    slides[next].style.transition = 'transform .62s cubic-bezier(.4,0,.2,1)';
+    slides[next].style.transform  = 'translateY(0)';
+
+    dots[cur].classList.remove('active');
+    dots[next].classList.add('active');
+    const prev = cur; cur = next;
+    updateUI(cur);
+
+    setTimeout(()=>{
+      slides[prev].style.transition  = 'none';
+      slides[prev].style.transform   = 'translateY(100%)';
+      slides[prev].style.visibility  = 'hidden';
+      slides[prev].classList.remove('active');
+      slides[cur].classList.add('active');
+      slides[cur].querySelectorAll('.fu,.fu2,.fu3,.fu4,.fu5,.fi,.sx').forEach(el=>{
+        el.style.animation='none'; el.offsetHeight; el.style.animation='';
+      });
+      animating = false;
+    }, 640);
+  });
+}
+
+/* 컨트롤 */
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight') manualGoTo(cur+1);
+  if(e.key==='ArrowUp'  ||e.key==='ArrowLeft')  manualGoTo(cur-1);
+  if(e.key===' '){ e.preventDefault(); togglePlay(); }
+});
+let ty=0;
+document.addEventListener('touchstart', e=>{ ty=e.touches[0].clientY; }, {passive:true});
+document.addEventListener('touchend',   e=>{ const dy=e.changedTouches[0].clientY-ty; if(Math.abs(dy)>50) manualGoTo(dy<0?cur+1:cur-1); }, {passive:true});
+let wl=false;
+document.addEventListener('wheel', e=>{ if(wl)return; wl=true; manualGoTo(e.deltaY>0?cur+1:cur-1); setTimeout(()=>{wl=false;},800); }, {passive:true});
+
+/* 타이머 링 CSS */
+const style = document.createElement('style');
+style.textContent = `@keyframes arcDrain { from{stroke-dashoffset:0} to{stroke-dashoffset:113.1} }`;
+document.head.appendChild(style);
+
+updateUI(0);
+startAuto();
+</script>
+</body>
+</html>
