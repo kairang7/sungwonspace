@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>역삼동 685 토지 | SUNGWONSPACE</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#07080a; --white:#f0f2f5; --gold:#c9a84c; --gold2:#e8c96a;
+  --navy:#0b1a2e; --blue:#1e5fa8; --sky:#3fa0d8;
+  --red:#e03838; --teal:#0ea88a; --green:#1a7a4a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);font-family:'Noto Sans KR',sans-serif;color:var(--white)}
+
+/* ── DECK ── */
+#deck{position:fixed;inset:0;overflow:hidden}
+.slide{
+  position:absolute;inset:0;width:100%;height:100%;
+  overflow:hidden;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  transform:translateY(100%);visibility:hidden;opacity:1!important;
+  transition:transform .62s cubic-bezier(.4,0,.2,1),visibility 0s .62s;
+  will-change:transform;
+}
+.slide.active{transform:translateY(0);visibility:visible;transition:transform .62s cubic-bezier(.4,0,.2,1),visibility 0s 0s}
+
+/* ── 애니메이션 ── */
+
+.slide.active .fu {animation:fadeUp .7s both}
+.slide.active .fu2{animation:fadeUp .7s .12s both}
+.slide.active .fu3{animation:fadeUp .7s .24s both}
+.slide.active .fu4{animation:fadeUp .7s .36s both}
+.slide.active .fu5{animation:fadeUp .7s .48s both}
+.slide.active .fu6{animation:fadeUp .7s .60s both}
+.slide.active .fi {animation:fadeIn .9s both}
+.slide.active .sx {animation:scaleX .9s .2s both;transform-origin:left}
+
+/* ── UI ── */
+#progress{position:fixed;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08);z-index:500}
+#pfill{height:100%;background:var(--gold);width:0%;transition:width .4s ease}
+#nav{position:fixed;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:500}
+.ndot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:background .3s,transform .3s}
+.ndot.active{background:var(--gold);transform:scale(1.5)}
+#playWrap{position:fixed;bottom:24px;right:18px;z-index:500;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+#timerArc{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:113.1;stroke-dashoffset:0}
+#playBtn{position:absolute;z-index:1;background:rgba(255,255,255,.07);border:none;color:var(--white);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:12px;transition:background .2s}
+#playBtn:hover{background:rgba(201,168,76,.3)}
+
+/* ════ S1: 위치 지도 슬라이드 ════ */
+#s1{background:#06090f}
+#s1 .g1{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,196,.1) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 6s ease-in-out infinite;pointer-events:none}
+#s1 .bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.03) 1px,transparent 1px);background-size:52px 52px;pointer-events:none}
+#s1 .wrap{position:relative;z-index:2;width:90%;max-width:1100px;display:grid;grid-template-columns:1fr 1.2fr;gap:56px;align-items:center}
+
+/* 왼쪽 정보 */
+#s1 .left .eyebrow{font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:14px}
+#s1 .left h1{font-family:'Noto Serif KR',serif;font-size:clamp(28px,4.5vw,54px);font-weight:900;line-height:1.25;margin-bottom:20px}
+#s1 .left h1 .addr{color:var(--gold)}
+#s1 .left .divider{width:56px;height:2px;background:var(--gold);margin-bottom:22px}
+#s1 .left .desc{font-size:clamp(13px,1.7vw,16px);color:rgba(255,255,255,.65);line-height:1.9;margin-bottom:30px}
+#s1 .left .tags{display:flex;flex-wrap:wrap;gap:8px}
+#s1 .tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:6px 14px;font-size:12px;color:rgba(255,255,255,.7)}
+#s1 .tag .dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+
+/* 오른쪽 지도 */
+#s1 .map-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden}
+#s1 .map-header{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+#s1 .map-header .dot-r{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 2s infinite}
+#s1 .map-header .loc-text{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:1px}
+#s1 .map-body{position:relative;padding:24px}
+/* SVG 간략 지도 */
+#s1 .map-svg-wrap{background:#1a2333;border-radius:10px;overflow:hidden;position:relative}
+#s1 .map-note{position:absolute;bottom:8px;right:8px;font-size:10px;color:rgba(255,255,255,.3);letter-spacing:1px}
+
+/* 필지 정보 카드 */
+#s1 .lot-cards{display:flex;gap:10px;margin-top:14px}
+#s1 .lot-card{flex:1;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:14px}
+#s1 .lc-num{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px}
+#s1 .lc-addr{font-size:13px;font-weight:700;margin-bottom:10px}
+#s1 .lc-row{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+#s1 .lc-row .val{color:var(--white);font-weight:700}
+
+/* ════ S2 & S3: 토지정보 슬라이드 ════ */
+.info-slide{background:#07090e}
+.info-slide .bg-stripe{position:absolute;inset:0;background-image:repeating-linear-gradient(-55deg,transparent,transparent 38px,rgba(255,255,255,.012) 38px,rgba(255,255,255,.012) 39px);pointer-events:none}
+.info-slide .wrap{position:relative;z-index:2;width:90%;max-width:1100px}
+
+/* 상단 헤더 */
+.info-slide .sl-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.info-slide .sl-badge{display:inline-flex;align-items:center;gap:8px;background:var(--gold);border-radius:4px;padding:4px 12px}
+.info-slide .sl-badge span{font-size:11px;font-weight:700;color:#07090e;letter-spacing:1px}
+.info-slide .sl-addr{font-size:12px;color:rgba(255,255,255,.4);text-align:right;line-height:1.7}
+
+/* 핵심 수치 박스들 */
+.info-slide .key-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.info-slide .ks{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:16px;text-align:center;transition:border-color .3s}
+.info-slide .ks:hover{border-color:rgba(201,168,76,.3)}
+.info-slide .ks-label{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:8px}
+.info-slide .ks-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,3vw,34px);color:var(--gold);line-height:1}
+.info-slide .ks-unit{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
+
+/* 메인 정보 그리드 */
+.info-slide .main-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.info-slide .info-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px 20px}
+.info-slide .ib-title{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:14px}
+.info-slide .row{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.info-slide .row:last-child{border-bottom:none}
+.info-slide .row .key{font-size:12px;color:rgba(255,255,255,.45);min-width:80px;flex-shrink:0;line-height:1.6}
+.info-slide .row .val{font-size:13px;color:var(--white);line-height:1.6;flex:1}
+.info-slide .row .val .hl{color:var(--sky);font-weight:700}
+.info-slide .row .val .red{color:var(--red);font-weight:700}
+.info-slide .row .val .gold{color:var(--gold);font-weight:700}
+
+/* 투자 포인트 */
+.info-slide .invest-box{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:12px;padding:18px 20px}
+.info-slide .invest-row{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid rgba(201,168,76,.1)}
+.info-slide .invest-row:last-child{border-bottom:none}
+.info-slide .invest-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.info-slide .invest-text{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7}
+.info-slide .invest-text strong{color:var(--white)}
+
+/* 가격 계산 */
+.info-slide .price-box{background:rgba(30,95,168,.08);border:1px solid rgba(30,95,168,.25);border-radius:12px;padding:18px 20px}
+.info-slide .price-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.info-slide .price-row:last-child{border-bottom:none;padding-top:12px}
+.info-slide .pr-label{font-size:12px;color:rgba(255,255,255,.5)}
+.info-slide .pr-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(16px,2.2vw,22px);color:var(--sky)}
+.info-slide .pr-total{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,3vw,30px);color:var(--gold)}
+
+/* 지역지구 제한 박스 */
+.info-slide .restrict-box{background:rgba(224,56,56,.05);border:1px solid rgba(224,56,56,.2);border-radius:12px;padding:16px 20px}
+.info-slide .rb-title{font-size:11px;letter-spacing:2px;color:var(--red);margin-bottom:10px}
+.info-slide .rb-tag{display:inline-block;background:rgba(224,56,56,.12);border:1px solid rgba(224,56,56,.25);color:rgba(255,255,255,.75);font-size:11px;padding:4px 10px;border-radius:4px;margin:3px 3px 3px 0;line-height:1.5}
+
+@media(max-width:768px){
+  #s1 .wrap{grid-template-columns:1fr;gap:24px}
+  .info-slide .key-stats{grid-template-columns:repeat(2,1fr)}
+  .info-slide .main-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="pfill"></div></div>
+<div id="nav"></div>
+<div id="playWrap">
+  <svg width="44" height="44" viewBox="0 0 44 44" style="position:absolute;inset:0">
+    <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2.5"/>
+    <circle id="timerArc" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/>
+  </svg>
+  <button id="playBtn" onclick="togglePlay()">⏸</button>
+</div>
+
+<div id="deck">
+
+<!-- ════ S1: 위치 & 개요 ════ -->
+<section class="slide active" id="s1">
+  <div class="bg-grid"></div>
+  <div class="g1"></div>
+  <div class="wrap">
+
+    <!-- 왼쪽 -->
+    <div class="left">
+      <div class="eyebrow fu">SUNGWONSPACE · 토지 매물 분석</div>
+      <h1 class="fu2">서울 강남구<br><span class="addr">역삼동 685번지</span><br>투자 분석</h1>
+      <div class="divider sx"></div>
+      <div class="desc fu3">
+        강남구 역삼동 소재 도로 지목 토지 2필지.<br>
+        제2종일반주거지역(7층이하) 지정.<br>
+        개별공시지가 기준 평당 약 850만원 수준.<br>
+        도시정비형 재개발 수혜 기대 지역.
+      </div>
+      <div class="tags fu4">
+        <span class="tag"><span class="dot"></span>강남구 역삼동</span>
+        <span class="tag"><span class="dot"></span>도로 지목</span>
+        <span class="tag"><span class="dot"></span>2종일반주거</span>
+        <span class="tag"><span class="dot"></span>총 283㎡</span>
+        <span class="tag"><span class="dot"></span>2필지</span>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 지도 카드 -->
+    <div class="fu3">
+      <div class="map-card">
+        <div class="map-header">
+          <div class="dot-r"></div>
+          <div class="loc-text">서울특별시 강남구 역삼동 685</div>
+        </div>
+        <div class="map-body">
+          <!-- SVG 간략 지도 -->
+          <div class="map-svg-wrap">
+            <svg viewBox="0 0 420 260" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block">
+              <!-- 배경 -->
+              <rect width="420" height="260" fill="#1a2333"/>
+              <!-- 도로망 -->
+              <line x1="0" y1="130" x2="420" y2="130" stroke="#2a3f5a" stroke-width="18"/>
+              <line x1="210" y1="0" x2="210" y2="260" stroke="#2a3f5a" stroke-width="18"/>
+              <line x1="0" y1="60" x2="420" y2="60" stroke="#1e304a" stroke-width="6"/>
+              <line x1="0" y1="200" x2="420" y2="200" stroke="#1e304a" stroke-width="6"/>
+              <line x1="80" y1="0" x2="80" y2="260" stroke="#1e304a" stroke-width="6"/>
+              <line x1="340" y1="0" x2="340" y2="260" stroke="#1e304a" stroke-width="6"/>
+              <!-- 도로 라벨 -->
+              <text x="105" y="125" fill="#4a6a9a" font-size="9" font-family="sans-serif">역삼로</text>
+              <text x="185" y="75" fill="#4a6a9a" font-size="8" font-family="sans-serif" transform="rotate(90,185,75)">선릉로</text>
+              <!-- 주변 블록들 -->
+              <rect x="90" y="70" width="110" height="50" fill="#1d2f44" rx="2"/>
+              <rect x="90" y="140" width="110" height="50" fill="#1d2f44" rx="2"/>
+              <rect x="220" y="70" width="110" height="50" fill="#1d2f44" rx="2"/>
+              <rect x="220" y="140" width="110" height="50" fill="#1d2f44" rx="2"/>
+              <!-- 공원 (선릉) -->
+              <rect x="310" y="100" width="90" height="100" fill="#1a3a28" rx="4"/>
+              <text x="350" y="155" fill="#2a6a3a" font-size="9" font-family="sans-serif" text-anchor="middle">선릉</text>
+              <!-- 필지 위치 강조 -->
+              <rect x="163" y="108" width="28" height="16" fill="rgba(201,168,76,.3)" stroke="#c9a84c" stroke-width="2" rx="2"/>
+              <text x="177" y="120" fill="#c9a84c" font-size="7" font-family="sans-serif" text-anchor="middle" font-weight="bold">685</text>
+              <!-- 핀 -->
+              <circle cx="177" cy="96" r="6" fill="#c9a84c"/>
+              <circle cx="177" cy="96" r="3" fill="#07090e"/>
+              <line x1="177" y1="102" x2="177" y2="108" stroke="#c9a84c" stroke-width="1.5"/>
+              <!-- 역삼역 표시 -->
+              <circle cx="210" cy="130" r="5" fill="#e03838" stroke="#fff" stroke-width="1"/>
+              <text x="215" y="148" fill="#e03838" font-size="8" font-family="sans-serif">역삼역</text>
+              <!-- 강남역 -->
+              <circle cx="80" cy="130" r="4" fill="#3b82f6" stroke="#fff" stroke-width="1"/>
+              <text x="62" y="148" fill="#3b82f6" font-size="8" font-family="sans-serif">강남역</text>
+              <!-- 선정릉역 -->
+              <circle cx="340" cy="130" r="4" fill="#22c55e" stroke="#fff" stroke-width="1"/>
+              <!-- 거리 표시 -->
+              <path d="M177 102 L210 125" stroke="rgba(201,168,76,.5)" stroke-width="1" stroke-dasharray="3,2"/>
+              <text x="190" y="108" fill="rgba(255,255,255,.4)" font-size="7" font-family="sans-serif">약 400m</text>
+            </svg>
+            <div class="map-note">역삼동 685번지 일대</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 필지 요약 카드 -->
+      <div class="lot-cards fu4">
+        <div class="lot-card">
+          <div class="lc-num">PARCEL 01</div>
+          <div class="lc-addr">역삼동 685-30번지</div>
+          <div class="lc-row"><span>지목</span><span class="val">도로</span></div>
+          <div class="lc-row"><span>면적</span><span class="val">140 ㎡ (42.4평)</span></div>
+          <div class="lc-row"><span>공시지가</span><span class="val">2,575,000원/㎡</span></div>
+          <div class="lc-row"><span>공시 합계</span><span class="val">360,500,000원</span></div>
+        </div>
+        <div class="lot-card">
+          <div class="lc-num">PARCEL 02</div>
+          <div class="lc-addr">역삼동 685-31번지</div>
+          <div class="lc-row"><span>지목</span><span class="val">도로</span></div>
+          <div class="lc-row"><span>면적</span><span class="val">143 ㎡ (43.3평)</span></div>
+          <div class="lc-row"><span>공시지가</span><span class="val">2,575,000원/㎡</span></div>
+          <div class="lc-row"><span>공시 합계</span><span class="val">368,225,000원</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════ S2: 685-30번지 상세 ════ -->
+<section class="slide info-slide" id="s2">
+  <div class="bg-stripe"></div>
+  <div class="wrap">
+
+    <div class="sl-header fu">
+      <div>
+        <div class="sl-badge"><span>PARCEL 01</span></div>
+        <div style="font-family:'Noto Serif KR',serif;font-size:clamp(18px,2.5vw,28px);font-weight:900;margin-top:10px;line-height:1.3">
+          역삼동 685-30번지 토지 상세
+        </div>
+      </div>
+      <div class="sl-addr">
+        서울특별시 강남구 역삼동 685-30번지<br>
+        <span style="color:var(--gold)">도로 · 140㎡ · 2026/01 기준</span>
+      </div>
+    </div>
+
+    <!-- 핵심 수치 -->
+    <div class="key-stats fu2">
+      <div class="ks">
+        <div class="ks-label">면적</div>
+        <div class="ks-val">140</div>
+        <div class="ks-unit">㎡ (42.4평)</div>
+      </div>
+      <div class="ks">
+        <div class="ks-label">공시지가/㎡</div>
+        <div class="ks-val">257.5</div>
+        <div class="ks-unit">만원/㎡</div>
+      </div>
+      <div class="ks">
+        <div class="ks-label">공시지가 합계</div>
+        <div class="ks-val">3.6억</div>
+        <div class="ks-unit">원 (360,500,000)</div>
+      </div>
+      <div class="ks">
+        <div class="ks-label">평당 공시지가</div>
+        <div class="ks-val">850</div>
+        <div class="ks-unit">만원/평 (환산)</div>
+      </div>
+    </div>
+
+    <!-- 메인 그리드 -->
+    <div class="main-grid">
+
+      <!-- 토지 기본 정보 -->
+      <div class="info-box fu3">
+        <div class="ib-title">토지 기본 정보</div>
+        <div class="row"><div class="key">소재지</div><div class="val">서울특별시 강남구 역삼동 685-30번지</div></div>
+        <div class="row"><div class="key">지목</div><div class="val"><span class="hl">도로</span></div></div>
+        <div class="row"><div class="key">면적</div><div class="val">140 ㎡ <span style="color:rgba(255,255,255,.4)">(42.4평)</span></div></div>
+        <div class="row"><div class="key">공시지가</div><div class="val"><span class="gold">2,575,000원/㎡</span> (2026/01)</div></div>
+        <div class="row"><div class="key">용도지역</div><div class="val">도시지역, <span class="hl">제2종일반주거지역</span> (7층이하)</div></div>
+        <div class="row"><div class="key">기타 지구</div><div class="val">대공방어협조구역 (위탁고도 77~257m)<br>과밀억제권역 &lt;수도권정비계획법&gt;</div></div>
+      </div>
+
+      <!-- 투자 포인트 -->
+      <div class="invest-box fu4">
+        <div class="ib-title" style="font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:12px">💡 투자 포인트</div>
+        <div class="invest-row">
+          <div class="invest-icon">📍</div>
+          <div class="invest-text"><strong>역삼역 초근접</strong> — 2호선 역삼역 도보 5분 내 위치. 강남 핵심 업무지구 직접 수혜권.</div>
+        </div>
+        <div class="invest-row">
+          <div class="invest-icon">🏗️</div>
+          <div class="invest-text"><strong>도시정비형 재개발 수혜</strong> — 서울시 강남 도심 도시정비형 재개발 신규 추가 지정 예상 구역 인접.</div>
+        </div>
+        <div class="invest-row">
+          <div class="invest-icon">🛣️</div>
+          <div class="invest-text"><strong>도로 지목 소액 투자</strong> — 도로 지목 특성상 상대적 저가 진입 가능. 재개발 편입 시 감정평가 상승 기대.</div>
+        </div>
+        <div class="invest-row">
+          <div class="invest-icon">📊</div>
+          <div class="invest-text"><strong>2종 일반주거지역</strong> — 7층이하 건축 가능. 용도지역 상향 시 추가 가치 상승 여력 존재.</div>
+        </div>
+      </div>
+
+      <!-- 거래 허가 현황 -->
+      <div class="restrict-box fu5" style="grid-column:1/-1">
+        <div class="rb-title">⚠️ 토지거래허가구역 현황 (「토지이용규제 기본법 시행령」 제9조 제4항)</div>
+        <span class="rb-tag">외국인 등 단독·다가구·연립·다세대 지정기간 2025.8.26~2026.8.25</span>
+        <span class="rb-tag">토지거래계약허가구역 지정기간 2025.10.1~2026.12.31 (아파트 용도 한정)</span>
+        <span class="rb-tag">토지거래계약허가구역 지정기간 2025.10.20~2026.12.31 (아파트 용도 한정)</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════ S3: 685-31번지 상세 ════ -->
+<section class="slide info-slide" id="s3">
+  <div class="bg-stripe"></div>
+  <div class="wrap">
+
+    <div class="sl-header fu">
+      <div>
+        <div class="sl-badge" style="background:var(--sky)"><span style="color:#fff">PARCEL 02</span></div>
+        <div style="font-family:'Noto Serif KR',serif;font-size:clamp(18px,2.5vw,28px);font-weight:900;margin-top:10px;line-height:1.3">
+          역삼동 685-31번지 토지 상세
+        </div>
+      </div>
+      <div class="sl-addr">
+        서울특별시 강남구 역삼동 685-31번지<br>
+        <span style="color:var(--sky)">도로 · 143㎡ · 2026/01 기준</span>
+      </div>
+    </div>
+
+    <!-- 핵심 수치 -->
+    <div class="key-stats fu2">
+      <div class="ks">
+        <div class="ks-label">면적</div>
+        <div class="ks-val" style="color:var(--sky)">143</div>
+        <div class="ks-unit">㎡ (43.3평)</div>
+      </div>
+      <div class="ks">
+        <div class="ks-label">공시지가/㎡</div>
+        <div class="ks-val" style="color:var(--sky)">257.5</div>
+        <div class="ks-unit">만원/㎡</div>
+      </div>
+      <div class="ks">
+        <div class="ks-label">공시지가 합계</div>
+        <div class="ks-val" style="color:var(--sky)">3.68억</div>
+        <div class="ks-unit">원 (368,225,000)</div>
+      </div>
+      <div class="ks">
+        <div class="ks-label">2필지 합계</div>
+        <div class="ks-val" style="color:var(--gold)">7.28억</div>
+        <div class="ks-unit">원 (공시 기준)</div>
+      </div>
+    </div>
+
+    <!-- 메인 그리드 -->
+    <div class="main-grid">
+
+      <!-- 토지 기본 정보 -->
+      <div class="info-box fu3">
+        <div class="ib-title" style="color:var(--sky)">토지 기본 정보</div>
+        <div class="row"><div class="key">소재지</div><div class="val">서울특별시 강남구 역삼동 685-31번지</div></div>
+        <div class="row"><div class="key">지목</div><div class="val"><span class="hl">도로</span></div></div>
+        <div class="row"><div class="key">면적</div><div class="val">143 ㎡ <span style="color:rgba(255,255,255,.4)">(43.3평)</span></div></div>
+        <div class="row"><div class="key">공시지가</div><div class="val"><span style="color:var(--sky);font-weight:700">2,575,000원/㎡</span> (2026/01)</div></div>
+        <div class="row"><div class="key">용도지역</div><div class="val">도시지역, <span class="hl">제2종일반주거지역</span> (7층이하)</div></div>
+        <div class="row"><div class="key">기타 지구</div><div class="val">대공방어협조구역 (위탁고도 77~257m)<br>과밀억제권역 &lt;수도권정비계획법&gt;</div></div>
+      </div>
+
+      <!-- 2필지 통합 분석 -->
+      <div class="price-box fu4">
+        <div class="ib-title" style="font-size:11px;letter-spacing:2px;color:var(--sky);margin-bottom:14px">📐 2필지 통합 분석</div>
+        <div class="price-row">
+          <div class="pr-label">685-30번지 면적</div>
+          <div class="pr-val">140 ㎡</div>
+        </div>
+        <div class="price-row">
+          <div class="pr-label">685-31번지 면적</div>
+          <div class="pr-val">143 ㎡</div>
+        </div>
+        <div class="price-row">
+          <div class="pr-label">2필지 합산 면적</div>
+          <div class="pr-val" style="color:var(--white)">283 ㎡ (85.6평)</div>
+        </div>
+        <div class="price-row">
+          <div class="pr-label">적용 공시지가</div>
+          <div class="pr-val">2,575,000원/㎡</div>
+        </div>
+        <div class="price-row" style="border-bottom:none">
+          <div class="pr-label" style="color:var(--gold);font-weight:700">2필지 공시지가 합계</div>
+          <div class="pr-total">7억 2,872만</div>
+        </div>
+      </div>
+
+      <!-- 거래 허가 현황 -->
+      <div class="restrict-box fu5" style="grid-column:1/-1">
+        <div class="rb-title">⚠️ 토지거래허가구역 현황 (「토지이용규제 기본법 시행령」 제9조 제4항)</div>
+        <span class="rb-tag">외국인 등 단독·다가구·연립·다세대 지정기간 2025.8.26~2026.8.25</span>
+        <span class="rb-tag">토지거래계약허가구역 지정기간 2025.10.1~2026.12.31 (아파트 용도 한정)</span>
+        <span class="rb-tag">토지거래계약허가구역 지정기간 2025.10.20~2026.12.31 (아파트 용도 한정)</span>
+        <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.5);line-height:1.7">
+          ※ 도로 지목 토지는 아파트 용도 제한과 별개로 투자 검토 가능. 전문가 상담 권장.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const TOTAL  = slides.length;
+const AUTO_DELAY = 7000;
+let cur = 0, animating = false, isPlaying = true;
+let autoTimer = null;
+
+/* 도트 */
+const nav = document.getElementById('nav');
+for(let i = 0; i < TOTAL; i++){
+  const d = document.createElement('div');
+  d.className = 'ndot' + (i===0?' active':'');
+  d.onclick = () => manualGoTo(i);
+  nav.appendChild(d);
+}
+const dots = document.querySelectorAll('.ndot');
+
+function updateUI(i){ document.getElementById('pfill').style.width = ((i+1)/TOTAL*100)+'%'; }
+
+function resetRing(){
+  const arc = document.getElementById('timerArc');
+  arc.style.animation='none'; arc.offsetHeight;
+  arc.style.animation = isPlaying ? `arcDrain ${AUTO_DELAY}ms linear forwards` : 'none';
+}
+function startAuto(){ clearTimeout(autoTimer); resetRing(); autoTimer=setTimeout(()=>{ goTo(cur+1<TOTAL?cur+1:0); if(isPlaying) startAuto(); }, AUTO_DELAY); }
+function stopAuto(){ clearTimeout(autoTimer); document.getElementById('timerArc').style.animation='none'; }
+function togglePlay(){
+  isPlaying=!isPlaying;
+  document.getElementById('playBtn').textContent=isPlaying?'⏸':'▶';
+  isPlaying?startAuto():stopAuto();
+}
+function manualGoTo(n){ if(isPlaying){stopAuto();startAuto();} goTo(n); }
+
+function goTo(n){
+  if(animating) return;
+  const next=(n+TOTAL)%TOTAL;
+  if(next===cur) return;
+  animating=true;
+  const down=next>cur||(cur===TOTAL-1&&next===0);
+
+  slides[next].style.transition='none';
+  slides[next].style.transform=down?'translateY(100%)':'translateY(-100%)';
+  slides[next].style.visibility='visible';
+
+  requestAnimationFrame(()=>{
+    slides[cur].style.transition='transform .62s cubic-bezier(.4,0,.2,1)';
+    slides[cur].style.transform=down?'translateY(-100%)':'translateY(100%)';
+    slides[next].style.transition='transform .62s cubic-bezier(.4,0,.2,1)';
+    slides[next].style.transform='translateY(0)';
+    dots[cur].classList.remove('active');
+    dots[next].classList.add('active');
+    const prev=cur; cur=next;
+    updateUI(cur);
+    setTimeout(()=>{
+      slides[prev].style.transition='none';
+      slides[prev].style.transform='translateY(100%)';
+      slides[prev].style.visibility='hidden';
+      slides[prev].classList.remove('active');
+      slides[cur].classList.add('active');
+      slides[cur].querySelectorAll('.fu,.fu2,.fu3,.fu4,.fu5,.fu6,.fi,.sx').forEach(el=>{
+        el.style.animation='none'; el.offsetHeight; el.style.animation='';
+      });
+      animating=false;
+    }, 640);
+  });
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight') manualGoTo(cur+1);
+  if(e.key==='ArrowUp'  ||e.key==='ArrowLeft')  manualGoTo(cur-1);
+  if(e.key===' '){e.preventDefault();togglePlay();}
+});
+let ty=0;
+document.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',e=>{const dy=e.changedTouches[0].clientY-ty;if(Math.abs(dy)>50)manualGoTo(dy<0?cur+1:cur-1)},{passive:true});
+let wl=false;
+document.addEventListener('wheel',e=>{if(wl)return;wl=true;manualGoTo(e.deltaY>0?cur+1:cur-1);setTimeout(()=>{wl=false},800)},{passive:true});
+
+const st=document.createElement('style');
+st.textContent='@keyframes arcDrain{from{stroke-dashoffset:0}to{stroke-dashoffset:113.1}}';
+document.head.appendChild(st);
+
+updateUI(0);
+startAuto();
+</script>
+</body>
+</html>

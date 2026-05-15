@@ -49,21 +49,6 @@ html, body {
   transition: transform 0.62s cubic-bezier(0.4,0,0.2,1), visibility 0s 0s;
 }
 
-/* ── 콘텐츠 애니메이션 ── */
-@keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-@keyframes scaleX { from { transform:scaleX(0); } to { transform:scaleX(1); } }
-@keyframes countUp { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
-@keyframes barGrow { from { height:0; } to { height:var(--h); } }
-
-.slide.active .fu  { animation: fadeUp .7s both; }
-.slide.active .fu2 { animation: fadeUp .7s .12s both; }
-.slide.active .fu3 { animation: fadeUp .7s .24s both; }
-.slide.active .fu4 { animation: fadeUp .7s .36s both; }
-.slide.active .fu5 { animation: fadeUp .7s .48s both; }
-.slide.active .fi  { animation: fadeIn .8s both; }
-.slide.active .sx  { animation: scaleX .9s .2s both; transform-origin: left; }
-
 /* ── 공통 BG 패턴 ── */
 .bg-grid {
   position: absolute; inset: 0; pointer-events: none;
