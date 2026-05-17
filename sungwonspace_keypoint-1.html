@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>성원스페이스 핵심 투자 전략</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#06080b;
+  --gold:#c9a84c;
+  --gold2:#f0d878;
+  --white:#f0f2f5;
+  --dim:rgba(255,255,255,.55);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);font-family:'Noto Sans KR',sans-serif;color:var(--white)}
+
+/* ── 파티클 캔버스 ── */
+#canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── DECK ── */
+#deck{position:fixed;inset:0;overflow:hidden;z-index:1}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transform:translateY(100%);visibility:hidden;opacity:1!important;
+  transition:transform .65s cubic-bezier(.4,0,.2,1),visibility 0s .65s;
+  will-change:transform;
+  padding:0 5%;
+}
+.slide.active{transform:translateY(0);visibility:visible;transition:transform .65s cubic-bezier(.4,0,.2,1),visibility 0s 0s}
+
+/* ── 공통 애니메이션 ── */
+@keyframes fadeUp  {from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn  {from{opacity:0}to{opacity:1}}
+@keyframes scaleIn {from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes drawLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes glow    {0%,100%{text-shadow:0 0 20px rgba(201,168,76,.3)}50%{text-shadow:0 0 40px rgba(201,168,76,.7),0 0 80px rgba(201,168,76,.3)}}
+@keyframes float   {0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes breathe {0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.12)}}
+@keyframes shimmer {0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes spin    {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes countUp {from{opacity:0;transform:scale(.7) rotate(-5deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+
+.slide.active .fu {animation:fadeUp .7s both}
+.slide.active .fu2{animation:fadeUp .7s .12s both}
+.slide.active .fu3{animation:fadeUp .7s .24s both}
+.slide.active .fu4{animation:fadeUp .7s .36s both}
+.slide.active .fu5{animation:fadeUp .7s .48s both}
+.slide.active .fu6{animation:fadeUp .7s .60s both}
+.slide.active .fi {animation:fadeIn .9s both}
+.slide.active .si {animation:scaleIn .7s both}
+.slide.active .sx {animation:drawLine .9s .2s both;transform-origin:left}
+
+/* ── UI 오버레이 ── */
+#progress{position:fixed;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.07);z-index:100}
+#pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0%;transition:width .5s ease}
+#nav{position:fixed;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100}
+.ndot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.22);cursor:pointer;transition:all .3s}
+.ndot.active{background:var(--gold);transform:scale(1.6);box-shadow:0 0 8px rgba(201,168,76,.6)}
+#playWrap{position:fixed;bottom:22px;right:18px;z-index:100;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+#timerArc{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:113.1;stroke-dashoffset:0}
+#playBtn{position:absolute;z-index:1;background:rgba(255,255,255,.07);border:none;color:var(--white);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:12px;transition:background .2s}
+#playBtn:hover{background:rgba(201,168,76,.3)}
+
+/* ════ S0: 타이틀 ════ */
+#s0{background:var(--black);text-align:center}
+#s0 .glow-ball{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 68%);top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 5s ease-in-out infinite;pointer-events:none}
+#s0 .logo-mark{margin-bottom:28px;animation:float 4s ease-in-out infinite}
+#s0 .brand{font-family:'Bebas Neue',sans-serif;font-size:clamp(11px,1.4vw,14px);letter-spacing:8px;color:var(--gold);margin-bottom:16px;opacity:.8}
+#s0 h1{font-family:'Noto Serif KR',serif;font-size:clamp(30px,5.5vw,64px);font-weight:900;line-height:1.25;margin-bottom:20px}
+#s0 h1 .gold{color:var(--gold);animation:glow 3s ease-in-out infinite}
+#s0 .sub-line{width:72px;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));margin:0 auto 24px;border-radius:2px}
+#s0 .tagline{font-size:clamp(14px,2vw,20px);color:var(--dim);line-height:1.8;max-width:640px;margin:0 auto}
+#s0 .tagline strong{color:var(--white)}
+
+/* ════ S1~S5: 포인트 슬라이드 공통 ════ */
+.point-slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+
+/* 번호 장식 */
+.pt-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(100px,20vw,200px);
+  line-height:1;
+  background:linear-gradient(180deg,rgba(201,168,76,.15) 0%,transparent 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  position:absolute;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* ── S1: 법리 검토 ── */
+#s1{background:linear-gradient(135deg,#06080b 0%,#0a1220 100%)}
+#s1 .pt-num{bottom:-20px;right:5%;font-size:clamp(120px,22vw,240px)}
+#s1 .inner{position:relative;z-index:2;width:88%;max-width:1060px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+#s1 .left .eyebrow{font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
+#s1 .left h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.5vw,44px);font-weight:900;line-height:1.3;margin-bottom:20px}
+#s1 .left h2 em{color:var(--gold);font-style:normal}
+#s1 .left .bar{height:2px;background:linear-gradient(90deg,var(--gold),transparent);margin-bottom:24px}
+#s1 .left p{font-size:clamp(14px,1.8vw,18px);color:var(--dim);line-height:1.9}
+#s1 .right{display:flex;flex-direction:column;gap:14px}
+#s1 .badge{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:18px 22px;display:flex;align-items:flex-start;gap:14px;transition:border-color .3s,background .3s}
+#s1 .badge:hover{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.12)}
+#s1 .badge .icon{font-size:24px;flex-shrink:0;margin-top:2px}
+#s1 .badge .text h4{font-size:14px;font-weight:700;margin-bottom:6px}
+#s1 .badge .text p{font-size:13px;color:var(--dim);line-height:1.7}
+
+/* ── S2: 저평가 선점 ── */
+#s2{background:linear-gradient(135deg,#060a0b 0%,#0a1812 100%)}
+#s2 .pt-num{top:-30px;left:3%;color:rgba(14,168,138,.08);-webkit-text-fill-color:rgba(14,168,138,.06)}
+#s2 .inner{position:relative;z-index:2;width:88%;max-width:1060px;text-align:center}
+#s2 .eyebrow{font-size:11px;letter-spacing:4px;color:#0ea88a;text-transform:uppercase;margin-bottom:16px}
+#s2 h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.8vw,50px);font-weight:900;line-height:1.3;margin-bottom:28px}
+#s2 h2 em{color:#0ea88a;font-style:normal}
+#s2 .arrow-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:36px}
+#s2 .arr-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 28px;text-align:center;min-width:180px}
+#s2 .arr-box .ab-label{font-size:11px;color:var(--dim);margin-bottom:8px;letter-spacing:1px}
+#s2 .arr-box .ab-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,3.5vw,40px);color:var(--white)}
+#s2 .arr-box.highlight{background:rgba(14,168,138,.1);border-color:rgba(14,168,138,.4)}
+#s2 .arr-box.highlight .ab-val{color:#0ea88a}
+#s2 .arr-arrow{font-size:28px;color:rgba(14,168,138,.6);padding:0 16px}
+#s2 .desc{font-size:clamp(14px,1.8vw,18px);color:var(--dim);line-height:1.9;max-width:720px;margin:0 auto}
+#s2 .desc strong{color:var(--white)}
+
+/* ── S3: 면세 물건 ── */
+#s3{background:linear-gradient(135deg,#08060b 0%,#160a22 100%)}
+#s3 .pt-num{bottom:-20px;right:3%;color:rgba(160,84,240,.08);-webkit-text-fill-color:rgba(160,84,240,.06)}
+#s3 .inner{position:relative;z-index:2;width:88%;max-width:1060px}
+#s3 .top-row{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-bottom:32px}
+#s3 .eyebrow{font-size:11px;letter-spacing:4px;color:#a855f7;text-transform:uppercase;margin-bottom:16px}
+#s3 h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.5vw,46px);font-weight:900;line-height:1.3;margin-bottom:16px}
+#s3 h2 em{color:#a855f7;font-style:normal}
+#s3 .desc{font-size:clamp(14px,1.8vw,17px);color:var(--dim);line-height:1.9}
+#s3 .tax-card{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:16px;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#s3 .tax-icon{font-size:48px;margin-bottom:14px;animation:float 3s ease-in-out infinite}
+#s3 .tax-main{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,60px);color:#a855f7;line-height:1;margin-bottom:8px}
+#s3 .tax-sub{font-size:13px;color:var(--dim);line-height:1.6}
+#s3 .compare{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+#s3 .cmp-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:16px;text-align:center}
+#s3 .cmp-item.active{background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.3)}
+#s3 .ci-label{font-size:11px;color:var(--dim);margin-bottom:8px;letter-spacing:1px}
+#s3 .ci-val{font-size:14px;font-weight:700}
+#s3 .ci-val.free{color:#a855f7;font-family:'Bebas Neue',sans-serif;font-size:22px}
+#s3 .ci-val.paid{color:rgba(255,80,80,.8)}
+
+/* ── S4: 안전 등기 ── */
+#s4{background:linear-gradient(135deg,#060a08 0%,#0a1820 100%)}
+#s4 .pt-num{top:-20px;left:3%;color:rgba(30,95,168,.08);-webkit-text-fill-color:rgba(30,95,168,.06)}
+#s4 .inner{position:relative;z-index:2;width:88%;max-width:1060px;display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
+#s4 .eyebrow{font-size:11px;letter-spacing:4px;color:#3fa0d8;text-transform:uppercase;margin-bottom:16px}
+#s4 h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.5vw,46px);font-weight:900;line-height:1.3;margin-bottom:20px}
+#s4 h2 em{color:#3fa0d8;font-style:normal}
+#s4 .desc{font-size:clamp(14px,1.8vw,17px);color:var(--dim);line-height:1.9;margin-bottom:28px}
+#s4 .steps{display:flex;flex-direction:column;gap:0}
+#s4 .step{display:flex;align-items:flex-start;gap:16px;padding:14px 0;position:relative}
+#s4 .step:not(:last-child)::after{content:'';position:absolute;left:18px;top:46px;width:2px;height:calc(100% - 20px);background:rgba(63,160,216,.25)}
+#s4 .step-num{width:36px;height:36px;border-radius:50%;background:rgba(63,160,216,.15);border:1px solid rgba(63,160,216,.35);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:#3fa0d8;flex-shrink:0}
+#s4 .step-text h4{font-size:14px;font-weight:700;margin-bottom:4px}
+#s4 .step-text p{font-size:13px;color:var(--dim);line-height:1.6}
+#s4 .shield{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#s4 .shield-icon{font-size:80px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(63,160,216,.4))}
+#s4 .shield-badge{background:rgba(63,160,216,.1);border:1px solid rgba(63,160,216,.3);border-radius:10px;padding:14px 20px;text-align:center;width:100%}
+#s4 .sb-title{font-size:13px;color:#3fa0d8;font-weight:700;margin-bottom:6px}
+#s4 .sb-desc{font-size:12px;color:var(--dim);line-height:1.6}
+
+/* ── S5: 성공 사례 & 마무리 ── */
+#s5{background:var(--black);text-align:center}
+#s5 .glow-ball{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);animation:breathe 6s ease-in-out infinite;pointer-events:none}
+#s5 .inner{position:relative;z-index:2;width:88%;max-width:1060px}
+#s5 .eyebrow{font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:20px}
+#s5 h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,3.8vw,50px);font-weight:900;line-height:1.3;margin-bottom:36px}
+#s5 h2 em{color:var(--gold)}
+#s5 .cases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px}
+#s5 .case{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:22px 18px;transition:transform .3s,border-color .3s,box-shadow .3s}
+#s5 .case:hover{transform:translateY(-4px);border-color:rgba(201,168,76,.35);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+#s5 .case-loc{font-size:12px;color:var(--dim);margin-bottom:10px}
+#s5 .case-rate{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:8px}
+#s5 .case-desc{font-size:12px;color:var(--dim);line-height:1.6}
+#s5 .bottom-line{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:12px;padding:20px 28px;font-size:clamp(14px,2vw,18px);color:var(--dim);line-height:1.8}
+#s5 .bottom-line strong{color:var(--gold);font-size:clamp(16px,2.4vw,22px)}
+#s5 .contact{margin-top:22px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+#s5 .tel{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,4vw,44px);color:var(--gold);letter-spacing:3px}
+#s5 .addr-text{font-size:12px;color:rgba(255,255,255,.3);letter-spacing:1px}
+
+/* 반응형 */
+@media(max-width:768px){
+  #s1 .inner,#s3 .top-row,#s4 .inner{grid-template-columns:1fr;gap:24px}
+  #s2 .arrow-row{flex-direction:column;gap:10px}
+  #s2 .arr-arrow{transform:rotate(90deg)}
+  #s3 .compare,#s5 .cases{grid-template-columns:1fr}
+  #s5 .cases{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div id="progress"><div id="pfill"></div></div>
+<div id="nav"></div>
+<div id="playWrap">
+  <svg width="44" height="44" viewBox="0 0 44 44" style="position:absolute;inset:0">
+    <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2.5"/>
+    <circle id="timerArc" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/>
+  </svg>
+  <button id="playBtn" onclick="togglePlay()">⏸</button>
+</div>
+
+<div id="deck">
+
+<!-- S0: 타이틀 -->
+<section class="slide active" id="s0">
+  <div class="glow-ball"></div>
+  <div class="logo-mark fu">
+    <svg width="56" height="56" viewBox="0 0 64 64" fill="none">
+      <rect x="10" y="10" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="1.5"/>
+      <rect x="34" y="10" width="20" height="20" rx="2" stroke="rgba(201,168,76,.5)" stroke-width="1.5"/>
+      <rect x="10" y="34" width="20" height="20" rx="2" stroke="rgba(201,168,76,.3)" stroke-width="1.5"/>
+      <rect x="34" y="34" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="1.5"/>
+    </svg>
+  </div>
+  <div class="brand fu2">SUNGWONSPACE</div>
+  <h1 class="fu3">성원스페이스의<br><span class="gold">핵심 투자 전략</span></h1>
+  <div class="sub-line sx"></div>
+  <p class="tagline fu4">
+    도시정비사업 및 미래성장 거점지역 내<br>
+    <strong>재개발 예정지와 확정지 현금청산 / 입주권 투자전략!</strong><br>
+    고객의 리스크를 최소화하면서 <strong>수익이 보장되는 투자처</strong>를 추천드립니다.
+  </p>
+</section>
+
+<!-- S1: 법리 검토 -->
+<section class="slide" id="s1">
+  <div class="pt-num">01</div>
+  <div class="inner">
+    <div class="left">
+      <div class="eyebrow fu">Point 01 · 사전 법리 검토</div>
+      <h2 class="fu2">도시정비사업 추진 지역 내<br><em>물건을 미리 확보</em>합니다</h2>
+      <div class="bar sx"></div>
+      <p class="fu3">
+        도시정비사업 및 미래성장 거점지역 재개발을 추진하는 지역 내 물건을,
+        당사는 <strong style="color:var(--white)">법리적 검토를 통해 미리 확보</strong>함으로
+        안심하고 투자를 하실 수 있습니다!
+      </p>
+    </div>
+    <div class="right">
+      <div class="badge fu3">
+        <div class="icon">⚖️</div>
+        <div class="text">
+          <h4>법리적 사전 검토</h4>
+          <p>투자 전 법무 전문가와 협력하여 권리관계, 토지이용 규제, 재개발 가능성을 면밀히 분석합니다.</p>
+        </div>
+      </div>
+      <div class="badge fu4">
+        <div class="icon">🔍</div>
+        <div class="text">
+          <h4>선제적 물건 확보</h4>
+          <p>일반 투자자보다 먼저 가치 있는 물건을 발굴·확보하여 최적의 진입 타이밍을 제공합니다.</p>
+        </div>
+      </div>
+      <div class="badge fu5">
+        <div class="icon">🛡️</div>
+        <div class="text">
+          <h4>안심 투자 보장</h4>
+          <p>검증된 물건만을 고객에게 추천하여 투자 리스크를 최소화합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S2: 저평가 선점 -->
+<section class="slide" id="s2">
+  <div class="pt-num">02</div>
+  <div class="inner">
+    <div class="eyebrow fu">Point 02 · 저평가 부동산 선점</div>
+    <h2 class="fu2">정비구역 내 <em>대지 가격만큼의 수익률</em>을<br>얻을 수 있는 물건이 있습니다</h2>
+    <div class="arrow-row fu3">
+      <div class="arr-box">
+        <div class="ab-label">현재 시장가</div>
+        <div class="ab-val">저평가</div>
+      </div>
+      <div class="arr-arrow">→</div>
+      <div class="arr-box">
+        <div class="ab-label">성원스페이스 노하우</div>
+        <div class="ab-val">가치 발굴</div>
+      </div>
+      <div class="arr-arrow">→</div>
+      <div class="arr-box highlight">
+        <div class="ab-label">재개발 완료 후</div>
+        <div class="ab-val">대지 가격</div>
+      </div>
+    </div>
+    <p class="desc fu4">
+      정비구역 및 도시재생 등 재개발을 하려는 지역에는<br>
+      <strong>대지 가격만큼 수익률을 얻을 수 있는 물건들</strong>이 있습니다.<br>
+      상대적으로 <strong>저평가된 부동산의 가치</strong>를 알아보고,<br>
+      앞서 선점할 수 있는 <strong>노하우</strong>가 중요합니다!
+    </p>
+  </div>
+</section>
+
+<!-- S3: 면세 물건 -->
+<section class="slide" id="s3">
+  <div class="pt-num">03</div>
+  <div class="inner">
+    <div class="top-row">
+      <div>
+        <div class="eyebrow fu">Point 03 · 세금 혜택</div>
+        <h2 class="fu2">보유기간 동안<br><em>세금이 부과되지 않는</em><br>면세 물건!</h2>
+        <p class="desc fu3">
+          일반 부동산 투자와 달리 보유 기간 중 재산세·종합부동산세 등이
+          부과되지 않는 특수한 물건에 투자합니다.
+          세금 부담 없이 <strong style="color:#a855f7">순수한 수익</strong>을 극대화할 수 있습니다.
+        </p>
+      </div>
+      <div class="tax-card fu2">
+        <div class="tax-icon">🏆</div>
+        <div class="tax-main">ZERO TAX</div>
+        <div class="tax-sub">보유 기간 중<br>세금 부과 없음</div>
+      </div>
+    </div>
+    <div class="compare fu4">
+      <div class="cmp-item">
+        <div class="ci-label">일반 토지·건물</div>
+        <div class="ci-val paid">재산세 부과</div>
+      </div>
+      <div class="cmp-item">
+        <div class="ci-label">고가 부동산</div>
+        <div class="ci-val paid">종합부동산세</div>
+      </div>
+      <div class="cmp-item active">
+        <div class="ci-label">성원스페이스 추천 물건</div>
+        <div class="ci-val free">면세 ✓</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S4: 안전 등기 -->
+<section class="slide" id="s4">
+  <div class="pt-num">04</div>
+  <div class="inner">
+    <div class="left">
+      <div class="eyebrow fu">Point 04 · 안전한 소유권 이전</div>
+      <h2 class="fu2">법무사법인을 통해<br><em>안전하게 등기권리</em>가<br>이전되는 물건!</h2>
+      <p class="desc fu3">
+        소유권 이전은 법무사법인을 통해 안전하게 등기권리가 이전됩니다.
+        전문 법무사의 철저한 검토로 사기·분쟁 없는 안전한 거래를 보장합니다.
+      </p>
+      <div class="steps">
+        <div class="step fu4">
+          <div class="step-num">1</div>
+          <div class="step-text"><h4>계약 체결</h4><p>당사 전문가와 투자 조건 확정 후 계약</p></div>
+        </div>
+        <div class="step fu5">
+          <div class="step-num">2</div>
+          <div class="step-text"><h4>법무사법인 검토</h4><p>권리관계·등기 현황 법리 검토 완료</p></div>
+        </div>
+        <div class="step fu6">
+          <div class="step-num">3</div>
+          <div class="step-text"><h4>안전한 소유권 이전</h4><p>등기권리 완전 이전 완료 확인</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="shield fu3">
+      <div class="shield-icon">🔐</div>
+      <div class="shield-badge">
+        <div class="sb-title">법무사법인 공동 진행</div>
+        <div class="sb-desc">전문 법무사의 철저한 검토로<br>사기·분쟁 없는 안전한 등기 이전 보장</div>
+      </div>
+      <div class="shield-badge" style="background:rgba(63,160,216,.08);border-color:rgba(63,160,216,.25)">
+        <div class="sb-title" style="color:#3fa0d8">등기 이전 완료 확인</div>
+        <div class="sb-desc">계약 후 소유권 이전까지<br>전 과정을 투명하게 관리</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S5: 성공 사례 & 마무리 -->
+<section class="slide" id="s5">
+  <div class="glow-ball"></div>
+  <div class="inner">
+    <div class="eyebrow fu">Point 05 · 검증된 투자 성과</div>
+    <h2 class="fu2">과거 투자사례로 확인하는<br><em>성공 투자의 실적</em></h2>
+    <div class="cases">
+      <div class="case fu3">
+        <div class="case-loc">📍 서울 송파구 마천동</div>
+        <div class="case-rate">1,668%</div>
+        <div class="case-desc">2014년 매입 → 2021년 매도<br>1,159만원 → 2억 500만원</div>
+      </div>
+      <div class="case fu4">
+        <div class="case-loc">📍 서울 강북구 미아동</div>
+        <div class="case-rate">973%</div>
+        <div class="case-desc">2012년 매입 → 2022년 매도<br>3,379만원 → 3억 6,288만원</div>
+      </div>
+      <div class="case fu5">
+        <div class="case-loc">📍 서울 종로구 창신동</div>
+        <div class="case-rate">414%</div>
+        <div class="case-desc">2016년 매입 → 2021년 매도<br>1,352만원 → 7,000만원</div>
+      </div>
+    </div>
+    <div class="bottom-line fu5">
+      <strong>투자 수익률과 리스크는 투자금과 비례합니다.</strong><br>
+      성원스페이스는 고객의 <strong>리스크를 최소화</strong>하면서<br>
+      <strong>수익이 보장되는 투자처</strong>를 추천드립니다.
+    </div>
+    <div class="contact fu6">
+      <div style="text-align:center">
+        <div style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,.4);margin-bottom:8px">📞 지금 바로 상담하세요</div>
+        <div class="tel" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,62px);color:var(--gold);letter-spacing:5px;text-shadow:0 0 30px rgba(201,168,76,.5);line-height:1">
+          010-3781-6068
+        </div>
+        <div class="addr-text" style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.3);letter-spacing:1px;line-height:1.8">
+          sungwonspace.com &nbsp;|&nbsp; 서울 동작구 동작대로 37, 3층<br>
+          월~목 10:00~16:00
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+/* ── 파티클 배경 ── */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, pts;
+function initCanvas(){
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  pts = Array.from({length:55}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+    r: Math.random()*1.4+.4,
+    a: Math.random()*.4+.08
+  }));
+}
+function drawCanvas(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>W) p.vx*=-1;
+    if(p.y<0||p.y>H) p.vy*=-1;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(201,168,76,${p.a})`; ctx.fill();
+  });
+  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if(d<130){
+      ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y);
+      ctx.strokeStyle=`rgba(201,168,76,${.05*(1-d/130)})`; ctx.lineWidth=.5; ctx.stroke();
+    }
+  }
+  requestAnimationFrame(drawCanvas);
+}
+window.addEventListener('resize', initCanvas);
+initCanvas(); drawCanvas();
+
+/* ── 슬라이드 엔진 ── */
+const slides = document.querySelectorAll('.slide');
+const TOTAL  = slides.length;
+const AUTO_DELAY = 6000;
+let cur=0, animating=false, isPlaying=true, autoTimer=null;
+
+const nav = document.getElementById('nav');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');
+  d.className='ndot'+(i===0?' active':'');
+  d.onclick=()=>manualGoTo(i);
+  nav.appendChild(d);
+}
+const dots = document.querySelectorAll('.ndot');
+
+function updateUI(i){ document.getElementById('pfill').style.width=((i+1)/TOTAL*100)+'%'; }
+
+function resetRing(){
+  const arc=document.getElementById('timerArc');
+  arc.style.animation='none'; arc.offsetHeight;
+  arc.style.animation=isPlaying?`arcDrain ${AUTO_DELAY}ms linear forwards`:'none';
+}
+function startAuto(){ clearTimeout(autoTimer); resetRing(); autoTimer=setTimeout(()=>{ goTo(cur+1<TOTAL?cur+1:0); if(isPlaying) startAuto(); },AUTO_DELAY); }
+function stopAuto(){ clearTimeout(autoTimer); document.getElementById('timerArc').style.animation='none'; }
+function togglePlay(){
+  isPlaying=!isPlaying;
+  document.getElementById('playBtn').textContent=isPlaying?'⏸':'▶';
+  isPlaying?startAuto():stopAuto();
+}
+function manualGoTo(n){ if(isPlaying){stopAuto();startAuto();} goTo(n); }
+
+function goTo(n){
+  if(animating) return;
+  const next=(n+TOTAL)%TOTAL;
+  if(next===cur) return;
+  animating=true;
+  const down=next>cur||(cur===TOTAL-1&&next===0);
+  slides[next].style.transition='none';
+  slides[next].style.transform=down?'translateY(100%)':'translateY(-100%)';
+  slides[next].style.visibility='visible';
+  requestAnimationFrame(()=>{
+    slides[cur].style.transition='transform .65s cubic-bezier(.4,0,.2,1)';
+    slides[cur].style.transform=down?'translateY(-100%)':'translateY(100%)';
+    slides[next].style.transition='transform .65s cubic-bezier(.4,0,.2,1)';
+    slides[next].style.transform='translateY(0)';
+    dots[cur].classList.remove('active'); dots[next].classList.add('active');
+    const prev=cur; cur=next; updateUI(cur);
+    setTimeout(()=>{
+      slides[prev].style.transition='none';
+      slides[prev].style.transform='translateY(100%)';
+      slides[prev].style.visibility='hidden';
+      slides[prev].classList.remove('active');
+      slides[cur].classList.add('active');
+      slides[cur].querySelectorAll('.fu,.fu2,.fu3,.fu4,.fu5,.fu6,.fi,.si,.sx').forEach(el=>{
+        el.style.animation='none'; el.offsetHeight; el.style.animation='';
+      });
+      animating=false;
+    },680);
+  });
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight') manualGoTo(cur+1);
+  if(e.key==='ArrowUp'  ||e.key==='ArrowLeft')  manualGoTo(cur-1);
+  if(e.key===' '){e.preventDefault();togglePlay();}
+});
+let ty=0;
+document.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',e=>{const dy=e.changedTouches[0].clientY-ty;if(Math.abs(dy)>50)manualGoTo(dy<0?cur+1:cur-1)},{passive:true});
+let wl=false;
+document.addEventListener('wheel',e=>{if(wl)return;wl=true;manualGoTo(e.deltaY>0?cur+1:cur-1);setTimeout(()=>{wl=false},900)},{passive:true});
+
+const st=document.createElement('style');
+st.textContent='@keyframes arcDrain{from{stroke-dashoffset:0}to{stroke-dashoffset:113.1}}';
+document.head.appendChild(st);
+
+updateUI(0); startAuto();
+</script>
+</body>
+</html>
