@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>오늘의 부동산 뉴스 | 2026.05.18</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#05060a; --white:#f0f2f5;
+  --gold:#c9a84c;  --gold2:#f0d878;
+  --red:#e03838;   --sky:#3fa0d8;
+  --teal:#0ea88a;  --purple:#8b5cf6;
+  --green:#16a34a; --orange:#ea7c1e;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--black);
+  font-family:'Noto Sans KR',sans-serif;color:var(--white)}
+
+/* ── 덱 & 슬라이드 ── */
+#deck{position:fixed;inset:0;overflow:hidden}
+.slide{
+  position:absolute;inset:0;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transform:translateY(100%);visibility:hidden;opacity:1!important;
+  transition:transform .6s cubic-bezier(.4,0,.2,1),visibility 0s .6s;
+  will-change:transform;
+}
+.slide.active{transform:translateY(0);visibility:visible;
+  transition:transform .6s cubic-bezier(.4,0,.2,1),visibility 0s 0s}
+
+/* ── 애니메이션 ── */
+@keyframes fu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes glow{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes growUp{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1)}}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes arcDrain{from{stroke-dashoffset:0}to{stroke-dashoffset:113.1}}
+
+.slide.active .a1{animation:fu .65s both}
+.slide.active .a2{animation:fu .65s .1s both}
+.slide.active .a3{animation:fu .65s .2s both}
+.slide.active .a4{animation:fu .65s .3s both}
+.slide.active .a5{animation:fu .65s .4s both}
+.slide.active .a6{animation:fu .65s .5s both}
+.slide.active .ax{animation:sx .85s .15s both;transform-origin:left}
+
+/* ── UI 공통 ── */
+#progress{position:fixed;bottom:0;left:0;right:56px;height:3px;
+  background:rgba(255,255,255,.08);z-index:600}
+#pfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));
+  width:0%;transition:width .4s ease}
+#nav{position:fixed;right:12px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:7px;z-index:600}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);
+  cursor:pointer;transition:background .3s,transform .3s}
+.dot.on{background:var(--gold);transform:scale(1.7)}
+#pw{position:fixed;bottom:20px;right:14px;z-index:600;
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+#arc{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:113.1}
+#pb{position:absolute;background:rgba(255,255,255,.07);border:none;color:var(--white);
+  width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:12px}
+
+/* ── 하단 뉴스 티커 ── */
+#ticker{position:fixed;bottom:3px;left:0;right:58px;height:26px;
+  background:rgba(5,6,10,.92);border-top:1px solid rgba(201,168,76,.18);
+  overflow:hidden;display:flex;align-items:center;z-index:500}
+#ticker-track{display:flex;white-space:nowrap;
+  animation:ticker 50s linear infinite;font-size:11px;color:rgba(255,255,255,.45)}
+#ticker-track span{margin-right:56px}
+#ticker-track .h{color:var(--gold);font-weight:700}
+
+/* ── 공통 BG ── */
+.bg{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(201,168,76,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(201,168,76,.028) 1px,transparent 1px);
+  background-size:50px 50px}
+.g{position:absolute;border-radius:50%;pointer-events:none}
+
+/* ── 공통 카드/박스 ── */
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:11px;padding:16px 18px;transition:border-color .3s}
+.card:hover{border-color:rgba(201,168,76,.3)}
+.row{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
+.row:last-child{border-bottom:none}
+.rk{color:rgba(255,255,255,.45)}
+.rv{font-weight:700}
+.badge{display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1.5px}
+.flow{display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);
+  border-radius:9px;padding:12px 15px;margin-bottom:10px}
+.fi{font-size:20px;flex-shrink:0}
+.ft{font-size:13px;color:rgba(255,255,255,.72);line-height:1.65;flex:1}
+.fn{font-family:'Bebas Neue',sans-serif;font-size:18px;flex-shrink:0}
+
+/* ════ S0 : 커버 ════ */
+#s0{background:var(--black)}
+#s0 .g1{width:750px;height:750px;
+  background:radial-gradient(circle,rgba(201,168,76,.09) 0%,transparent 62%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  animation:glow 6s ease-in-out infinite;pointer-events:none}
+#s0 .inner{position:relative;z-index:2;text-align:center;width:90%;max-width:820px}
+#s0 .chip{display:inline-flex;align-items:center;gap:9px;
+  background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);
+  border-radius:4px;padding:6px 16px;margin-bottom:26px}
+#s0 .blink{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite}
+#s0 .chip-t{font-size:11px;letter-spacing:2px;color:var(--gold)}
+#s0 h1{font-family:'Noto Serif KR',serif;font-size:clamp(34px,7vw,76px);
+  font-weight:900;line-height:1.18;margin-bottom:14px}
+#s0 h1 .shine{
+  background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold));
+  background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 3s linear infinite}
+#s0 .divider{width:68px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:16px auto 20px}
+#s0 .sub{font-size:clamp(12px,1.5vw,15px);color:rgba(255,255,255,.45);
+  line-height:1.85;margin-bottom:28px}
+#s0 .hl-list{display:flex;flex-direction:column;gap:9px;text-align:left}
+#s0 .hl{display:flex;align-items:center;gap:11px;
+  background:rgba(255,255,255,.04);border-left:3px solid var(--gold);
+  border-radius:0 8px 8px 0;padding:10px 15px;
+  font-size:clamp(12px,1.4vw,14px);color:rgba(255,255,255,.78)}
+#s0 .hn{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold);flex-shrink:0}
+
+/* ════ S1 : 서울 아파트 66주 연속 상승 ════ */
+#s1{background:linear-gradient(140deg,#060811 0%,#080b18 100%)}
+#s1 .g1{width:550px;height:280px;
+  background:radial-gradient(ellipse,rgba(224,56,56,.12) 0%,transparent 65%);
+  top:8%;left:50%;transform:translateX(-50%)}
+#s1 .wrap{position:relative;z-index:2;width:88%;max-width:1060px}
+#s1 .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+#s1 .kpi-box{border-radius:11px;padding:16px;text-align:center}
+#s1 .kb1{background:rgba(224,56,56,.1);border:1px solid rgba(224,56,56,.3)}
+#s1 .kb2{background:rgba(234,124,30,.09);border:1px solid rgba(234,124,30,.28)}
+#s1 .kb3{background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.28)}
+#s1 .kl{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:6px}
+#s1 .kv{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,4vw,42px);line-height:1}
+#s1 .ks{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
+#s1 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#s1 .region-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+#s1 .rg{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:8px;padding:10px;text-align:center}
+#s1 .rn{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:5px}
+#s1 .rv2{font-family:'Bebas Neue',sans-serif;font-size:clamp(14px,2vw,18px)}
+#s1 .up{color:#4ade80}
+
+/* ════ S2 : 가계대출 문턱 강화 ════ */
+#s2{background:linear-gradient(140deg,#07080e 0%,#09091a 100%)}
+#s2 .g1{width:500px;height:280px;
+  background:radial-gradient(ellipse,rgba(139,92,246,.12) 0%,transparent 65%);
+  top:8%;right:-60px}
+#s2 .wrap{position:relative;z-index:2;width:88%;max-width:1060px}
+#s2 .timeline{display:flex;flex-direction:column;gap:0;margin-bottom:16px}
+#s2 .tl-item{display:flex;gap:14px;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+#s2 .tl-item:last-child{border-bottom:none}
+#s2 .tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+#s2 .tl-t{font-size:13px;color:rgba(255,255,255,.72);line-height:1.7}
+#s2 .tl-t b{color:var(--white)}
+#s2 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ════ S3 : 매물 잠김·투기지구 ════ */
+#s3{background:linear-gradient(140deg,#060a10 0%,#08101a 100%)}
+#s3 .g1{width:500px;height:280px;
+  background:radial-gradient(ellipse,rgba(63,160,216,.12) 0%,transparent 65%);
+  bottom:0;left:-60px}
+#s3 .wrap{position:relative;z-index:2;width:88%;max-width:1060px}
+#s3 .alert-box{background:rgba(224,56,56,.07);border:1px solid rgba(224,56,56,.25);
+  border-radius:11px;padding:16px 20px;margin-bottom:16px}
+#s3 .ab-title{font-size:13px;font-weight:700;color:var(--red);margin-bottom:8px}
+#s3 .ab-body{font-size:13px;color:rgba(255,255,255,.7);line-height:1.8}
+#s3 .area-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+#s3 .at{background:rgba(224,56,56,.12);border:1px solid rgba(224,56,56,.3);
+  color:rgba(255,255,255,.75);font-size:12px;padding:4px 11px;border-radius:4px}
+#s3 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ════ S4 : 전세 월세화·공급 급감 ════ */
+#s4{background:linear-gradient(140deg,#070a0e 0%,#090d18 100%)}
+#s4 .g1{width:500px;height:280px;
+  background:radial-gradient(ellipse,rgba(14,168,138,.1) 0%,transparent 65%);
+  top:10%;right:-50px}
+#s4 .wrap{position:relative;z-index:2;width:88%;max-width:1060px}
+#s4 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#s4 .supply-bars{display:flex;align-items:flex-end;gap:8px;height:100px;margin:12px 0}
+#s4 .bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+#s4 .bb{width:100%;border-radius:4px 4px 0 0}
+#s4 .by{font-size:10px;color:rgba(255,255,255,.4)}
+#s4 .bv{font-size:10px;color:rgba(255,255,255,.6)}
+
+/* ════ S5 : 농지 전수조사 ════ */
+#s5{background:linear-gradient(140deg,#060a09 0%,#080e0d 100%)}
+#s5 .g1{width:500px;height:280px;
+  background:radial-gradient(ellipse,rgba(22,163,74,.12) 0%,transparent 65%);
+  top:8%;left:50%;transform:translateX(-50%)}
+#s5 .wrap{position:relative;z-index:2;width:88%;max-width:1060px}
+#s5 .step-list{display:flex;flex-direction:column;gap:9px}
+#s5 .si{display:flex;align-items:flex-start;gap:12px;
+  background:rgba(22,163,74,.06);border:1px solid rgba(22,163,74,.18);
+  border-radius:10px;padding:14px}
+#s5 .sn{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#4ade80;
+  flex-shrink:0;width:28px}
+#s5 .st{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7}
+#s5 .st b{color:#fff}
+#s5 .tag-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+#s5 .tg{background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);
+  color:rgba(255,255,255,.7);font-size:11px;padding:4px 11px;border-radius:20px}
+
+/* ════ S6 : 압구정4구역·재건축 동향 ════ */
+#s6{background:linear-gradient(140deg,#08070f 0%,#0a0914 100%)}
+#s6 .g1{width:500px;height:280px;
+  background:radial-gradient(ellipse,rgba(139,92,246,.11) 0%,transparent 65%);
+  bottom:0;right:-60px}
+#s6 .wrap{position:relative;z-index:2;width:88%;max-width:1060px}
+#s6 .main-card{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.28);
+  border-radius:12px;padding:20px;margin-bottom:14px}
+#s6 .mc-head{display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:14px}
+#s6 .mc-title{font-family:'Noto Serif KR',serif;font-size:clamp(16px,2.2vw,22px);
+  font-weight:900;line-height:1.4}
+#s6 .mc-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,3.5vw,38px);
+  color:#a78bfa;line-height:1;text-align:right}
+#s6 .mc-sub{font-size:11px;color:rgba(255,255,255,.4)}
+#s6 .mc-body{font-size:13px;color:rgba(255,255,255,.7);line-height:1.8}
+#s6 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#s6 .sm-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:9px;padding:13px}
+#s6 .sc-n{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px}
+#s6 .sc-t{font-size:13px;font-weight:700;margin-bottom:3px}
+#s6 .sc-s{font-size:11px;color:rgba(255,255,255,.45)}
+
+/* ════ S7 : CTA ════ */
+#s7{background:var(--black)}
+#s7 .g1{width:750px;height:750px;
+  background:radial-gradient(circle,rgba(201,168,76,.09) 0%,transparent 60%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  animation:glow 5s ease-in-out infinite}
+#s7 .inner{position:relative;z-index:2;text-align:center;width:88%;max-width:760px}
+#s7 .brand{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:6px;
+  color:var(--gold);margin-bottom:22px}
+#s7 h2{font-family:'Noto Serif KR',serif;font-size:clamp(22px,4vw,48px);
+  font-weight:900;line-height:1.48;margin-bottom:16px}
+#s7 .desc{font-size:clamp(13px,1.5vw,16px);color:rgba(255,255,255,.5);
+  line-height:1.9;margin-bottom:30px}
+#s7 .tel{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,8vw,86px);
+  letter-spacing:5px;line-height:1;margin-bottom:22px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2),var(--gold));
+  background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:shimmer 2.5s linear infinite}
+#s7 .btn{display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#05060a;font-size:15px;font-weight:700;padding:14px 36px;
+  border-radius:50px;cursor:pointer;border:none;
+  box-shadow:0 8px 28px rgba(201,168,76,.28);transition:transform .2s}
+#s7 .btn:hover{transform:translateY(-2px)}
+#s7 .info{margin-top:18px;font-size:12px;color:rgba(255,255,255,.28);letter-spacing:1px}
+
+/* 공통 뉴스 헤더 */
+.nh{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.ns{font-size:11px;color:rgba(255,255,255,.32);letter-spacing:.5px}
+.nt{font-family:'Noto Serif KR',serif;font-size:clamp(18px,2.8vw,34px);
+  font-weight:900;line-height:1.38;margin-bottom:12px}
+.nb{font-size:clamp(13px,1.6vw,16px);color:rgba(255,255,255,.7);
+  line-height:1.95;margin-bottom:16px}
+.nb .w{color:#fff;font-weight:700}
+.nb .c{font-weight:700}
+.abar{height:2px;border-radius:2px;margin-bottom:18px}
+
+@media(max-width:700px){
+  #s1 .kpi,#s1 .grid2,#s2 .grid2,#s3 .grid2,
+  #s4 .grid2,#s6 .grid3{grid-template-columns:1fr}
+  #s1 .region-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"><div id="pfill"></div></div>
+<div id="nav"></div>
+<div id="pw">
+  <svg width="44" height="44" viewBox="0 0 44 44" style="position:absolute;inset:0">
+    <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="2.5"/>
+    <circle id="arc" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/>
+  </svg>
+  <button id="pb" onclick="togglePlay()">⏸</button>
+</div>
+
+<!-- 하단 티커 -->
+<div id="ticker">
+  <div id="ticker-track">
+    <span>🔴 <span class="h">서울 아파트</span> 5월 2주 0.28% 상승 — 강남구 반등, 25개 자치구 전체 오름세</span>
+    <span>🏦 <span class="h">2분기 가계대출</span> 문턱 더 높아진다 — 주담대·신용대출 강화 기조 유지</span>
+    <span>📛 <span class="h">구리·용인기흥·화성동탄</span> 투기지구 지정 요건 충족 — 지정 여부 주목</span>
+    <span>🏠 서울 <span class="h">전세→월세 전환 5,199건</span> — 5년래 최다, 입주 물량 48% 급감</span>
+    <span>🌾 <span class="h">농지 전수조사</span> 오늘(18일) 시작 — 경기도 전체 드론 촬영</span>
+    <span>🏗️ <span class="h">압구정4구역</span> 삼성물산 시공자 선정 총회 23일 (2.1조원 규모)</span>
+    <span>📊 <span class="h">성북구 0.54%</span> · 종로구 0.36% — 주간 기준 역대 최고 상승률</span>
+    <span>🔴 <span class="h">서울 아파트</span> 5월 2주 0.28% 상승 — 강남구 반등, 25개 자치구 전체 오름세</span>
+    <span>🏦 <span class="h">2분기 가계대출</span> 문턱 더 높아진다 — 주담대·신용대출 강화 기조 유지</span>
+    <span>📛 <span class="h">구리·용인기흥·화성동탄</span> 투기지구 지정 요건 충족 — 지정 여부 주목</span>
+    <span>🏠 서울 <span class="h">전세→월세 전환 5,199건</span> — 5년래 최다, 입주 물량 48% 급감</span>
+    <span>🌾 <span class="h">농지 전수조사</span> 오늘(18일) 시작 — 경기도 전체 드론 촬영</span>
+    <span>🏗️ <span class="h">압구정4구역</span> 삼성물산 시공자 선정 총회 23일 (2.1조원 규모)</span>
+    <span>📊 <span class="h">성북구 0.54%</span> · 종로구 0.36% — 주간 기준 역대 최고 상승률</span>
+  </div>
+</div>
+
+<div id="deck">
+
+<!-- ══ S0 커버 ══ -->
+<section class="slide active" id="s0">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="inner">
+    <div class="chip a1">
+      <div class="blink"></div>
+      <div class="chip-t">2026.05.18 월요일 · LIVE 부동산 뉴스</div>
+    </div>
+    <h1 class="a2">오늘의<br><span class="shine">부동산</span><br>주요뉴스</h1>
+    <div class="divider ax"></div>
+    <div class="sub a3">한국부동산원 · 머니투데이 · 이데일리 · 서울경제 · 파이낸셜뉴스 · 하우징헤럴드</div>
+    <div class="hl-list a4">
+      <div class="hl"><span class="hn">01</span>서울 아파트 66주 연속 상승 · 강남구 반등 · 전구 상승</div>
+      <div class="hl"><span class="hn">02</span>2분기 가계대출 문턱 더 높아진다 · 구리·동탄 투기지구 요건 충족</div>
+      <div class="hl"><span class="hn">03</span>전세→월세 5년래 최다 · 서울 입주 48% 급감</div>
+      <div class="hl"><span class="hn">04</span>농지 전수조사 오늘 시작 · 경기도 드론 촬영</div>
+      <div class="hl"><span class="hn">05</span>압구정4구역 삼성물산 수주 확정 · 재건축 동향</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S1 : 서울 아파트 66주 연속 상승 ══ -->
+<section class="slide" id="s1">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="wrap">
+    <div class="nh a1">
+      <span class="badge" style="background:var(--red);color:#fff">속보</span>
+      <span class="ns">한국부동산원 · 머니투데이 · 5/15 발표</span>
+    </div>
+    <div class="nt a2" style="color:var(--white)">
+      서울 아파트 <span style="color:var(--red)">66주 연속 상승</span><br>
+      강남구 반등 — 25개 자치구 전체 오름세
+    </div>
+    <div class="abar ax" style="background:linear-gradient(90deg,var(--red),transparent)"></div>
+    <div class="kpi a3">
+      <div class="kpi-box kb1">
+        <div class="kl">서울 매매 주간 변동</div>
+        <div class="kv" style="color:var(--red)">+0.28%</div>
+        <div class="ks">1월 넷째 주 이후 최고</div>
+      </div>
+      <div class="kpi-box kb2">
+        <div class="kl">서울 전세 주간 변동</div>
+        <div class="kv" style="color:var(--orange)">+0.28%</div>
+        <div class="ks">2015년 11월 이후 최고</div>
+      </div>
+      <div class="kpi-box kb3">
+        <div class="kl">연속 상승</div>
+        <div class="kv" style="color:var(--gold)">66주</div>
+        <div class="ks">2025년 2월 상승 전환 후</div>
+      </div>
+    </div>
+    <div class="grid2 a4">
+      <div class="card">
+        <div class="rk" style="font-size:11px;letter-spacing:2px;color:var(--red);margin-bottom:10px">주요 자치구 상승률</div>
+        <div class="row"><div class="rk">성북구</div><div class="rv up">+0.54% 역대 최고</div></div>
+        <div class="row"><div class="rk">서대문구</div><div class="rv up">+0.45%</div></div>
+        <div class="row"><div class="rk">종로구</div><div class="rv up">+0.36% 역대 최고</div></div>
+        <div class="row"><div class="rk">송파구</div><div class="rv up">+0.35%</div></div>
+        <div class="row"><div class="rk">강남구</div><div class="rv up">+0.19% 반등</div></div>
+      </div>
+      <div>
+        <div class="nb a5" style="margin-bottom:12px">
+          <span class="w">양도세 중과 유예 종료(5/9)</span> 이후 급매물이 소진되고 매물이 빠르게 줄었습니다. 강북권 주도 상승에 이어 <span class="c" style="color:var(--orange)">강남권까지 합류</span>, 집값 안정에 다시 적신호가 켜졌습니다.
+        </div>
+        <div class="region-grid a6">
+          <div class="rg"><div class="rn">강남</div><div class="rv2 up">+0.19%</div></div>
+          <div class="rg"><div class="rn">용산</div><div class="rv2 up">+0.21%</div></div>
+          <div class="rg"><div class="rn">서초</div><div class="rv2 up">+0.17%</div></div>
+          <div class="rg"><div class="rn">동대문</div><div class="rv2 up">+0.33%</div></div>
+          <div class="rg"><div class="rn">강동</div><div class="rv2 up">+0.19%</div></div>
+          <div class="rg"><div class="rn">전세</div><div class="rv2 up">+0.28%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S2 : 가계대출 강화 · 투기지구 요건 충족 ══ -->
+<section class="slide" id="s2">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="wrap">
+    <div class="nh a1">
+      <span class="badge" style="background:var(--purple);color:#fff">규제</span>
+      <span class="ns">이데일리 · 한국부동산뉴스 · 5/18</span>
+    </div>
+    <div class="nt a2">
+      2분기 가계대출 문턱 <span style="color:#a78bfa">더 높아진다</span><br>
+      구리·용인기흥·화성동탄 <span style="color:var(--red)">투기지구 요건 충족</span>
+    </div>
+    <div class="abar ax" style="background:linear-gradient(90deg,var(--purple),transparent)"></div>
+    <div class="grid2 a3">
+      <div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot" style="background:var(--purple)"></div>
+            <div class="tl-t"><b>2분기 은행권 가계대출 강화 기조</b><br>정부 규제 영향으로 주담대·신용대출 문턱이 다시 높아졌습니다. 기업대출 위주로 전략이 이동 중입니다.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot" style="background:var(--red)"></div>
+            <div class="tl-t"><b>구리·용인기흥·화성동탄 투기지구 요건 충족</b><br>이들 지역이 투기과열지구·조정대상지역 지정 요건을 충족한 것으로 확인됐습니다. 지정 여부가 주목됩니다.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot" style="background:var(--orange)"></div>
+            <div class="tl-t"><b>양도세 중과 재개 이후 시장 변화</b><br>5월 9일 이후 서울 매물 잠김 현상 시작. 거래량 5,000건 감소, 호가 반등 분위기.</div>
+          </div>
+        </div>
+      </div>
+      <div class="a4">
+        <div class="card" style="margin-bottom:12px">
+          <div class="rk" style="font-size:11px;letter-spacing:2px;color:var(--purple);margin-bottom:10px">투기지구 요건 충족 지역</div>
+          <div class="row"><div class="rk">구리시</div><div class="rv" style="color:var(--red)">요건 충족</div></div>
+          <div class="row"><div class="rk">용인 기흥구</div><div class="rv" style="color:var(--red)">요건 충족</div></div>
+          <div class="row"><div class="rk">화성 동탄</div><div class="rv" style="color:var(--red)">요건 충족</div></div>
+          <div class="row"><div class="rk">지정 여부</div><div class="rv" style="color:var(--orange)">검토 중</div></div>
+        </div>
+        <div class="card">
+          <div class="rk" style="font-size:11px;letter-spacing:2px;color:var(--purple);margin-bottom:10px">대출 규제 현황</div>
+          <div class="row"><div class="rk">15억이하 주담대</div><div class="rv">6억원 한도</div></div>
+          <div class="row"><div class="rk">25억이하 주담대</div><div class="rv">4억원 한도</div></div>
+          <div class="row"><div class="rk">25억초과 주담대</div><div class="rv">2억원 한도</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S3 : 매물 잠김·전세 급감 ══ -->
+<section class="slide" id="s3">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="wrap">
+    <div class="nh a1">
+      <span class="badge" style="background:var(--sky);color:#fff">시장</span>
+      <span class="ns">헤럴드경제 · 부동산360 · 5월 최신</span>
+    </div>
+    <div class="nt a2">
+      서울 전역 <span style="color:var(--sky)">전세 매물 급감</span><br>
+      '1,700세대 대단지 전세 0건' 도미노
+    </div>
+    <div class="abar ax" style="background:linear-gradient(90deg,var(--sky),transparent)"></div>
+    <div class="alert-box a3">
+      <div class="ab-title">⚠️ 전세 급감 현상 확산</div>
+      <div class="ab-body">
+        이재명 대통령이 <b style="color:#fff">다주택자 양도세 중과 유예 연장 불가</b>를 선언하면서 서울 전역에서 전세 매물이 빠르게 줄고 있습니다. 외곽 대단지도 전세 0건 현상이 확산되고 있습니다.
+      </div>
+      <div class="area-tags">
+        <span class="at">서울 외곽 대단지</span>
+        <span class="at">경기도 확산</span>
+        <span class="at">전세 공백</span>
+        <span class="at">매물 잠김</span>
+      </div>
+    </div>
+    <div class="grid2 a4">
+      <div>
+        <div class="flow">
+          <div class="fi">🔒</div>
+          <div class="ft">양도세 중과 재개 → 다주택자 <b>매물 회수</b> → 전세 공급 급감</div>
+          <div class="fn" style="color:var(--red)">↓↓</div>
+        </div>
+        <div class="flow">
+          <div class="fi">💸</div>
+          <div class="ft">임대사업자 <b>대출 옥죄기</b> → 빌라 임대인 버티기 한계 → 서민 주거 불안</div>
+          <div class="fn" style="color:var(--orange)">⚠️</div>
+        </div>
+        <div class="flow">
+          <div class="fi">📉</div>
+          <div class="ft">서울 외곽 중저가 단지로 <b>매수세 이동</b> — 수요 분산 현상</div>
+          <div class="fn" style="color:var(--sky)">→</div>
+        </div>
+      </div>
+      <div class="card a5">
+        <div class="rk" style="font-size:11px;letter-spacing:2px;color:var(--sky);margin-bottom:10px">시장 동향 정리</div>
+        <div class="row"><div class="rk">전세 매물</div><div class="rv" style="color:var(--red)">급감</div></div>
+        <div class="row"><div class="rk">호가</div><div class="rv" style="color:var(--orange)">반등 중</div></div>
+        <div class="row"><div class="rk">거래량</div><div class="rv" style="color:var(--red)">-5,000건</div></div>
+        <div class="row"><div class="rk">실거주의무</div><div class="rv" style="color:#4ade80">유예</div></div>
+        <div class="row"><div class="rk">5월 3주 서울</div><div class="rv" style="color:#4ade80">+0.09%</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S4 : 전세 월세화·입주 급감 ══ -->
+<section class="slide" id="s4">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="wrap">
+    <div class="nh a1">
+      <span class="badge" style="background:var(--teal);color:#fff">공급</span>
+      <span class="ns">서울경제 · 뉴스투데이 · 부동산R114</span>
+    </div>
+    <div class="nt a2">
+      전세→월세 전환 <span style="color:var(--teal)">5년래 최다</span><br>
+      서울 입주 물량 <span style="color:var(--red)">48% 급감</span>
+    </div>
+    <div class="abar ax" style="background:linear-gradient(90deg,var(--teal),transparent)"></div>
+    <div class="grid2 a3">
+      <div>
+        <div class="nb" style="margin-bottom:14px">
+          서울 아파트 전세→월세 전환 계약갱신이 <span class="w">5,199건</span>으로 <span class="c" style="color:var(--teal)">5년 내 최대치</span>를 기록했습니다. 전세대출 규제 강화와 임대인의 월세 선호가 맞물린 결과입니다.
+        </div>
+        <div class="supply-bars a5">
+          <div class="bc">
+            <div class="bv">4.9만</div>
+            <div class="bb" style="height:100%;background:linear-gradient(to top,#6d28d9,#8b5cf6)"></div>
+            <div class="by">2020</div>
+          </div>
+          <div class="bc">
+            <div class="bv">3.4만</div>
+            <div class="bb" style="height:69%;background:linear-gradient(to top,#6d28d9,#8b5cf6)"></div>
+            <div class="by">2021</div>
+          </div>
+          <div class="bc">
+            <div class="bv">2.4만</div>
+            <div class="bb" style="height:49%;background:linear-gradient(to top,#6d28d9,#8b5cf6)"></div>
+            <div class="by">2022</div>
+          </div>
+          <div class="bc">
+            <div class="bv">3.7만</div>
+            <div class="bb" style="height:75%;background:linear-gradient(to top,#6d28d9,#8b5cf6)"></div>
+            <div class="by">2025</div>
+          </div>
+          <div class="bc">
+            <div class="bv" style="color:var(--red)">1.6만</div>
+            <div class="bb" style="height:33%;background:linear-gradient(to top,#b91c1c,#f87171);border:1px dashed rgba(255,100,100,.5);animation:growUp .8s ease both"></div>
+            <div class="by" style="color:var(--red)">2026</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">서울 아파트 연간 입주 물량 (단위: 가구)</div>
+      </div>
+      <div class="a4">
+        <div class="card" style="margin-bottom:11px">
+          <div class="rk" style="font-size:11px;letter-spacing:2px;color:var(--teal);margin-bottom:10px">핵심 수치</div>
+          <div class="row"><div class="rk">전세→월세 전환</div><div class="rv" style="color:var(--teal)">5,199건</div></div>
+          <div class="row"><div class="rk">서울 입주(2026)</div><div class="rv" style="color:var(--red)">16,262가구</div></div>
+          <div class="row"><div class="rk">전년 대비</div><div class="rv" style="color:var(--red)">-56%</div></div>
+          <div class="row"><div class="rk">전세가 전망</div><div class="rv" style="color:var(--orange)">+4.7%↑</div></div>
+        </div>
+        <div class="flow a5">
+          <div class="fi">📊</div>
+          <div class="ft">2011년 입주 급감 시 서울 전세가 <b>+13.4%</b> — 유사한 공급 압박 우려</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S5 : 농지 전수조사 ══ -->
+<section class="slide" id="s5">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="wrap">
+    <div class="nh a1">
+      <span class="badge" style="background:var(--green);color:#fff">오늘</span>
+      <span class="ns">파이낸셜뉴스 · 농림축산식품부 · 5/18</span>
+    </div>
+    <div class="nt a2">
+      사상 첫 농지 전수조사 <span style="color:#4ade80">오늘 시작</span><br>
+      경기도 전체 드론 촬영 · 투기 농지 집중 단속
+    </div>
+    <div class="abar ax" style="background:linear-gradient(90deg,var(--green),transparent)"></div>
+    <div class="nb a3">
+      농림축산식품부가 <span class="w">오늘(18일)부터</span> 지자체와 함께 농지 투기 근절을 위한 전수조사를 시작합니다.
+      투기 우려가 높은 <span class="c" style="color:#4ade80">경기도 전체 농지는 드론으로 촬영</span>합니다.
+    </div>
+    <div class="step-list a4">
+      <div class="si">
+        <div class="sn">1</div>
+        <div class="st"><b>5~7월 기본조사</b> — 행정정보·인공위성·AI로 심층조사 대상 선별. 농지대장으로 소유자·면적 확인, 위반 여부 점검</div>
+      </div>
+      <div class="si">
+        <div class="sn">2</div>
+        <div class="st"><b>8~12월 심층조사</b> — 불법 임대차 의심 농지 탐문조사. 농자재 구매내역·판매 내역으로 실경작 여부 확인</div>
+      </div>
+      <div class="si">
+        <div class="sn">내년</div>
+        <div class="st"><b>1996년 이전 취득 농지</b>까지 2단계 확대 조사. 예산 <b>588억 원</b> 투입 · 조사 인력 <b>약 5,000명</b> + 특별사법경찰 배치</div>
+      </div>
+    </div>
+    <div class="tag-row a5">
+      <span class="tg">🌾 115만ha 대상</span>
+      <span class="tg">🚁 경기도 드론 촬영</span>
+      <span class="tg">👮 특사경 현장 배치</span>
+      <span class="tg">💰 예산 588억</span>
+      <span class="tg">🤖 위성·AI 활용</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S6 : 압구정4구역·재건축 동향 ══ -->
+<section class="slide" id="s6">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="wrap">
+    <div class="nh a1">
+      <span class="badge" style="background:var(--purple);color:#fff">재건축</span>
+      <span class="ns">하우징헤럴드 · 5/12</span>
+    </div>
+    <div class="nt a2">
+      압구정4구역 <span style="color:#a78bfa">삼성물산</span> 시공자 선정<br>
+      2.1조원 규모 · 23일 총회
+    </div>
+    <div class="abar ax" style="background:linear-gradient(90deg,var(--purple),transparent)"></div>
+    <div class="main-card a3">
+      <div class="mc-head">
+        <div>
+          <div class="mc-title">서울 압구정4구역 재건축</div>
+          <div class="mc-body" style="margin-top:8px">오는 23일 총회를 열고 우선협상대상자인 삼성물산을 시공자로 선정할 예정입니다. 강남 초대형 재건축 사업의 핵심 분수령입니다.</div>
+        </div>
+        <div>
+          <div class="mc-num">2.1조</div>
+          <div class="mc-sub">원 총공사비</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid3 a4">
+      <div class="sm-card">
+        <div class="sc-n">천호A1-1구역</div>
+        <div class="sc-t" style="color:#4ade80">대우건설 선정</div>
+        <div class="sc-s">공공재개발 · 5/16</div>
+      </div>
+      <div class="sm-card">
+        <div class="sc-n">신반포20차</div>
+        <div class="sc-t" style="color:#4ade80">SK에코플랜트</div>
+        <div class="sc-s">소규모재건축 · 5/16</div>
+      </div>
+      <div class="sm-card">
+        <div class="sc-n">안락1구역 (부산)</div>
+        <div class="sc-t">1,535가구 입찰</div>
+        <div class="sc-s">현장설명회 5/18</div>
+      </div>
+    </div>
+    <div class="flow a5" style="margin-top:12px;background:rgba(139,92,246,.08);border-color:rgba(139,92,246,.22)">
+      <div class="fi">🏙️</div>
+      <div class="ft">서울시 정비사업 융자금 지원 — 이주비 조달 어려운 조합에 <b>직접 융자</b>로 주택공급 정상화 추진</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ S7 : 성원스페이스 CTA ══ -->
+<section class="slide" id="s7">
+  <div class="bg"></div>
+  <div class="g g1"></div>
+  <div class="inner">
+    <div class="brand a1">SUNGWONSPACE · 부동산 투자 전문</div>
+    <h2 class="a2">
+      집값 상승·공급 부족<br>
+      <span style="background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">
+        지금이 투자 적기</span>입니다
+    </h2>
+    <div class="desc a3">
+      서울 66주 연속 상승 · 강남 반등 · 입주 물량 급감<br>
+      도시정비사업 소액 투자로 리스크 최소화 — 지금 상담하세요
+    </div>
+    <div class="tel a4">010-3781-6068</div>
+    <button class="btn a5" onclick="window.location.href='tel:01037816068'">
+      📞 지금 바로 전화 상담
+    </button>
+    <div class="info a6">월~목 10:00~16:00 &nbsp;|&nbsp; 서울 동작구 동작대로 37, 3층</div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<script>
+const slides=document.querySelectorAll('.slide');
+const TOTAL=slides.length;
+const DELAY=7000;
+let cur=0,busy=false,playing=true,timer=null;
+
+/* 도트 */
+const nav=document.getElementById('nav');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' on':'');
+  d.onclick=()=>manual(i);
+  nav.appendChild(d);
+}
+const dots=document.querySelectorAll('.dot');
+
+function ui(i){document.getElementById('pfill').style.width=((i+1)/TOTAL*100)+'%'}
+
+/* 타이머 링 */
+function ring(){
+  const a=document.getElementById('arc');
+  a.style.animation='none';a.offsetHeight;
+  a.style.animation=playing?`arcDrain ${DELAY}ms linear forwards`:'none';
+}
+function startAuto(){clearTimeout(timer);ring();timer=setTimeout(()=>{go((cur+1)%TOTAL);if(playing)startAuto();},DELAY)}
+function stopAuto(){clearTimeout(timer);document.getElementById('arc').style.animation='none'}
+function togglePlay(){
+  playing=!playing;
+  document.getElementById('pb').textContent=playing?'⏸':'▶';
+  playing?startAuto():stopAuto();
+}
+function manual(n){if(playing){stopAuto();startAuto();}go(n)}
+
+function go(n){
+  if(busy||n===cur)return;
+  busy=true;
+  const down=n>cur||(cur===TOTAL-1&&n===0);
+  slides[n].style.transition='none';
+  slides[n].style.transform=down?'translateY(100%)':'translateY(-100%)';
+  slides[n].style.visibility='visible';
+  requestAnimationFrame(()=>{
+    slides[cur].style.transition='transform .6s cubic-bezier(.4,0,.2,1)';
+    slides[cur].style.transform=down?'translateY(-100%)':'translateY(100%)';
+    slides[n].style.transition='transform .6s cubic-bezier(.4,0,.2,1)';
+    slides[n].style.transform='translateY(0)';
+    dots[cur].classList.remove('on');
+    dots[n].classList.add('on');
+    const p=cur;cur=n;ui(cur);
+    setTimeout(()=>{
+      slides[p].style.transition='none';
+      slides[p].style.transform='translateY(100%)';
+      slides[p].style.visibility='hidden';
+      slides[p].classList.remove('active');
+      slides[cur].classList.add('active');
+      slides[cur].querySelectorAll('.a1,.a2,.a3,.a4,.a5,.a6,.ax').forEach(el=>{
+        el.style.animation='none';el.offsetHeight;el.style.animation='';
+      });
+      busy=false;
+    },620);
+  });
+}
+
+/* 조작 */
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='ArrowRight')manual((cur+1)%TOTAL);
+  if(e.key==='ArrowUp'  ||e.key==='ArrowLeft') manual((cur-1+TOTAL)%TOTAL);
+  if(e.key===' '){e.preventDefault();togglePlay();}
+});
+let ty=0;
+document.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dy)>50)manual(dy<0?(cur+1)%TOTAL:(cur-1+TOTAL)%TOTAL);
+},{passive:true});
+let wl=false;
+document.addEventListener('wheel',e=>{
+  if(wl)return;wl=true;
+  manual(e.deltaY>0?(cur+1)%TOTAL:(cur-1+TOTAL)%TOTAL);
+  setTimeout(()=>{wl=false},800);
+},{passive:true});
+
+/* arcDrain 키프레임 주입 */
+document.head.insertAdjacentHTML('beforeend',
+  '<style>@keyframes arcDrain{from{stroke-dashoffset:0}to{stroke-dashoffset:113.1}}</style>');
+
+ui(0);startAuto();
+</script>
+</body>
+</html>
