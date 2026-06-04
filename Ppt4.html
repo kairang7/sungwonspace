@@ -1,347 +1,712 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>서울시, 도심·환승역 주변 고밀복합개발 본격 추진</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@700;900&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f1f5f9;
-            color: #1e293b;
-            padding: 40px 20px;
-            line-height: 1.7;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUNGWONSPACE 6월 공식 속보 브리핑</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #f5f5f0;
+  --gold: #c9a84c;
+  --gold-light: #e8c96a;
+  --navy: #0d1f3c;
+  --blue: #1a3a6b;
+  --gray: #888;
+}
 
-        /* 공문서 스타일 A4 레이아웃 컨테이너 */
-        .document-page {
-            max-width: 820px;
-            margin: 0 auto 30px auto;
-            background: #ffffff;
-            padding: 60px 50px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
-            position: relative;
-        }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* 상단 타이틀 매칭 */
-        .doc-header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-        }
-        .corporate-title {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: #0f172a;
-        }
-        .release-date-status {
-            text-align: right;
-            font-size: 12px;
-            font-weight: bold;
-            color: #1e3a8a;
-        }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #030712; 
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none;
+}
 
-        /* 보도자료 메인 헤더 및 담당부서 표 */
-        .press-main-title-area {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 35px;
-            gap: 20px;
-        }
-        .seoul-logo-section {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-top: 10px;
-        }
-        .logo-txt-top {
-            font-family: 'Noto Serif KR', serif;
-            font-size: 26px;
-            font-weight: 900;
-            letter-spacing: -1px;
-            color: #dc2626;
-            line-height: 1.1;
-        }
-        .logo-txt-bottom {
-            font-size: 24px;
-            font-weight: 900;
-            color: #1e3a8a;
-            line-height: 1.1;
-            letter-spacing: 2px;
-        }
-        .press-badge {
-            font-family: 'Noto Serif KR', serif;
-            font-size: 34px;
-            font-weight: 900;
-            border: 3px double #000;
-            padding: 2px 14px;
-            letter-spacing: 6px;
-            color: #000;
-            margin-left: 10px;
-            margin-top: 5px;
-        }
+/* ─── Custom Cursor ─────────────────── */
+#cursor {
+  position: fixed; width: 12px; height: 12px;
+  background: var(--gold); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s;
+  mix-blend-mode: difference;
+}
+@media (max-width: 768px) {
+  html, body { cursor: default; }
+  #cursor { display: none; }
+}
 
-        /* 담당부서 테이블 구조 복원 */
-        .department-table {
-            border-collapse: collapse;
-            font-size: 12px;
-            width: 320px;
-        }
-        .department-table th, .department-table td {
-            border: 1px solid #000;
-            padding: 6px 8px;
-            text-align: left;
-            height: 28px;
-        }
-        .department-table th {
-            background-color: #f8fafc;
-            font-weight: 600;
-            text-align: center;
-        }
+/* ─── Shorts Container (Strict 9:16 Screen Lock) ─────────────────── */
+#shorts-viewport {
+  position: relative;
+  background: var(--black);
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+  
+  width: 100vw;
+  height: 177.78vw;
+  max-width: 410px;
+  max-height: 728px;
+}
 
-        /* 핵심 대제목 박스 */
-        .headline-box {
-            border: 4px double #000;
-            padding: 18px 24px;
-            text-align: center;
-            margin-bottom: 40px;
-            background: #fff;
-        }
-        .headline-box h2 {
-            font-family: 'Noto Sans KR', sans-serif;
-            font-weight: 900;
-            font-size: 23px;
-            line-height: 1.4;
-            color: #000;
-            letter-spacing: -0.5px;
-        }
+@media (min-aspect-ratio: 9/16) {
+  #shorts-viewport {
+    height: 100vh;
+    width: 56.25vh;
+  }
+}
 
-        /* 본문 공문서식 조판 기호 마진 설정 */
-        .content-body {
-            text-align: justify;
-            word-break: break-all;
-            font-size: 15px;
-            color: #111111;
-        }
-        
-        /* ⬛ 대문단 구조 */
-        .para-main {
-            position: relative;
-            padding-left: 24px;
-            margin-bottom: 25px;
-            font-weight: 700;
-            font-size: 16px;
-        }
-        .para-main::before {
-            content: "⬛";
-            position: absolute;
-            left: 0;
-            top: 2px;
-            font-size: 14px;
-            color: #000;
-        }
+@media (min-width: 769px) {
+  #shorts-viewport {
+    max-width: 410px;
+    max-height: 728px;
+    border: 8px solid #1f2937;
+    border-radius: 36px;
+  }
+}
 
-        /* ❍ 중문단 구조 */
-        .para-sub {
-            position: relative;
-            padding-left: 24px;
-            margin-left: 24px;
-            margin-bottom: 18px;
-            font-weight: 500;
-        }
-        .para-sub::before {
-            content: "❍";
-            position: absolute;
-            left: 0;
-            top: 1px;
-            font-size: 14px;
-            font-weight: bold;
-        }
+/* ─── Story Auto Paging Progress Bars ─────────────────── */
+#story-progress {
+  position: absolute;
+  top: 16px; left: 16px; right: 16px;
+  display: flex; gap: 4px;
+  z-index: 100;
+}
+.progress-bar-wrap {
+  flex: 1; height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-bar-fill {
+  position: absolute; inset-y: 0; left: 0;
+  width: 0%; background: var(--gold);
+}
 
-        /* – 소문단 구조 */
-        .para-detail {
-            position: relative;
-            padding-left: 20px;
-            margin-left: 48px;
-            margin-bottom: 14px;
-            color: #334155;
-            font-weight: 400;
-        }
-        .para-detail::before {
-            content: "–";
-            position: absolute;
-            left: 0;
-            top: -1px;
-            font-weight: bold;
-        }
+/* ─── Header Info badging ─────────────────── */
+#story-header {
+  position: absolute;
+  top: 32px; left: 16px; right: 16px;
+  display: flex; justify-content: space-between;
+  align-items: center;
+  z-index: 90;
+}
+.brand-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10, 10, 10, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 6px 12px; border-radius: 20px;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+}
+.brand-badge span {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px; letter-spacing: 1.5px;
+  color: var(--gold);
+}
+.live-badge {
+  background: #1e3a8a; color: white;
+  font-size: 8px; font-weight: 900;
+  padding: 3px 8px; border-radius: 4px;
+  letter-spacing: 1px;
+}
 
-        /* 주석 기호 설정 */
-        .para-note {
-            position: relative;
-            padding-left: 20px;
-            margin-left: 48px;
-            margin-bottom: 14px;
-            color: #475569;
-            font-size: 14px;
-        }
-        .para-note::before {
-            content: "○";
-            position: absolute;
-            left: 0;
-            top: 1px;
-        }
+/* ─── Control Play/Pause Button ─────────────────── */
+#action-control {
+  position: absolute;
+  top: 85px; right: 16px;
+  z-index: 95;
+}
+.btn-control {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+}
 
-        /* 공문서 하단 페이지 번호 */
-        .page-footer-num {
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 50px;
-            font-family: sans-serif;
-            letter-spacing: 4px;
-        }
-    </style>
+/* ─── Tap Navigation Hotzones ─────────────────── */
+#tap-left, #tap-right {
+  position: absolute; top: 0; bottom: 0;
+  z-index: 50;
+}
+#tap-left { left: 0; width: 30%; cursor: w-resize; }
+#tap-right { right: 0; width: 70%; cursor: e-resize; }
+
+/* ─── Slides Stack Deck ─────────────────── */
+.slide {
+  position: absolute; inset: 0;
+  padding: 120px 20px 75px 20px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out, visibility 0.4s;
+  transform: scale(0.97);
+  overflow: hidden;
+  z-index: 10;
+}
+.slide.active {
+  opacity: 1; visibility: visible;
+  transform: scale(1);
+  z-index: 20;
+}
+
+/* Slide backgrounds styling */
+#s1 { background: var(--black); }
+#s2 { background: var(--navy); }
+.case-slide { background: #080e18; }
+.policy-slide { background: #060d18; }
+#s7 { background: var(--black); }
+
+.bg-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+  background-size: 40px 40px; z-index: -1;
+}
+.bg-map {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(26,58,107,0.75) 0%, rgba(13,31,60,0.98) 85%);
+  z-index: -1;
+}
+.circle-glow {
+  position: absolute; width: 280px; height: 280px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: -1;
+}
+
+/* ─── Components Styling ─────────────────── */
+.slide-num-tag {
+  display: inline-block; background: var(--gold); color: var(--black);
+  font-family: 'Bebas Neue', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px;
+}
+.slide-tag { font-size: 10.5px; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
+.slide-title { font-family: 'Noto Serif KR', serif; font-size: 21px; font-weight: 900; line-height: 1.35; color: var(--white); margin-bottom: 10px; }
+.slide-desc { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+.slide-desc span { color: var(--gold-light); font-weight: 700; }
+
+.bullet-doc { position: relative; padding-left: 16px; font-size: 11.5px; color: rgba(255,255,255,0.7); line-height: 1.5; margin-bottom: 8px; text-align: justify; }
+.bullet-doc::before { content: "❍"; position: absolute; left: 0; top: 0px; color: var(--gold); font-size: 11px; }
+
+/* Map and Schematic view boxes inside shorts */
+.graphic-preview-container {
+  width: 100%; height: 115px; rounded-xl: 12px; overflow: hidden; border: 1px solid rgba(201,168,76,0.25); margin-bottom: 10px; background: #000; position: relative;
+}
+.graphic-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+
+/* Simulator components */
+.simulator-embedded { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 10px; margin-top: 5px; }
+.sim-bar-chart { height: 75px; background: rgba(0,0,0,0.4); border-radius: 8px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; position: relative; }
+.sim-bar-pillar { width: 36px; background: linear-gradient(to top, #856924, var(--gold)); border-radius: 3px 3px 0 0; transition: height 0.3s ease; }
+
+/* Map Paging Internal Switcher */
+.station-map-btn {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  padding: 4px 8px; border-radius: 6px; font-size: 10px; color: #94a3b8; cursor: pointer; transition: all 0.2s;
+}
+.station-map-btn.active {
+  background: var(--gold); color: #000; font-weight: bold; border-color: var(--gold);
+}
+
+#slide-indicator { position: absolute; bottom: 22px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: rgba(255, 255, 255, 0.35); z-index: 100; pointer-events: none; }
+#slide-indicator span { color: var(--gold); }
+</style>
 </head>
 <body>
 
-    <!-- PAGE 1 -->
-    <div class="document-page">
-        <div class="doc-header-top">
-            <div class="corporate-title">SUNGWONSPACE ㈜성원스페이스</div>
-            <div class="release-date-status">
-                2026. 6. 1.(월) 조간용<br>
-                <span style="font-weight: normal; font-size: 11px; color: #64748b;">이 보도자료는 2026년 5월 31일 오전 11:15부터 보도할 수 있습니다.</span>
-            </div>
-        </div>
+<div id="cursor"></div>
 
-        <div class="press-main-title-area">
-            <div class="flex items-center">
-                <div class="seoul-logo-section">
-                    <span class="logo-txt-top">동행·매력 특별시</span>
-                    <span class="logo-txt-bottom">서울</span>
-                </div>
-                <div class="press-badge">보도자료</div>
-            </div>
-            
-            <table class="department-table">
-                <tr>
-                    <th>담당 부서</th>
-                    <td>도시공간본부 도시공간전략과</td>
-                    <th>도시공간전략과장</th>
-                    <td>김창기</td>
-                    <td>02-2133-6960</td>
-                </tr>
-                <tr>
-                    <th>문의 사항</th>
-                    <td>보도 배포 및 총괄 담당</td>
-                    <th>종합계획팀장</th>
-                    <td>고경곤</td>
-                    <td>02-2133-6980</td>
-                </tr>
-            </table>
-        </div>
+<div id="shorts-viewport">
 
-        <div class="headline-box">
-            <h2>서울시, 도심·환승역 주변 고밀복합개발 본격 추진<br>용적률 ‘최대 1300%’ 적용</h2>
-        </div>
+  <!-- [1] Top Auto Paging Fill Bars -->
+  <div id="story-progress"></div>
 
-        <div class="content-body">
-            <div class="para-detail" style="margin-left: 0; margin-bottom: 30px; font-weight: 500; font-size: 15.5px; line-height: 1.8;">
-                도시 광문교통망 및 주요 관문 역세권 구역을 업무·고밀 복합거점으로 육성<br>
-                일반상업지역 및 준주거지역 상향을 통해 용적률 최대 1,300% 적용, 대규모 고밀개발 유도<br>
-                성장거점형 복합개발사업 운영기준 마련… 시범사업 통해 제도 안착 추진<br>
-                6월 후보지 추천 및 시범사업 착수… 서울형 복합개발 모델 본격 본격화
-            </div>
-
-            <div class="para-main">
-                서울시가 중심지 및 환승역 주변을 교통·업무·상업·주거가 테마가 어우러진 고밀복합 거점으로 조성하기 위해 「성장거점형 복합개발사업」을 본격 추진한다.
-            </div>
-
-            <div class="para-sub">
-                이번 사업은 대중교통구역 전반의 복합적 육성이 필요한 중심지역의 대중교통 접근성이 우수한 환승역 주변에 대한 다양한 도시기능을 복합적으로 유도하여, 기존 도심 기능을 고도화하고 새로운 성장거점을 조성하는 것을 목표로 한다.
-            </div>
-
-            <div class="para-detail">
-                사업 여건과 입지 특성 등을 고려해 관련 기준에 따라 일반상업지역으로 용도지역을 상향하는 경우 용적률을 최대 1,300%까지 적용할 수 있도록 하여, 업무·상업·상업·주거·문화 기능이 집약된 고밀복합 개발을 유도한다.
-            </div>
-        </div>
-        <div class="page-footer-num">- 1 -</div>
+  <!-- [2] Overlaid Global Header Header -->
+  <div id="story-header">
+    <div class="brand-badge">
+      <svg width="12" height="12" viewBox="0 0 64 64" fill="none">
+        <rect x="10" y="10" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="4"/>
+        <rect x="34" y="34" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="4"/>
+      </svg>
+      <span>SUNGWONSPACE</span>
     </div>
+    <div class="live-badge">제정 2026.06.01[span_1](start_span)[span_1](end_span)</div>
+  </div>
 
-    <!-- PAGE 2 -->
-    <div class="document-page">
-        <div class="content-body" style="padding-top: 30px;">
-            <div class="para-detail" style="margin-left: 24px;">
-                사업대상지는 서울도시기본계획상 중심지·광역중앙 및 대중교통 접근성이 우수한 환승역 반경 500m 이내 영역을 중심으로 설정된다.
-            </div>
+  <!-- [3] Play / Pause Action Trigger -->
+  <div id="action-control">
+    <button id="btn-play-pause" class="btn-control" onclick="togglePlayPause(event)">
+      <i class="fa-solid fa-pause"></i>
+    </button>
+  </div>
 
-            <div class="para-main">
-                서울시는 그간 「도심 복합개발 지원에 관한 법률」에 따라 조례와 시행규칙을 제정하여 제도적 기반을 구축해 왔으며, 원활한 사업 추진을 위해 「성장거점형 복합개발사업 운영기준」을 새롭게 마련했다.
-            </div>
+  <!-- [4] Touch/Click Hot Navigation Areas -->
+  <div id="tap-left" onclick="prevSlide()"></div>
+  <div id="tap-right" onclick="nextSlide()"></div>
 
-            <div class="para-sub">
-                이번 운영기준에는 사업대상지 요건, 복합개발계획 수립기준, 용도지역 상향기준, 공공기여 산정 기준 등 사업 추진을 위한 세부 기준이 담겼다.
-            </div>
+  <!-- [5] Main Presentation Deck Cards -->
+  <div id="deck">
 
-            <div class="para-sub">
-                특히, 서울시는 자치구 및 민간개발 사업 신청 제공을 위해 지역 여건을 고려한 공공기여 이중 완화 기준을 마련했다.
-            </div>
+    <!-- SLIDE 1: 오피셜 커버 인트로 -->
+    <section class="slide active" id="s1" data-duration="5000">
+      <div class="bg-grid"></div>
+      <div class="circle-glow"></div>
+      
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 2px; margin-bottom: 12px;">SEOUL METROPOLITAN POLICY</div>
+        <h1 style="font-family: 'Noto Serif KR', serif; font-size: 25px; font-weight: 900; line-height: 1.4; color: var(--white);">
+          성장거점형 복합개발사업<br>
+          <span style="color: var(--gold-light); font-size: 28px;">운영기준 수립 속보[span_2](start_span)[span_2](end_span)</span>
+        </h1>
+        <div style="width: 40px; height: 1.5px; background: var(--gold); margin: 18px auto;"></div>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 300;">도심·환승역 고밀복합개발 지침 원문[span_3](start_span)[span_3](end_span)</p>
+      </div>
 
-            <div class="para-detail">
-                용도지역 변경에 따른 공공기여 비율은 공공기여 적용률의 50%를 기본으로 적용하되, 필요시 자치구에서 관할 자치구의 비율을 최대 10% 범위 안에서 지역 여건에 따라 인하 조정할 수 있도록 하여 사업성을 대폭 제고했다. 이는 상대적으로 개발 여건이 부족한 지역의 사업 부담을 낮춰주고, 민간 참여 및 사업 추진 가능성을 높이기 위한 취지다.
-            </div>
+      <p style="font-size: 10.5px; text-align: center; color: rgba(255,255,255,0.35);">
+        오른쪽 스크린 터치 시 다음 장 이동 <i class="fa-solid fa-chevron-right ml-1"></i>
+      </p>
+    </section>
 
-            <div class="para-detail">
-                「성장거점형 복합개발사업 운영기준」의 세부내용은 서울시도시계획포털 누리집 자료실에서 확인할 수 있다.
-            </div>
-
-            <div class="para-main">
-                서울시는 6월부터 자치구로부터 후보지를 추천받아 개발지 대상지의 적정성을 검토하고, 시범사업 대상지를 선정할 예정이다.
-            </div>
-
-            <div class="para-sub">
-                자치구가 지역 여건과 개발 필요성, 사업 실현 가능성 등을 종합적으로 검토해 후보지를 추천하면, 서울시가 전문가 자문 등을 거쳐 최종 대상지를 선정하게 된다.
-            </div>
-
-            <div class="para-sub">
-                서울시는 제도의 안정적 안착을 위해 우선 시범사업을 추진하고, 운영 과정에서 나타나는 미비점을 지속적으로 보완해 나갈 계획이다.
-            </div>
+    <!-- SLIDE 2: 보도자료 핵심 개요 개막 (이미지 포함) -->
+    <section class="slide" id="s2" data-duration="5500">
+      <div class="bg-map"></div>
+      
+      <div>
+        <div class="slide-tag">도시공간본부 발표[span_4](start_span)[span_4](end_span)</div>
+        <h2 class="slide-title">환승역 주변 고밀개발<br>수직 콤팩트시티 가동[span_5](start_span)[span_5](end_span)</h2>
+        
+        <!-- 보도자료 예시 조감도 이미지 배치 -->
+        <div class="graphic-preview-container" style="height: 115px; border-radius: 12px;">
+          <img src="https://stqnq5ux4599.edge.naverncp.com/data2/content/image/2026/05/31/.cache/512/20260531500367.png" 
+               alt="서울 중심지 고밀복합개발 예시안 조감도" class="graphic-img">
+          <div class="absolute bottom-1 right-2 bg-black/75 px-2 py-0.5 rounded text-[8px] text-slate-300">[도심 고밀복합개발 예시안 조감도][span_6](start_span)[span_6](end_span)</div>
         </div>
-        <div class="page-footer-num">- 2 -</div>
-    </div>
 
-    <!-- PAGE 3 -->
-    <div class="document-page">
-        <div class="content-body" style="padding-top: 30px;">
-            <div class="para-main">
-                서울시는 이번 사업을 통해 중심지역과 환승역 주변의 입지적 장점을 적극 활용하고, 도시 기능 강화가 필요한 지역을 고밀복합 거점으로 전환하여 서울 전역의 균형 있는 성장을 도모한다는 방침이다.
-            </div>
+        <p class="slide-desc">
+          서울시는 교통 요충지를 고밀 복합거점으로 육성하기 위해 <span>일반상업지역 중심 종상향 규제 완화</span>를 개시합니다[span_7](start_span)[span_7](end_span).
+        </p>
+      </div>
 
-            <div class="para-sub">
-                이를 통해 지역 내 일자리·주거·문화·생활편의 기능을 확충하고, 기반시설 여건을 개선해 서울의 도시경쟁력 제고에도 크게 기여할 것으로 기대된다.
-            </div>
+      <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); pt-2;">
+        <div class="bullet-doc">대중교통 접근성이 우수한 환승역세권 중심 복합기능 유도[span_8](start_span)[span_8](end_span)</div>
+      </div>
+    </section>
 
-            <div class="para-main" style="margin-top: 40px; border-left: 4px solid #c9a84c; padding-left: 16px;">
-                조남준 서울시 도시공간본부장은 “성장거점형 복합개발사업은 중심지와 환승역 주변의 잠재력을 활용해 서울의 새로운 활력을 불어넣는 핵심 사업”이라며, “시범사업을 통해 제도의 실효성을 검증하고, 공공성과 사업성이 균형을 이루는 서울형 복합개발 모델을 마련해 나가겠다”고 말했다.
+    <!-- SLIDE 3: 용적률 1300% 한도 시뮬레이션 인터랙티브 단독 고정 -->
+    <section class="slide case-slide" id="s3" data-duration="5500">
+      <div class="bg-accent"></div>
+      
+      <div>
+        <div class="slide-num-tag">FAR OVERVIEW</div>
+        <div class="slide-tag">종상향 용도 변경 가치[span_9](start_span)[span_9](end_span)</div>
+        <h2 class="slide-title">일반상업지역 최대 인센티브<br>용적률 ‘1,300%’ 허용[span_10](start_span)[span_10](end_span)</h2>
+        <p class="slide-desc" style="margin-bottom: 8px;">
+          슬라이더 작동 시 자동 페이징이 일시 중지됩니다. 상향 조건에 따라 <span>초고층 입체 개발</span> 한도가 변동됩니다[span_11](start_span)[span_11](end_span).
+        </p>
+      </div>
+
+      <div class="simulator-embedded" style="z-index: 60;">
+        <div class="sim-bar-chart">
+          <div id="sim-tower" class="sim-bar-pillar" style="height: 100%;">
+            <div class="absolute top-1 left-0 right-0 flex flex-col items-center gap-0.5 opacity-40">
+              <span class="w-5 h-[1px] bg-white"></span><span class="w-5 h-[1px] bg-white"></span>
             </div>
+          </div>
+          <div class="absolute top-2 left-3 bg-black/70 rounded px-2 py-0.5 text-[9px]">
+            예측 건물이미지 높이: <span id="lbl-floors" class="font-bold text-[#c9a84c]">65층</span>
+          </div>
+        </div>
+
+        <div class="mt-3 space-y-1.5">
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-slate-400">지정 용적률 조건</span>
+            <span id="lbl-val" class="text-white font-bold text-xs">1,300%</span>
+          </div>
+          <input type="range" id="rng-far" min="200" max="1300" step="100" value="1300" oninput="simulateFAR(true)" class="w-full accent-[#c9a84c] bg-neutral-800 h-1 rounded cursor-pointer">
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: 대상지 환승역세권 실제 도심 지도 매칭 (용산, 왕십리, 청량리, 신도림 수동/자동 전환형 인터페이스) -->
+    <section class="slide policy-slide" id="s4" data-duration="7000">
+      <div class="bg-lines"></div>
+      
+      <div>
+        <div class="slide-tag">환승역 주변 개발구역 현황[span_12](start_span)[span_12](end_span)</div>
+        <h2 class="slide-title">4대 중심 환승 거점역<br>실제 노선 인프라 맵 매칭[span_13](start_span)[span_13](end_span)</h2>
+        
+        <!-- 실거래 연동 및 프레젠테이션 수립 지도 이미지 뷰어 -->
+        <div class="graphic-preview-container" style="height: 125px; border-radius: 12px;">
+          <!-- 용산역 지도 내부 기본 로드 -->
+          <img id="station-map-img" src="https://images.unsplash.com/photo-1541462608141-2f58c6e40265?auto=format&fit=crop&w=500&q=80" 
+               alt="거점역 주변 정밀 노선 레이아웃" class="w-full h-full object-cover">
+          <div id="station-map-title" class="absolute bottom-1 left-2 bg-black/80 px-2 py-0.5 rounded text-[8px] text-amber-400 font-bold">용산역 중심 개발 구역도[span_14](start_span)[span_14](end_span)</div>
+        </div>
+
+        <div class="flex justify-between gap-1 mb-2" style="z-index: 60; position: relative;">
+          <button onclick="switchStationMap('용산', event)" class="station-map-btn active">용산</button>
+          <button onclick="switchStationMap('왕십리', event)" class="station-map-btn">왕십리</button>
+          <button onclick="switchStationMap('청량리', event)" class="station-map-btn">청량리</button>
+          <button onclick="switchStationMap('신도림', event)" class="station-map-btn">신도림</button>
+        </div>
+      </div>
+
+      <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); pt-1.5;">
+        <p id="station-map-desc" class="text-[11px] text-slate-400 leading-relaxed">대중교통 접근성이 극대화된 환승역 반경 500m 이내 대상지가 순차 매칭됩니다[span_15](start_span)[span_15](end_span).</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: 대중교통 결절지 범위도 공식 인포그래픽 복원 -->
+    <section class="slide policy-slide" id="s5" data-duration="5500">
+      <div class="bg-lines"></div>
+      
+      <div>
+        <div class="slide-num-tag">DIAGRAM VIEW</div>
+        <div class="slide-tag">대중교통 결절지 범위도[span_16](start_span)[span_16](end_span)</div>
+        <h2 class="slide-title">반경 500m 입체적 가이드<br>결절지 경계 분석 구조[span_17](start_span)[span_17](end_span)</h2>
+        
+        <!-- 공식 대중교통 결절지 범위도 정밀 그래픽 레이아웃화 -->
+        <div class="graphic-preview-container" style="height: 125px; display: flex; align-items: center; justify-content: center; background: #fff; padding: 6px; border-radius: 12px;">
+            <svg viewBox="0 0 240 120" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
+                <!-- Left box pattern (정방형 결절지) -->
+                <rect x="15" y="10" width="80" height="80" fill="rgba(201,168,76,0.05)" stroke="#cbd5e1" stroke-width="1"/>
+                <rect x="25" y="20" width="60" height="60" fill="none" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="2 2"/>
+                <line x1="55" y1="20" x2="55" y2="80" stroke="#1e3a8a" stroke-width="1"/>
+                <line x1="25" y1="50" x2="85" y2="50" stroke="#1e3a8a" stroke-width="1"/>
+                <text x="55" y="15" fill="#dc2626" font-size="6" text-anchor="middle">500m</text>
+                <text x="90" y="53" fill="#1e3a8a" font-size="6">500m</text>
+                
+                <!-- Right box pattern (교차형 결절지 다이어그램) -->
+                <rect x="135" y="10" width="85" height="80" fill="rgba(201,168,76,0.05)" stroke="#cbd5e1" stroke-width="1"/>
+                <rect x="140" y="25" width="55" height="55" fill="none" stroke="#dc2626" stroke-width="1.2"/>
+                <rect x="160" y="15" width="50" height="60" fill="none" stroke="#1e3a8a" stroke-width="1.2" stroke-dasharray="3 1"/>
+                <text x="145" y="20" fill="#dc2626" font-size="6">500m</text>
+                <text x="212" y="55" fill="#1e3a8a" font-size="6">500m</text>
+
+                <!-- Caption -->
+                <text x="120" y="105" fill="#334155" font-size="8" font-family="Pretendard, sans-serif" font-weight="bold" text-anchor="middle">&lt;대중교통 결절지 범위도 원문 매칭 가이드&gt;[span_18](start_span)[span_18](end_span)</text>
+            </svg>
+        </div>
+
+        <p class="slide-desc">
+          용도지역 상향 인센티브의 척도가 되는 <span>중심지 간 중첩 결절 영역</span>의 면적 및 경계 산정 지침 다이어그램입니다[span_19](start_span)[span_19](end_span).
+        </p>
+      </div>
+
+      <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); pt-1.5;">
+        <div class="bullet-doc">자치구 공공기여 가이드라인 최대 10% 자체 인하 재량권 결합[span_20](start_span)[span_20](end_span)</div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: 시범사업 공모 절차 제언 -->
+    <section class="slide policy-slide" id="s6" data-duration="5000">
+      <div class="bg-lines"></div>
+      
+      <div>
+        <div class="slide-num-tag">REGULATORY REFORM</div>
+        <div class="slide-tag">6월 자치구 후보지 공모[span_21](start_span)[span_21](end_span)</div>
+        <h2 class="slide-title">인허가 심의 통합 단축<br>서울형 고밀 복합 모델 수립[span_22](start_span)[span_22](end_span)</h2>
+        <p class="slide-desc">
+          서울시는 6월 후보지 지정을 개시하여 하반기 정비구역 입체 랜드마크 마스터플랜을 전격 시범 수혈합니다[span_23](start_span)[span_23](end_span).
+        </p>
+      </div>
+
+      <div class="urban-cards-shorts" style="width: 100%;">
+        <div class="urban-card-shorts">
+          <div class="urban-card-title text-[#c9a84c]">일자리·주거·문화 기능의 완전한 융합[span_24](start_span)[span_24](end_span)</div>
+          <div class="urban-card-body">단순 역무 보조 구역에서 벗어나 독립적인 도심 경제 코어 역할 부여[span_25](start_span)[span_25](end_span)</div>
+        </div>
+        <div class="urban-card-shorts">
+          <div class="urban-card-title text-slate-300">소액 노후 지분 자산의 가치 전이</div>
+          <div class="urban-card-body">용적률 1,300%에 비례해 기부채납 이외 일반분양 기여 가치가 비약적으로 상승함에 따른 초기 진입 필수 유효[span_26](start_span)[span_26](end_span)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: 오피셜 에필로그 아웃트로 -->
+    <section class="slide" id="s7" data-duration="5000">
+      <div class="bg-grid"></div>
+      <div class="circle-glow"></div>
+      
+      <div class="outro-content-shorts" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; text-align: center;">
+        <div class="outro-logo-icon" style="margin-bottom: 20px;">
+          <svg width="44" height="44" viewBox="0 0 64 64" fill="none">
+            <rect x="10" y="10" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="2.5"/>
+            <rect x="34" y="10" width="20" height="20" rx="2" stroke="rgba(201,168,76,0.5)" stroke-width="2.5"/>
+            <rect x="10" y="34" width="20" height="20" rx="2" stroke="rgba(201,168,76,0.3)" stroke-width="2.5"/>
+            <rect x="34" y="34" width="20" height="20" rx="2" stroke="#c9a84c" stroke-width="2.5"/>
+          </svg>
         </div>
         
-        <!-- 하단 기관 주소 여백 바닥글 복원 -->
-        <div style="margin-top: 180px; border-top: 1px solid #cbd5e1; pt-4; text-align: center; font-size: 11px; color: #94a3b8;">
-            SUNGWONSPACE ㈜성원스페이스 &nbsp;|&nbsp; 서울시 동작구 동작대로 37, 3층
+        <div style="font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 4px; color: var(--gold); margin-bottom: 12px;">
+          SUNGWONSPACE
         </div>
-        <div class="page-footer-num">- 3 -</div>
-    </div>
 
+        <h2 class="serif-font" style="font-size: 21px; font-weight: 700; line-height: 1.45; margin-bottom: 14px; color: var(--white);">
+          용적률 1,300% 고밀 완화 트렌드,<br>
+          <span style="color: var(--gold);">성원스페이스</span>가 함께 설계합니다[span_27](start_span)[span_27](end_span).
+        </h2>
+
+        <p style="font-size: 11.5px; color: rgba(255,255,255,0.45); line-height: 1.75; max-width: 290px; margin: 0 auto 28px; font-weight: 300;">
+          공식 보도 문서 기반의 정밀 분석과 투명한 토지 거래 축적 데이터를 토대로 안전한 상급지 진입을 확약합니다[span_28](start_span)[span_28](end_span).
+        </p>
+        
+        <div class="outro-tel-shorts" style="font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--gold); letter-spacing: 2px; line-height: 1; margin-bottom: 4px;">
+          010-3781-6068
+        </div>
+        
+        <div class="outro-sub-shorts" style="font-size: 10px; letter-spacing: 0.5px; color: rgba(255,255,255,0.35);">
+          sungwonspace.com &nbsp;|&nbsp; 서울 동작구 동작대로 37, 3층
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /deck -->
+
+  <!-- [6] Progress display bar count -->
+  <div id="slide-indicator">
+    <span id="cur">01</span> / <span id="tot">07</span>
+  </div>
+
+</div><!-- /shorts-viewport -->
+
+<script>
+// Custom cursor setup
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+});
+
+// Slides core matrix configuration
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+let current  = 0;
+let isPlaying = true;
+
+let slideTimer = null;
+let progressAnimId = null;
+let startTime = 0;
+let remainingTime = 0;
+const SLIDE_DURATION = 5000; 
+
+// Dynamic station maps repository match
+const stationMapData = {
+  '용산': {
+    img: 'https://images.unsplash.com/photo-1541462608141-2f58c6e40265?auto=format&fit=crop&w=500&q=80',
+    title: '용산역 중심 고밀복합 구역도[span_29](start_span)[span_29](end_span)',
+    desc: '용산국제업무지구 아우라 연동 배후 초고밀 컴플렉스 단지 및 인근 정비구역 연계 수혜 유력 거점[span_30](start_span)[span_30](end_span)'
+  },
+  '왕십리': {
+    img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80',
+    title: '왕십리역 역세권 종상향 타겟지[span_31](start_span)[span_31](end_span)',
+    desc: '2·5·분당·경의선 스퀘어 교차점 중심부 용적률 완화 반영형 주거·레저 통합 지구 수혈안[span_32](start_span)[span_32](end_span)'
+  },
+  '청량리': {
+    img: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=500&q=80',
+    title: '청량리역 정비예정구역 평면 노선망[span_33](start_span)[span_33](end_span)',
+    desc: 'GTX 광역 고속거점망을 선도할 관문역세권 노후 부지 초밀도 재개발 중심 기획지[span_34](start_span)[span_34](end_span)'
+  },
+  '신도림': {
+    img: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&w=500&q=80',
+    title: '신도림 국철 유휴구역 입체 연결도[span_35](start_span)[span_35](end_span)',
+    desc: '서남권 핵심 유동인구 횡단로 연계형 청년 주거 창업 클러스터 고밀 콤팩트시티 대안 부지[span_36](start_span)[span_36](end_span)'
+  }
+};
+
+function switchStationMap(name, event) {
+  if (event) event.stopPropagation(); // Prevent slide click skippage
+  
+  const imgEl = document.getElementById('station-map-img');
+  const titleEl = document.getElementById('station-map-title');
+  const descEl = document.getElementById('station-map-desc');
+  
+  // Update images path and innerHTML captions
+  imgEl.src = stationMapData[name].img;
+  titleEl.textContent = stationMapData[name].title;
+  descEl.textContent = stationMapData[name].desc;
+  
+  // Tab UI class activation styling
+  document.querySelectorAll('.station-map-btn').forEach(btn => {
+    btn.className = "station-map-btn";
+    if (btn.textContent === name) {
+      btn.className = "station-map-btn active";
+    }
+  });
+}
+
+// Automatically rotate station map thumbnails within page 4 timeline
+let mapRotationIdx = 0;
+const mapStationsList = ['용산', '왕십리', '청량리', '신도림'];
+function autoRotateMaps() {
+  if (current === 3 && isPlaying) {
+    switchStationMap(mapStationsList[mapRotationIdx], null);
+    mapRotationIdx = (mapRotationIdx + 1) % mapStationsList.length;
+  }
+}
+setInterval(autoRotateMaps, 1600); // inner slide map rotation speed
+
+// Auto Paging Bars layout injection
+const progressContainer = document.getElementById('story-progress');
+slides.forEach((_, idx) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'progress-bar-wrap';
+  
+  const fill = document.createElement('div');
+  fill.className = 'progress-bar-fill';
+  fill.id = `fill-${idx}`;
+  
+  wrap.appendChild(fill);
+  progressContainer.appendChild(wrap);
+});
+
+document.getElementById('tot').textContent = String(total).padStart(2, '0');
+
+function goTo(n) {
+  clearTimeout(slideTimer);
+  cancelAnimationFrame(progressAnimId);
+
+  slides[current].classList.remove('active');
+  current = (n + total) % total;
+  slides[current].classList.add('active');
+  
+  document.getElementById('cur').textContent = String(current + 1).padStart(2, '0');
+
+  slides[current].querySelectorAll('.urban-card-shorts, .bullet-doc, .slide-title').forEach(el => {
+    el.style.animation = 'none';
+    el.offsetHeight; 
+    el.style.animation = '';
+  });
+
+  startTime = Date.now();
+  remainingTime = SLIDE_DURATION;
+
+  for (let i = 0; i < total; i++) {
+    const fill = document.getElementById(`fill-${i}`);
+    if (i < current) {
+      fill.style.width = '100%';
+    } else {
+      fill.style.width = '0%';
+    }
+  }
+
+  if (current === 2) {
+    simulateFAR(false);
+  }
+
+  if (isPlaying) {
+    runSlideTimer(remainingTime);
+  }
+}
+
+function runSlideTimer(duration) {
+  startTime = Date.now();
+  slideTimer = setTimeout(() => {
+    nextSlide();
+  }, duration);
+
+  updateProgressLine();
+}
+
+function updateProgressLine() {
+  if (!isPlaying) return;
+
+  const elapsed = Date.now() - startTime;
+  const currentProgress = ((SLIDE_DURATION - remainingTime + elapsed) / SLIDE_DURATION) * 100;
+  
+  const fill = document.getElementById(`fill-${current}`);
+  if (fill) {
+    fill.style.width = `${Math.min(currentProgress, 100)}%`;
+  }
+
+  if (currentProgress < 100) {
+    progressAnimId = requestAnimationFrame(updateProgressLine);
+  }
+}
+
+function nextSlide() {
+  const fill = document.getElementById(`fill-${current}`);
+  if (fill) fill.style.width = '100%';
+  goTo(current + 1);
+}
+
+function prevSlide() {
+  const fill = document.getElementById(`fill-${current}`);
+  if (fill) fill.style.width = '0%';
+  goTo(current - 1);
+}
+
+function togglePlayPause(event) {
+  if (event) event.stopPropagation();
+  const btn = document.getElementById('btn-play-pause');
+  
+  if (isPlaying) {
+    isPlaying = false;
+    clearTimeout(slideTimer);
+    cancelAnimationFrame(progressAnimId);
+    remainingTime -= (Date.now() - startTime);
+    btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+  } else {
+    isPlaying = true;
+    if (remainingTime <= 0) remainingTime = SLIDE_DURATION;
+    btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    runSlideTimer(remainingTime);
+  }
+}
+
+function simulateFAR(shouldPause = false) {
+  if (shouldPause && isPlaying) {
+    togglePlayPause();
+  }
+
+  const far = parseInt(document.getElementById('rng-far').value);
+  const tower = document.getElementById('sim-tower');
+  const lblVal = document.getElementById('lbl-val');
+  const lblFloors = document.getElementById('lbl-floors');
+
+  const floors = Math.round((far / 1300) * 65);
+  const heightPercent = 20 + Math.round((far / 1300) * 80);
+
+  tower.style.height = `${heightPercent}%`;
+  lblVal.textContent = `${far.toLocaleString()}%`;
+  lblFloors.textContent = `${floors}층`;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
+  if (e.key === ' ') {
+    e.preventDefault();
+    togglePlayPause();
+  }
+});
+
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 50) {
+    if (dx < 0) nextSlide();
+    else prevSlide();
+  }
+}, {passive:true});
+
+window.onload = function() {
+  goTo(0);
+};
+</script>
 </body>
 </html>
