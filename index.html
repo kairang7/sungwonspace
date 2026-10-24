@@ -48,6 +48,7 @@ header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
 .hero .unit{font-size:15px;color:var(--muted);margin-top:6px}
 .hero .side{text-align:right}
 .hero .side .num{font-size:40px;font-weight:600;line-height:1}
+.hero .side .steps{font-size:30px;margin-top:10px}
 
 .grid{display:grid;grid-template-columns:repeat(3,1fr);margin:12px 14px 0;border-top:1px solid var(--line)}
 .cell{padding:10px 4px 10px 4px;border-bottom:1px solid var(--line)}
@@ -113,6 +114,8 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="side">
       <div class="num" id="time">00:00:00</div>
       <div class="unit">운동 시간</div>
+      <div class="num steps" id="steps">0</div>
+      <div class="unit" id="stepsUnit">걸음</div>
     </div>
   </section>
 
@@ -154,7 +157,8 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 const $ = id => document.getElementById(id);
 const ACT = {walk:'걷기', run:'달리기', hike:'등산', bike:'자전거'};
 const DIRS = ['북','북동','동','남동','남','남서','서','북서'];
-const HDG_STEP_M = 8;        // 방향 계산에 쓰는 최소 이동 거리
+const HDG_STEP_M = 8;
+const STRIDE = {walk:0.7, run:1.0, hike:0.6, bike:0}; // 센서가 없을 때 쓰는 평균 보폭(m)        // 방향 계산에 쓰는 최소 이동 거리
 const STORE = 'trailog:sessions';
 const MIN_STEP_M = 3;        // 이보다 짧은 이동은 GPS 떨림으로 보고 무시
 const MAX_ACC_M = 35;        // 정확도가 이보다 나쁘면 기록에서 제외
@@ -164,6 +168,36 @@ let act = 'run', status = 'idle';   // idle | running | paused
 let pts = [], dist = 0, gain = 0, loss = 0, heading = null, hdgFrom = null, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
 let lastFix = null;
+let steps = 0, stepTimes = [], motionOn = false, motionSeen = false, gAvg = null, sm = 0, above = false, lastStepT = 0;
+
+// ---------- 걸음 수 (가속도 센서) ----------
+function onMotion(e){
+  const a = e.accelerationIncludingGravity;
+  if (!a || a.x == null) return;
+  motionSeen = true;
+  if (status !== 'running' || act === 'bike') return;
+  const m = Math.hypot(a.x, a.y, a.z);
+  gAvg = gAvg == null ? m : gAvg*0.97 + m*0.03;   // 중력 성분(느린 평균)
+  sm = sm*0.6 + (m - gAvg)*0.4;                   // 흔들림 성분 스무딩
+  const now = performance.now();
+  // 위로 튀는 피크 1번 = 1걸음, 너무 빠른 연속 피크(0.28초 이내)는 무시
+  if (!above && sm > 1.1 && now - lastStepT > 280) { above = true; lastStepT = now; steps++; stepTimes.push(Date.now()); }
+  else if (above && sm < 0.3) above = false;
+}
+function enableMotion(){
+  if (motionOn) return;
+  const add = () => { window.addEventListener('devicemotion', onMotion); motionOn = true; };
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    // 아이폰: 버튼을 누른 순간에만 권한 요청 가능
+    DeviceMotionEvent.requestPermission()
+      .then(r => r === 'granted' ? add() : showNote('동작 센서 권한이 거부되어 걸음 수를 이동 거리로 추정합니다.'))
+      .catch(() => {});
+  } else if ('DeviceMotionEvent' in window) add();
+}
+function shownSteps(){
+  if (act === 'bike') return null;
+  return motionSeen && !sim ? steps : Math.round(dist / STRIDE[act]);
+}
 
 // ---------- 지도 ----------
 const map = L.map('map', {zoomControl:false}).setView([37.5665, 126.978], 15);
@@ -280,7 +314,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ---------- 시작 / 일시정지 / 종료 ----------
 $('btnMain').onclick = () => {
-  if (status === 'idle') { reset(); status = 'running'; resumeAt = Date.now(); startWatch(); keepAwake(); tick = setInterval(render, 1000); }
+  if (status === 'idle') { enableMotion(); reset(); status = 'running'; resumeAt = Date.now(); startWatch(); keepAwake(); tick = setInterval(render, 1000); }
   else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; }
   else { status = 'running'; resumeAt = Date.now(); keepAwake(); }
   render();
@@ -289,12 +323,12 @@ $('btnStop').onclick = () => {
   if (status === 'running') elapsed += Date.now() - resumeAt;
   status = 'idle'; clearInterval(tick); curSpd = 0;
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
-  if (sim) { clearInterval(sim.timer); sim = null; $('btnSim').hidden = false; }
   if (pts.length > 1) saveSession();
+  if (sim) { clearInterval(sim.timer); sim = null; $('btnSim').hidden = false; }
   render(); renderHist();
 };
 function reset(){
-  pts = []; dist = 0; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
+  pts = []; dist = 0; gain = 0; loss = 0; steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
   track.setLatLngs([]);
 }
 
@@ -309,6 +343,12 @@ function render(){
   $('alt').textContent = altSmooth == null ? '--' : Math.round(altSmooth);
   $('gain').textContent = Math.round(gain);
   $('loss').textContent = Math.round(loss);
+  const st = shownSteps();
+  stepTimes = stepTimes.filter(t => t > Date.now() - 30000);
+  $('steps').textContent = st == null ? '--' : st.toLocaleString('ko-KR');
+  $('stepsUnit').textContent = act === 'bike' ? '걸음 (자전거 제외)'
+    : (!motionSeen || sim) ? '걸음 (거리로 추정)'
+    : (status === 'running' && stepTimes.length > 4) ? `걸음, 분당 ${stepTimes.length*2}` : '걸음';
   $('avgPace').textContent = fmtPace(avg);
   $('dir').textContent = heading == null ? '--' : Math.round(heading) + '°';
   $('dirTxt').textContent = heading == null ? '진행 방향' : '진행 방향 ' + DIRS[Math.round(heading/45) % 8];
@@ -348,7 +388,7 @@ function drawChart(){
 // ---------- 기록 저장 / GPX 내보내기 ----------
 function loadSessions(){ try { return JSON.parse(localStorage.getItem(STORE)) || []; } catch(_) { return []; } }
 function saveSession(){
-  const s = {id:Date.now(), act, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd,
+  const s = {id:Date.now(), act, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(),
              pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t])};
   const all = loadSessions(); all.unshift(s);
   try { localStorage.setItem(STORE, JSON.stringify(all.slice(0, 30))); }
@@ -359,7 +399,7 @@ function renderHist(){
   list.innerHTML = all.length ? '' : '<li class="empty">아직 저장된 기록이 없습니다. 시작을 눌러 첫 운동을 기록하세요.</li>';
   all.forEach(s => {
     const li = document.createElement('li'), d = new Date(s.start);
-    li.innerHTML = `<div class="meta"><b>${ACT[s.act]} ${(s.dist/1000).toFixed(2)}km</b>${d.toLocaleDateString('ko-KR')} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · ${fmtTime(s.ms)} · 상승 ${Math.round(s.gain)}m 하강 ${Math.round(s.loss || 0)}m</div>`;
+    li.innerHTML = `<div class="meta"><b>${ACT[s.act]} ${(s.dist/1000).toFixed(2)}km</b>${d.toLocaleDateString('ko-KR')} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · ${fmtTime(s.ms)} · 상승 ${Math.round(s.gain)}m 하강 ${Math.round(s.loss || 0)}m${s.steps != null ? ' · ' + s.steps.toLocaleString('ko-KR') + '걸음' : ''}</div>`;
     const bShow = Object.assign(document.createElement('button'), {textContent:'지도'});
     const bGpx = Object.assign(document.createElement('button'), {textContent:'GPX'});
     const bDel = Object.assign(document.createElement('button'), {textContent:'삭제'});
