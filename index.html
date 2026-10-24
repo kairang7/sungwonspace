@@ -51,6 +51,17 @@ header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
 .pace .num{font-size:26px;font-weight:600;line-height:1;color:var(--ink)}
 .pace small{font-size:12px}
 .pace[hidden]{display:none}
+.clock{font-size:13px;color:var(--muted);margin-bottom:8px}
+.clock .num{font-size:22px;font-weight:600;color:var(--ink);margin-right:4px}
+.wx{margin:12px 14px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 6px 8px}
+.wx-row{display:grid;grid-template-columns:repeat(3,1fr)}
+.wx-col{text-align:center;padding:0 4px}
+.wx-col+.wx-col{border-left:1px solid var(--line)}
+.wx-col small{display:block;color:var(--muted);font-size:12px}
+.wx-ic{font-size:22px;line-height:1.3}
+.wx-t{font-size:26px;font-weight:600;line-height:1.1}
+.wx-desc{font-size:12px;color:var(--ink)}
+.wx-meta{margin-top:8px;padding:0 6px;font-size:12px;color:var(--muted);text-align:center}
 .hero .side{text-align:right}
 .hero .side .num{font-size:40px;font-weight:600;line-height:1}
 .hero .side .steps{font-size:30px;margin-top:10px}
@@ -120,11 +131,21 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <div class="unit">현재 속도 (km/h)</div>
     </div>
     <div class="side">
+      <div class="clock"><span class="num" id="clock">--:--</span>현재 시각</div>
       <div class="num" id="time">00:00:00</div>
       <div class="unit">운동 시간</div>
       <div class="num steps" id="steps">0</div>
       <div class="unit" id="stepsUnit">걸음</div>
     </div>
+  </section>
+
+  <section class="wx" aria-label="날씨">
+    <div class="wx-row">
+      <div class="wx-col" id="wx0"><small>지금</small><div class="wx-ic">–</div><div class="num wx-t">--°</div><div class="wx-desc">&nbsp;</div></div>
+      <div class="wx-col" id="wx30"><small>30분 후</small><div class="wx-ic">–</div><div class="num wx-t">--°</div><div class="wx-desc">&nbsp;</div></div>
+      <div class="wx-col" id="wx60"><small>1시간 후</small><div class="wx-ic">–</div><div class="num wx-t">--°</div><div class="wx-desc">&nbsp;</div></div>
+    </div>
+    <div class="wx-meta" id="wxMeta">위치를 찾으면 날씨를 불러옵니다</div>
   </section>
 
   <section class="grid">
@@ -177,6 +198,57 @@ let pts = [], dist = 0, gain = 0, loss = 0, heading = null, hdgFrom = null, maxS
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
 let lastFix = null;
 let steps = 0, stepTimes = [], motionOn = false, motionSeen = false, gAvg = null, sm = 0, above = false, lastStepT = 0;
+
+// ---------- 날씨 (Open-Meteo, API 키 불필요) ----------
+const WX = {0:['맑음','☀️'],1:['대체로 맑음','🌤️'],2:['구름 조금','⛅'],3:['흐림','☁️'],45:['안개','🌫️'],48:['짙은 안개','🌫️'],
+  51:['약한 이슬비','🌦️'],53:['이슬비','🌦️'],55:['강한 이슬비','🌧️'],56:['어는 이슬비','🌧️'],57:['어는 이슬비','🌧️'],
+  61:['약한 비','🌦️'],63:['비','🌧️'],65:['강한 비','🌧️'],66:['어는 비','🌧️'],67:['어는 비','🌧️'],
+  71:['약한 눈','🌨️'],73:['눈','🌨️'],75:['강한 눈','❄️'],77:['싸락눈','🌨️'],80:['약한 소나기','🌦️'],81:['소나기','🌧️'],82:['강한 소나기','⛈️'],
+  85:['눈 소나기','🌨️'],86:['강한 눈 소나기','❄️'],95:['뇌우','⛈️'],96:['우박 뇌우','⛈️'],99:['우박 뇌우','⛈️']};
+let wxAt = 0, wxPos = null;
+function wxCol(id, label, temp, code, day, prec){
+  const w = WX[code] || ['정보 없음','❔'];
+  const ic = (!day && code <= 1) ? '🌙' : w[1];
+  const pr = prec > 0 ? ` ${prec.toFixed(1)}mm` : '';
+  $(id).innerHTML = `<small>${label}</small><div class="wx-ic">${ic}</div><div class="num wx-t">${temp == null ? '--' : Math.round(temp)}°</div><div class="wx-desc">${w[0]}${pr}</div>`;
+}
+function maybeWeather(fix){
+  if (Date.now() - wxAt < 10*60000 && wxPos && haversine(wxPos, fix) < 5000) return;  // 10분마다, 5km 이동 시 갱신
+  wxAt = Date.now(); wxPos = fix; loadWeather(fix.lat, fix.lon);
+}
+async function loadWeather(lat, lon){
+  // 좌표는 소수 2자리(약 1km)로 줄여서 전송
+  const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(2) + '&longitude=' + lon.toFixed(2)
+    + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,is_day'
+    + '&minutely_15=temperature_2m,precipitation,weather_code,is_day&forecast_minutely_15=8'
+    + '&hourly=temperature_2m,weather_code,precipitation,precipitation_probability,is_day&forecast_hours=3'
+    + '&wind_speed_unit=ms&timezone=auto';
+  try {
+    const r = await fetch(u); if (!r.ok) throw new Error(r.status);
+    const j = await r.json(), c = j.current, base = Date.parse(c.time);
+    wxCol('wx0', '지금', c.temperature_2m, c.weather_code, c.is_day, c.precipitation);
+    const pick = (mins) => {
+      const target = base + mins*60000, m = j.minutely_15, h = j.hourly;
+      if (m && m.time) {   // 15분 단위 예보 우선
+        const i = m.time.findIndex(t => Date.parse(t) >= target - 7*60000);
+        if (i >= 0 && m.temperature_2m[i] != null && m.weather_code[i] != null)
+          return [m.temperature_2m[i], m.weather_code[i], m.is_day[i], m.precipitation[i]];
+      }
+      const i = h.time.reduce((b, t, k) => Math.abs(Date.parse(t)-target) < Math.abs(Date.parse(h.time[b])-target) ? k : b, 0);
+      return [h.temperature_2m[i], h.weather_code[i], h.is_day[i], h.precipitation[i]];
+    };
+    wxCol('wx30', '30분 후', ...pick(30));
+    wxCol('wx60', '1시간 후', ...pick(60));
+    const h = j.hourly, hi = h.time.findIndex(t => Date.parse(t) > base);
+    const pop = hi >= 0 && h.precipitation_probability ? h.precipitation_probability[hi] : null;
+    $('wxMeta').textContent = `체감 ${Math.round(c.apparent_temperature)}°  습도 ${c.relative_humidity_2m}%  바람 ${c.wind_speed_10m.toFixed(1)}m/s`
+      + (pop != null ? `  1시간 내 강수확률 ${pop}%` : '')
+      + `  (${c.time.slice(11,16)} 기준, 날씨: Open-Meteo)`;
+  } catch (e) {
+    $('wxMeta').textContent = '날씨 정보를 불러오지 못했습니다. 인터넷 연결을 확인하세요. 2분 뒤 다시 시도합니다.';
+    wxAt = Date.now() - 8*60000;
+  }
+}
 
 // ---------- 걸음 수 (가속도 센서) ----------
 function onMotion(e){
@@ -269,6 +341,7 @@ function onPos(p){
   const g = $('gps'); g.dataset.q = fix.acc <= 10 ? 'good' : fix.acc <= MAX_ACC_M ? 'ok' : 'bad';
   $('gpsTxt').textContent = '±' + Math.round(fix.acc) + 'm';
   me.setLatLng(lastFix); accCircle.setLatLng(lastFix).setRadius(fix.acc);
+  if (fix.acc <= 1000) maybeWeather(fix);
   if (!map.hasLayer(me)) { accCircle.addTo(map); me.addTo(map); map.setView(lastFix, 16); }
   updateHeading(fix);
   if (follow) map.panTo(lastFix, {animate:true});
@@ -447,6 +520,8 @@ $('btnSim').onclick = () => {
 function showNote(t){ const n = $('note'); n.textContent = t; n.hidden = false; }
 if (!window.isSecureContext) showNote('위치 기능은 HTTPS 주소(또는 localhost)에서만 동작합니다. 휴대폰에서는 HTTPS로 배포된 주소로 접속하세요.');
 window.addEventListener('resize', drawChart);
+const updClock = () => $('clock').textContent = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
+updClock(); setInterval(updClock, 1000);
 startWatch(); render(); renderHist();
 })();
 </script>
