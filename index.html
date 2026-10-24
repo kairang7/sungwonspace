@@ -58,7 +58,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .leaflet-control-attribution{font-size:10px}
 
 /* 시트 */
-.sheet{position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(120px + env(safe-area-inset-bottom,0px))}
+.sheet{overflow-x:hidden;position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(120px + env(safe-area-inset-bottom,0px))}
 .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-height:20px}
 .status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .status[data-s="running"]{color:var(--ink);font-weight:500}
@@ -67,20 +67,39 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .status[data-s="view"] i{background:var(--accent)}
 @keyframes pulse{50%{opacity:.25}}
 
+.hero>div{min-width:0}
 .hero{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:6px}
 .speed{display:flex;align-items:baseline;gap:6px}
-.speed .big{font-size:96px;font-weight:700;line-height:.82;color:var(--accent);letter-spacing:-.01em}
+.speed .big{font-size:clamp(60px,21vw,96px);font-weight:700;line-height:.82;color:var(--accent);letter-spacing:-.01em}
 .speed .u{font-size:16px;font-weight:500;color:var(--muted)}
 .sub{margin-top:10px;font-size:13px;color:var(--muted)}
 .sub .num{font-size:22px;font-weight:600;color:var(--ink);margin-right:3px}
 .sub[hidden]{display:none}
 .timebox{text-align:right}
-.timebox .t{font-size:44px;font-weight:600;line-height:1}
+.timebox .t{font-size:clamp(28px,9vw,44px);font-weight:600;line-height:1}
 .timebox small{display:block;font-size:12px;color:var(--muted)}
 .timebox .clock{margin-top:8px;font-size:13px;color:var(--muted)}
 .timebox .clock .num{font-size:22px;font-weight:600;color:var(--ink);margin-right:4px}
 
-.keys{margin-top:16px;background:var(--surface);border-radius:16px;padding:12px 0}
+.hrbar{margin-top:14px}
+.hr-connect{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surface);border:1px dashed var(--line);color:var(--ink);border-radius:14px;padding:12px;font-size:15px;font-weight:700}
+.hr-connect small{font-weight:400;color:var(--muted);font-size:12px}
+.hr-connect:disabled{font-weight:400;font-size:13px;color:var(--muted);cursor:default}
+.hr-connect[hidden]{display:none}
+.heart{color:#E0245E;display:inline-block}
+.hr-live{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:14px;padding:10px 12px 10px 14px}
+.hr-live[hidden]{display:none}
+.hr-live .heart{font-size:22px;animation:beat var(--beat,1s) ease-in-out infinite}
+.hr-live.static .heart,.hr-live.stale .heart{animation:none;opacity:.5}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.28)}30%{transform:scale(1)}}
+.hr-bpm{font-size:38px;font-weight:700;line-height:1}
+.hr-live .u{color:var(--muted);font-size:13px;white-space:nowrap}
+.hr-zone{font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.hr-zone:empty{display:none}
+.hr-stat{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;line-height:1.35;white-space:nowrap}
+.hr-live button{flex:none;white-space:nowrap;border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:5px 10px;font-size:12px}
+.hr-live button[hidden]{display:none}
+.keys{margin-top:12px;background:var(--surface);border-radius:16px;padding:12px 0}
 .keyrow{display:grid;grid-template-columns:repeat(3,1fr)}
 .mix{margin:12px 14px 0;padding-top:10px;border-top:1px solid var(--line)}
 .mix[hidden]{display:none}
@@ -101,6 +120,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .cell:not(:nth-child(3n+1)){padding-left:12px;border-left:1px solid var(--line)}
 .cell .num{font-size:26px;font-weight:600;line-height:1.1}
 .cell small{display:block;font-size:12px;color:var(--muted)}
+button.cell{background:none;color:inherit;text-align:left;font:inherit;border-top:0;border-right:0;cursor:pointer}
+button.cell small{color:var(--accent)}
 
 .card{background:var(--surface);border-radius:16px;padding:12px 14px;margin-top:14px}
 h2{font-size:14px;font-weight:700;margin:0 0 8px}
@@ -142,7 +163,7 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 #btnStop[hidden],#btnSim[hidden]{display:none}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);z-index:1100;background:var(--ink);color:var(--surface);border-radius:999px;padding:9px 18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-@media (max-width:360px){.speed .big{font-size:80px}.timebox .t{font-size:36px}.key .num{font-size:28px}}
+@media (max-width:360px){.key .num{font-size:28px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -171,22 +192,36 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
     </div>
   </section>
 
+  <section class="hrbar" id="hrBar">
+    <button class="hr-connect" id="btnHr" type="button"><span class="heart">♥</span>심박계 연결<small>갤럭시워치, 심박 스트랩</small></button>
+    <div class="hr-live" id="hrLive" hidden>
+      <span class="heart">♥</span>
+      <span class="num hr-bpm" id="hrBpm">--</span><span class="u" id="hrUnit">bpm</span>
+      <span class="hr-zone" id="hrZone"></span>
+      <span class="hr-stat" id="hrStat"></span>
+      <button id="btnHrOff" type="button">해제</button>
+    </div>
+  </section>
+
   <section class="keys">
     <div class="keyrow">
       <div class="key"><div class="num" id="dist">0.00</div><small>거리 km</small></div>
       <div class="key"><div class="num" id="steps">0</div><small id="stepsUnit">걸음</small></div>
-      <div class="key"><div class="num" id="avg">0.0</div><small>평균 속도 km/h</small></div>
+      <div class="key"><div class="num" id="kcal">0</div><small>칼로리 kcal</small></div>
     </div>
     <div class="mix" id="mix" hidden></div>
   </section>
 
   <section class="grid">
+    <div class="cell"><div class="num" id="avg">0.0</div><small>평균 속도 km/h</small></div>
     <div class="cell"><div class="num" id="max">0.0</div><small>최고 속도 km/h</small></div>
     <div class="cell"><div class="num" id="avgPace">--</div><small>평균 페이스 분/km</small></div>
-    <div class="cell"><div class="num" id="dir">--</div><small id="dirTxt">진행 방향</small></div>
     <div class="cell"><div class="num" id="alt">--</div><small id="altLbl">고도 m</small></div>
     <div class="cell"><div class="num" id="gain">0</div><small>누적 상승 m</small></div>
     <div class="cell"><div class="num" id="loss">0</div><small>누적 하강 m</small></div>
+    <div class="cell"><div class="num" id="dir">--</div><small id="dirTxt">진행 방향</small></div>
+    <div class="cell"><div class="num" id="kcalRate">--</div><small>시간당 kcal</small></div>
+    <button class="cell" id="btnWeight" type="button"><div class="num" id="weight">--</div><small id="profileLbl">체중 kg (변경)</small></button>
   </section>
 
   <p class="note" id="note" hidden></p>
@@ -254,6 +289,8 @@ let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd =
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
 let lastFix = null, heading = null, hdgFrom = null, viewing = null, viewMarks = [];
 let steps = 0, stepTimes = [], motionOn = false, motionSeen = false, gAvg = null, sm = 0, above = false, lastStepT = 0;
+let kcal = 0, weight = parseFloat(localStorage.getItem('trailog:weight')) || null, age = parseInt(localStorage.getItem('trailog:age')) || null;
+let hr = {dev:null, ch:null, bpm:null, at:0, sum:0, n:0, max:0, want:false, retry:0};
 let wxAt = 0, wxPos = null, mtn = {is:false, relief:null, pos:null, busy:false};
 
 // ---------- 지도 ----------
@@ -332,7 +369,15 @@ function addPoint(fix, d){
     else if (altRef - alt >= ALT_STEP_M) { loss += altRef - alt; altRef = alt; }
   }
   actDist[act] = (actDist[act] || 0) + d;
-  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a:act});
+  const prev = pts[pts.length-1];
+  if (prev && d > 0) {
+    const dt = Math.min((fix.t - prev.t)/1000, 60);
+    let j = pts.length - 1; while (j > 0 && pts[j-1].t >= fix.t - 30000) j--;
+    const q = pts[j], dd = dist - q.d;
+    const grade = (dd >= 15 && alt != null && q.alt != null) ? (alt - q.alt)/dd : 0;
+    if (dt > 0) kcal += kcalStep(act, d/dt*3.6, grade, dt, kg());
+  }
+  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a:act, hr:hrLive() ? hr.bpm : null});
   if (!viewing) trackAdd([fix.lat, fix.lon], act);
 }
 function updateHeading(fix){
@@ -417,6 +462,127 @@ async function checkMountain(fix){
   } catch(_) { mtn.pos = null; }
 }
 
+// ---------- 칼로리 ----------
+// 걷기·등산·달리기는 ACSM 대사 공식(속도와 오르막 경사 반영), 자전거는 운동 강도표(MET) 기준
+function met(a, kmh, grade){
+  const v = kmh*1000/60, g = Math.min(Math.max(grade || 0, 0), 0.3);   // m/분, 오르막만 반영
+  if (a === 'bike') return kmh < 16 ? 4 : kmh < 19 ? 6.8 : kmh < 22 ? 8 : kmh < 25 ? 10 : kmh < 30 ? 12 : 15.8;
+  if (a === 'run') return (0.2*v + 0.9*v*g + 3.5) / 3.5;
+  return (0.1*v + 1.8*v*g + 3.5) / 3.5;                               // 걷기, 등산
+}
+const kcalStep = (a, kmh, grade, sec, kg) => met(a, kmh, grade) * 3.5 * kg / 200 * (sec/60);
+const kg = () => weight || 65;
+// 최근 30초 구간의 경사(오르막 비율)
+function gradeOf(list, i, j){
+  const p = list[i], q = list[j], dd = p.d - q.d;
+  return (dd >= 15 && p.alt != null && q.alt != null) ? (p.alt - q.alt) / dd : 0;
+}
+// 저장된 지점 목록으로 칼로리 다시 계산 (예전 기록용)
+function kcalOf(list){
+  let k = 0, j = 0;
+  for (let i = 1; i < list.length; i++) {
+    const dt = Math.min((list[i].t - list[i-1].t)/1000, 60), dd = list[i].d - list[i-1].d;
+    if (dt <= 0 || dd <= 0) continue;
+    while (list[j].t < list[i].t - 30000) j++;
+    k += kcalStep(list[i].a, dd/dt*3.6, gradeOf(list, i, j), dt, kg());
+  }
+  return k;
+}
+function askAge(){
+  const v = prompt('심박 구간 계산에 쓸 나이를 입력하세요', age || 40);
+  if (v == null) return;
+  const n = parseInt(v);
+  if (!(n >= 10 && n <= 100)) { toast('10~100 사이의 숫자로 입력하세요'); return; }
+  age = n; localStorage.setItem('trailog:age', age); render();
+}
+function askWeight(){
+  const v = prompt('칼로리 계산에 쓸 체중(kg)을 입력하세요', weight || 65);
+  if (v == null) return;
+  const n = parseFloat(v);
+  if (!(n >= 20 && n <= 250)) { toast('20~250 사이의 숫자로 입력하세요'); return; }
+  weight = Math.round(n*10)/10; localStorage.setItem('trailog:weight', weight);
+  toast(`체중 ${weight}kg으로 저장했습니다`); render();
+}
+$('btnWeight').onclick = () => { askWeight(); askAge(); };
+
+// ---------- 심박계 (Web Bluetooth 표준 심박 서비스) ----------
+const ZONES = [['회복','#8FA2AC'],['지방 연소','#3B82F6'],['유산소','#2E7D57'],['고강도','#E8890C'],['최대','#DC2626']];
+const hrMax = () => Math.round(208 - 0.7*(age || 40));          // 다나카 공식
+function zoneOf(bpm){ const r = bpm / hrMax(); return r < .6 ? 0 : r < .7 ? 1 : r < .8 ? 2 : r < .9 ? 3 : 4; }
+const hrLive = () => hr.bpm != null && Date.now() - hr.at < 10000;   // 10초 넘게 신호 없으면 무효
+async function connectHr(){
+  try {
+    const dev = await navigator.bluetooth.requestDevice({filters:[{services:['heart_rate']}]});
+    hr.dev = dev; hr.want = true; hr.retry = 0;
+    dev.addEventListener('gattserverdisconnected', onHrLost);
+    await hrAttach();
+    if (!age) askAge();
+  } catch (e) {
+    if (e.name !== 'NotFoundError') showNote('심박계 연결 실패: ' + e.message + ' 워치의 심박 전송 앱이 켜져 있는지 확인하세요.');
+  }
+  renderHr();
+}
+async function hrAttach(){
+  const server = await hr.dev.gatt.connect();
+  const ch = await (await server.getPrimaryService('heart_rate')).getCharacteristic('heart_rate_measurement');
+  ch.addEventListener('characteristicvaluechanged', e => {
+    const v = e.target.value, flags = v.getUint8(0);
+    onHr(flags & 1 ? v.getUint16(1, true) : v.getUint8(1));   // 첫 비트가 1이면 16비트 값
+  });
+  await ch.startNotifications();
+  hr.ch = ch; hr.retry = 0;
+  toast(`${hr.dev.name || '심박계'} 연결됨`);
+  renderHr();
+}
+function onHrLost(){
+  hr.ch = null; renderHr();
+  if (!hr.want || !hr.dev) return;
+  if (hr.retry >= 6) { toast('심박계 연결이 끊어졌습니다. 다시 연결하세요'); hr.want = false; renderHr(); return; }
+  const wait = Math.min(2000 * 2 ** hr.retry, 20000); hr.retry++;
+  setTimeout(() => { if (hr.want && hr.dev && !hr.ch) hrAttach().catch(onHrLost); }, wait);
+}
+function disconnectHr(){
+  hr.want = false;
+  if (hr.dev && hr.dev.gatt.connected) hr.dev.gatt.disconnect();
+  hr.dev = null; hr.ch = null; hr.bpm = null; renderHr();
+}
+function onHr(bpm){
+  if (!(bpm > 25 && bpm < 240)) return;
+  hr.bpm = bpm; hr.at = Date.now();
+  if (status === 'running') { hr.sum += bpm; hr.n++; if (bpm > hr.max) hr.max = bpm; }
+  renderHr();
+}
+function renderHr(){
+  const btn = $('btnHr'), live = $('hrLive'), v = viewing && status === 'idle';
+  if (v) {   // 지난 기록: 저장된 평균/최고 심박
+    btn.hidden = true;
+    if (!viewing.avgHr) { live.hidden = true; return; }
+    live.hidden = false; live.className = 'hr-live static';
+    $('hrBpm').textContent = viewing.avgHr; $('hrUnit').textContent = 'bpm 평균';
+    const z = zoneOf(viewing.avgHr); $('hrZone').textContent = ZONES[z][0]; $('hrZone').style.background = ZONES[z][1];
+    $('hrStat').innerHTML = `최고 ${viewing.maxHr}<br>최대 심박 ${hrMax()}`; $('btnHrOff').hidden = true;
+    return;
+  }
+  if (!hr.dev) {
+    live.hidden = true; btn.hidden = false;
+    if (!navigator.bluetooth) { btn.disabled = true; btn.innerHTML = '이 브라우저는 심박계 연결을 지원하지 않습니다 (안드로이드 크롬 필요)'; }
+    return;
+  }
+  btn.hidden = true; live.hidden = false; $('btnHrOff').hidden = false; $('hrUnit').textContent = 'bpm';
+  const ok = hrLive();
+  live.className = 'hr-live' + (ok ? '' : ' stale');
+  $('hrBpm').textContent = ok ? hr.bpm : '--';
+  if (ok) {
+    const z = zoneOf(hr.bpm);
+    $('hrZone').textContent = `${z+1}구간 ${ZONES[z][0]}`; $('hrZone').style.background = ZONES[z][1];
+    live.style.setProperty('--beat', (60 / hr.bpm).toFixed(2) + 's');
+  } else $('hrZone').textContent = hr.ch ? '' : '재연결 중';
+  if (!ok && !hr.ch) $('hrZone').style.background = 'var(--warn)';
+  $('hrStat').innerHTML = hr.n ? `평균 ${Math.round(hr.sum/hr.n)}<br>최고 ${hr.max}` : `최대 심박<br>${hrMax()}`;
+}
+$('btnHr').onclick = () => { if (navigator.bluetooth) connectHr(); };
+$('btnHrOff').onclick = () => { if (confirm('심박계 연결을 해제할까요?')) disconnectHr(); };
+
 // ---------- 걸음 수 (가속도 센서) ----------
 function onMotion(e){
   const a = e.accelerationIncludingGravity;
@@ -497,7 +663,9 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // ---------- 시작 / 일시정지 / 종료 ----------
 $('btnMain').onclick = () => {
   if (status === 'idle') {
-    enableMotion(); closeView(true); reset();
+    enableMotion();
+    if (!weight) askWeight();
+    closeView(true); reset();
     status = 'running'; resumeAt = Date.now(); follow = true;
     startWatch(); keepAwake(); tick = setInterval(render, 1000);
     if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
@@ -511,13 +679,13 @@ $('btnStop').onclick = () => {
   status = 'idle'; clearInterval(tick); curSpd = 0;
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
   const saved = pts.length > 1 ? saveSession() : null;
-  if (sim) { clearInterval(sim.timer); sim = null; startWatch(); }
+  if (sim) { clearInterval(sim.timer); sim = null; startWatch(); if (!hr.ch) { hr.dev = null; hr.bpm = null; } }
   renderHist();
   if (saved) { toast('기록을 저장했습니다'); openView(saved); }
   else { toast('이동 거리가 없어 저장하지 않았습니다'); render(); }
 };
 function reset(){
-  pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
+  kcal = 0; hr.sum = 0; hr.n = 0; hr.max = 0; pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
   steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false;
   act = 'walk'; actKnown = false; cand = null; setAccent('walk');
   trackClear();
@@ -541,7 +709,8 @@ function render(){
     heroVal:curSpd.toFixed(1), heroPace:fmtPace(curSpd), heroUnit:'현재 페이스',
     time:fmtTime(ms), dist:km.toFixed(2), avg:avg.toFixed(1), max:maxSpd.toFixed(1), avgPace:fmtPace(avg),
     alt:altSmooth == null ? '--' : Math.round(altSmooth), altLbl:'고도 m',
-    gain:Math.round(gain), loss:Math.round(loss),
+    gain:Math.round(gain), loss:Math.round(loss), kcal:fmtN(Math.round(kcal)), weight:weight || '--',
+    kcalRate:ms > 60000 ? fmtN(Math.round(kcal/(ms/3600000))) : '--',
     dir:heading == null ? '--' : Math.round(heading) + '°',
     dirTxt:heading == null ? '진행 방향' : '진행 방향 ' + DIRS[Math.round(heading/45) % 8],
     steps:fmtN(st),
@@ -553,6 +722,8 @@ function render(){
   drawChart(pts);
 }
 function renderChrome(){
+  renderHr();
+  $('profileLbl').textContent = age ? `체중 kg, ${age}세` : '체중 kg, 나이 입력';
   const v = viewing && status === 'idle', s = v ? 'view' : status;
   $('status').dataset.s = s;
   $('statusTxt').textContent = {idle:'준비됨, 시작을 누르면 기록합니다', paused:'일시정지됨', view:'지난 기록 요약',
@@ -606,9 +777,9 @@ function openView(s){
   const data = s.pts.map((p, i) => {
     if (i) d += haversine({lat:s.pts[i-1][0], lon:s.pts[i-1][1]}, {lat:p[0], lon:p[1]});
     if (p[2] != null && (maxAlt == null || p[2] > maxAlt)) maxAlt = p[2];
-    return {alt:p[2], d, a:p[4] != null ? CODE[p[4]] : s.act, ll:[p[0], p[1]]};
+    return {alt:p[2], d, t:p[3], a:p[4] != null ? CODE[p[4]] : s.act, ll:[p[0], p[1]]};
   });
-  viewing = Object.assign({}, s, {data, maxAlt, mix:s.mix || {[s.act]: s.dist}});
+  viewing = Object.assign({}, s, {data, maxAlt, mix:s.mix || {[s.act]: s.dist}, kcal:s.kcal != null ? s.kcal : kcalOf(data)});
   setAccent(s.act);
   trackDraw(data);
   const ll = data.map(p => p.ll);
@@ -643,6 +814,8 @@ function renderView(){
     time:fmtTime(s.ms), dist:km.toFixed(2), avg:avg.toFixed(1), max:(s.maxSpd || 0).toFixed(1), avgPace:fmtPace(avg),
     alt:s.maxAlt == null ? '--' : Math.round(s.maxAlt), altLbl:'최고 고도 m',
     gain:Math.round(s.gain || 0), loss:Math.round(s.loss || 0), dir:'--', dirTxt:'진행 방향',
+    kcal:fmtN(Math.round(s.kcal)), weight:weight || '--',
+    kcalRate:s.ms > 60000 ? fmtN(Math.round(s.kcal/(s.ms/3600000))) : '--',
     steps:s.steps != null ? fmtN(s.steps) : '--', stepsUnit:'걸음'
   });
   $('paceBox').hidden = s.act === 'bike';
@@ -655,8 +828,9 @@ $('btnCloseView').onclick = () => closeView();
 function loadSessions(){ try { return JSON.parse(localStorage.getItem(STORE)) || []; } catch(_) { return []; } }
 function saveSession(){
   const mix = {}; for (const a in actDist) if (actDist[a] >= 1) mix[a] = Math.round(actDist[a]);
-  const s = {id:Date.now(), act:mainAct(actDist), mix, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(),
-             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a)])};
+  const s = {id:Date.now(), act:mainAct(actDist), mix, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(), kcal:Math.round(kcal), weight:kg(),
+             avgHr:hr.n ? Math.round(hr.sum/hr.n) : null, maxHr:hr.n ? hr.max : null,
+             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr])};
   const all = loadSessions(); all.unshift(s);
   try { localStorage.setItem(STORE, JSON.stringify(all.slice(0, 30))); return s; }
   catch(_) { showNote('저장 공간이 부족해 기록을 저장하지 못했습니다. 오래된 기록을 삭제한 뒤 다시 시도하세요.'); return null; }
@@ -672,7 +846,7 @@ function renderHist(){
     li.innerHTML = `<div class="h-top"><span class="num">${(s.dist/1000).toFixed(2)}</span><span class="u">km</span>
         <span class="h-act" style="background:var(--${s.act})">${ACT[s.act]}</span></div>
       <div class="h-sub"><span>${d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</span>
-        <span>${fmtTime(s.ms)}</span>${s.steps != null ? `<span>${fmtN(s.steps)}걸음</span>` : ''}<span>상승 ${Math.round(s.gain)}m</span></div>
+        <span>${fmtTime(s.ms)}</span>${s.steps != null ? `<span>${fmtN(s.steps)}걸음</span>` : ''}${s.kcal != null ? `<span>${fmtN(s.kcal)}kcal</span>` : ''}${s.avgHr ? `<span>평균 심박 ${s.avgHr}</span>` : ''}<span>상승 ${Math.round(s.gain)}m</span></div>
       <div class="mix h-mix"></div>
       <div class="h-btns"><button type="button" data-k="gpx">GPX 내보내기</button><button type="button" class="del" data-k="del">삭제</button></div>`;
     renderMix(li.querySelector('.h-mix'), s.mix || {[s.act]: s.dist}, s.dist);
@@ -714,6 +888,7 @@ $('btnSim').onclick = () => {
     const base = phases[Math.floor(k/45) % 3];
     hd += (Math.random()-.5)*.3; const v = base*(.85 + Math.random()*.3);
     lat += Math.cos(hd)*v/111320; lon += Math.sin(hd)*v/(111320*Math.cos(lat*Math.PI/180)); k++;
+    if (!hr.ch) { if (!hr.dev) hr.dev = {name:'가상 심박계', gatt:{connected:false}}; onHr(Math.round(80 + Math.min(v*3.6, 15)*5 + (Math.random()-.5)*6)); }
     onPos({timestamp:Date.now(), coords:{latitude:lat, longitude:lon, accuracy:5+Math.random()*6, speed:v,
       heading:(hd*180/Math.PI % 360 + 360) % 360, altitude:120 + 30*Math.sin(k/50) + (Math.random()-.5)*2}});
   }, 1000)};
