@@ -96,6 +96,12 @@ header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
 #btnSim{background:none;border:1px solid var(--line)!important;color:var(--muted);flex:0 0 auto;padding:14px 14px;font-weight:500;font-size:14px}
 button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .leaflet-control-attribution{font-size:10px}
+.viewbar{position:absolute;top:10px;left:24px;right:24px;z-index:500;display:flex;align-items:center;gap:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:6px 6px 6px 10px;font-size:13px}
+.viewbar[hidden]{display:none}
+.viewbar span{flex:1}
+.viewbar button{border:0;background:var(--ink);color:var(--surface);border-radius:8px;padding:6px 12px;font:inherit;font-size:13px}
+.hist li.on{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.pin-tip{font-family:inherit;font-size:11px;font-weight:700;padding:1px 6px}
 .me-icon{background:none;border:0}
 .me-arrow{width:40px;height:40px;transition:transform .4s ease}
 .me-arrow svg{width:40px;height:40px;overflow:visible}
@@ -119,6 +125,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
   <div class="recenter">
     <div id="map"></div>
+    <div class="viewbar" id="viewBar" hidden><span id="viewTxt"></span><button id="btnCloseView" type="button">닫기</button></div>
     <button id="btnCenter" type="button">현재 위치</button>
   </div>
 
@@ -128,7 +135,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
         <div class="big num" id="heroVal">0.0</div>
         <div class="pace" id="paceBox"><span class="num" id="heroPace">--</span><small>페이스 분/km</small></div>
       </div>
-      <div class="unit">현재 속도 (km/h)</div>
+      <div class="unit" id="heroUnit">현재 속도 (km/h)</div>
     </div>
     <div class="side">
       <div class="clock"><span class="num" id="clock">--:--</span>현재 시각</div>
@@ -152,7 +159,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="cell"><div class="num" id="dist">0.00</div><small>거리 km</small></div>
     <div class="cell"><div class="num" id="spd">0.0</div><small>현재 속도 km/h</small></div>
     <div class="cell"><div class="num" id="avg">0.0</div><small>평균 속도 km/h</small></div>
-    <div class="cell"><div class="num" id="alt">--</div><small>고도 m</small></div>
+    <div class="cell"><div class="num" id="alt">--</div><small id="altLbl">고도 m</small></div>
     <div class="cell"><div class="num" id="gain">0</div><small>누적 상승 m</small></div>
     <div class="cell"><div class="num" id="max">0.0</div><small>최고 속도 km/h</small></div>
     <div class="cell"><div class="num" id="dir">--</div><small id="dirTxt">진행 방향</small></div>
@@ -196,7 +203,7 @@ const ALT_STEP_M = 3;        // 누적 상승 계산 시 무시할 고도 흔들
 let act = 'run', status = 'idle';   // idle | running | paused
 let pts = [], dist = 0, gain = 0, loss = 0, heading = null, hdgFrom = null, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
-let lastFix = null;
+let lastFix = null, viewing = null, viewMarks = [];
 let steps = 0, stepTimes = [], motionOn = false, motionSeen = false, gAvg = null, sm = 0, above = false, lastStepT = 0;
 
 // ---------- 날씨 (Open-Meteo, API 키 불필요) ----------
@@ -297,6 +304,7 @@ function recolor(){ const c = getAccent(); track.setStyle({color:c}); accCircle.
 // ---------- 운동 종류 ----------
 document.querySelectorAll('.acts button').forEach(b => b.onclick = () => {
   if (status !== 'idle') return;
+  closeView();
   act = b.dataset.act; document.body.dataset.act = act;
   document.querySelectorAll('.acts button').forEach(x => x.setAttribute('aria-pressed', x === b));
   recolor(); render();
@@ -395,7 +403,7 @@ document.addEventListener('visibilitychange', () => {
 
 // ---------- 시작 / 일시정지 / 종료 ----------
 $('btnMain').onclick = () => {
-  if (status === 'idle') { enableMotion(); reset(); status = 'running'; resumeAt = Date.now(); startWatch(); keepAwake(); tick = setInterval(render, 1000); }
+  if (status === 'idle') { enableMotion(); closeView(); reset(); status = 'running'; resumeAt = Date.now(); startWatch(); keepAwake(); tick = setInterval(render, 1000); }
   else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; }
   else { status = 'running'; resumeAt = Date.now(); keepAwake(); }
   render();
@@ -415,6 +423,8 @@ function reset(){
 
 // ---------- 화면 갱신 ----------
 function render(){
+  if (viewing && status === 'idle') { renderView(); return; }
+  $('heroUnit').textContent = '현재 속도 (km/h)'; $('altLbl').textContent = '고도 m';
   const ms = nowElapsed(), km = dist/1000, avg = ms > 0 ? km/(ms/3600000) : 0;
   $('time').textContent = fmtTime(ms);
   $('dist').textContent = km.toFixed(2);
@@ -436,19 +446,82 @@ function render(){
   $('heroVal').textContent = curSpd.toFixed(1);
   $('heroPace').textContent = fmtPace(curSpd);
   $('paceBox').hidden = act === 'bike';   // 자전거는 페이스를 잘 쓰지 않아 숨김
+  renderButtons();
+  drawChart();
+}
+function renderButtons(){
   $('btnMain').textContent = {idle:'시작', running:'일시정지', paused:'계속'}[status];
   $('btnStop').hidden = status === 'idle';
   $('btnSim').hidden = status !== 'idle' || !!sim;
   document.querySelectorAll('.acts button').forEach(b => b.disabled = status !== 'idle');
-  drawChart();
 }
 
-function drawChart(){
+// ---------- 지난 기록 보기 ----------
+function openView(s){
+  if (status !== 'idle') return;
+  closeView();
+  // 저장된 지점으로 누적 거리와 고도 데이터 다시 계산
+  let d = 0, maxAlt = null;
+  const data = s.pts.map((p, i) => {
+    if (i) d += haversine({lat:s.pts[i-1][0], lon:s.pts[i-1][1]}, {lat:p[0], lon:p[1]});
+    if (p[2] != null && (maxAlt == null || p[2] > maxAlt)) maxAlt = p[2];
+    return {alt:p[2], d};
+  });
+  viewing = Object.assign({}, s, {data, maxAlt});
+  document.body.dataset.act = s.act; recolor();
+  const ll = s.pts.map(p => [p[0], p[1]]);
+  track.setLatLngs(ll);
+  const mk = (pos, color, label) => L.circleMarker(pos, {radius:7, color:'#fff', weight:3, fillColor:color, fillOpacity:1})
+    .bindTooltip(label, {permanent:true, direction:'top', offset:[0,-8], className:'pin-tip'}).addTo(map);
+  viewMarks = [mk(ll[0], '#2F7D5B', '출발'), mk(ll[ll.length-1], '#C53030', '도착')];
+  follow = false; map.fitBounds(track.getBounds(), {padding:[40,40]});
+  const dt = new Date(s.start);
+  $('viewTxt').textContent = `${dt.toLocaleDateString('ko-KR')} ${dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ${ACT[s.act]} 기록 보는 중`;
+  $('viewBar').hidden = false;
+  document.querySelectorAll('#histList li').forEach(li => li.classList.toggle('on', li.dataset.id == s.id));
+  render(); window.scrollTo({top:0, behavior:'smooth'});
+}
+function closeView(){
+  if (!viewing) return;
+  viewing = null;
+  viewMarks.forEach(m => map.removeLayer(m)); viewMarks = [];
+  document.body.dataset.act = act; recolor();
+  track.setLatLngs(pts.map(p => [p.lat, p.lon]));
+  $('viewBar').hidden = true; follow = true;
+  document.querySelectorAll('#histList li').forEach(li => li.classList.remove('on'));
+  if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
+  render();
+}
+function renderView(){
+  const s = viewing, km = s.dist/1000, avg = s.ms > 0 ? km/(s.ms/3600000) : 0;
+  $('heroVal').textContent = avg.toFixed(1);
+  $('heroPace').textContent = fmtPace(avg);
+  $('paceBox').hidden = s.act === 'bike';
+  $('heroUnit').textContent = '평균 속도 (km/h)';
+  $('time').textContent = fmtTime(s.ms);
+  $('steps').textContent = s.steps != null ? s.steps.toLocaleString('ko-KR') : '--';
+  $('stepsUnit').textContent = '걸음';
+  $('dist').textContent = km.toFixed(2);
+  $('spd').textContent = '--';
+  $('avg').textContent = avg.toFixed(1);
+  $('max').textContent = (s.maxSpd || 0).toFixed(1);
+  $('alt').textContent = s.maxAlt == null ? '--' : Math.round(s.maxAlt);
+  $('altLbl').textContent = '최고 고도 m';
+  $('gain').textContent = Math.round(s.gain || 0);
+  $('loss').textContent = Math.round(s.loss || 0);
+  $('avgPace').textContent = fmtPace(avg);
+  $('dir').textContent = '--'; $('dirTxt').textContent = '진행 방향';
+  renderButtons();
+  drawChart(s.data);
+}
+$('btnCloseView').onclick = closeView;
+
+function drawChart(src){
   const cv = $('chart'), dpr = window.devicePixelRatio || 1;
   const w = cv.clientWidth, h = cv.clientHeight;
   cv.width = w*dpr; cv.height = h*dpr;
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0,0,w,h);
-  const data = pts.filter(p => p.alt != null);
+  const data = (src || pts).filter(p => p.alt != null);
   const cs = getComputedStyle(document.body);
   ctx.font = '12px "Noto Sans KR", sans-serif';
   if (data.length < 2) { ctx.fillStyle = cs.getPropertyValue('--muted'); ctx.fillText('기록을 시작하면 고도 변화가 여기에 그려집니다', 12, h/2+4); return; }
@@ -481,13 +554,14 @@ function renderHist(){
   list.innerHTML = all.length ? '' : '<li class="empty">아직 저장된 기록이 없습니다. 시작을 눌러 첫 운동을 기록하세요.</li>';
   all.forEach(s => {
     const li = document.createElement('li'), d = new Date(s.start);
+    li.dataset.id = s.id; if (viewing && viewing.id === s.id) li.classList.add('on');
     li.innerHTML = `<div class="meta"><b>${ACT[s.act]} ${(s.dist/1000).toFixed(2)}km</b>${d.toLocaleDateString('ko-KR')} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · ${fmtTime(s.ms)} · 상승 ${Math.round(s.gain)}m 하강 ${Math.round(s.loss || 0)}m${s.steps != null ? ' · ' + s.steps.toLocaleString('ko-KR') + '걸음' : ''}</div>`;
     const bShow = Object.assign(document.createElement('button'), {textContent:'지도'});
     const bGpx = Object.assign(document.createElement('button'), {textContent:'GPX'});
     const bDel = Object.assign(document.createElement('button'), {textContent:'삭제'});
-    bShow.onclick = () => { if (status !== 'idle') return; track.setLatLngs(s.pts.map(p => [p[0], p[1]])); follow = false; map.fitBounds(track.getBounds(), {padding:[20,20]}); window.scrollTo({top:0, behavior:'smooth'}); };
+    bShow.onclick = () => openView(s);
     bGpx.onclick = () => exportGpx(s);
-    bDel.onclick = () => { if (confirm('이 기록을 삭제할까요?')) { localStorage.setItem(STORE, JSON.stringify(loadSessions().filter(x => x.id !== s.id))); renderHist(); } };
+    bDel.onclick = () => { if (confirm('이 기록을 삭제할까요?')) { if (viewing && viewing.id === s.id) closeView(); localStorage.setItem(STORE, JSON.stringify(loadSessions().filter(x => x.id !== s.id))); renderHist(); } };
     li.append(bShow, bGpx, bDel); list.append(li);
   });
 }
@@ -519,7 +593,7 @@ $('btnSim').onclick = () => {
 // ---------- 공통 ----------
 function showNote(t){ const n = $('note'); n.textContent = t; n.hidden = false; }
 if (!window.isSecureContext) showNote('위치 기능은 HTTPS 주소(또는 localhost)에서만 동작합니다. 휴대폰에서는 HTTPS로 배포된 주소로 접속하세요.');
-window.addEventListener('resize', drawChart);
+window.addEventListener('resize', () => render());
 const updClock = () => $('clock').textContent = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
 updClock(); setInterval(updClock, 1000);
 startWatch(); render(); renderHist();
