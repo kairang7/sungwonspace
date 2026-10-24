@@ -58,7 +58,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .leaflet-control-attribution{font-size:10px}
 
 /* 시트 */
-.sheet{overflow-x:hidden;position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(120px + env(safe-area-inset-bottom,0px))}
+.sheet{overflow-x:hidden;position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(170px + env(safe-area-inset-bottom,0px))}
 .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-height:20px}
 .status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .status[data-s="running"]{color:var(--ink);font-weight:500}
@@ -87,17 +87,17 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .hr-connect:disabled{font-weight:400;font-size:13px;color:var(--muted);cursor:default}
 .hr-connect[hidden]{display:none}
 .heart{color:#E0245E;display:inline-block}
-.hr-live{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:14px;padding:10px 12px 10px 14px}
+.hr-live{display:flex;align-items:center;gap:5px;min-width:0;background:var(--surface);border-radius:14px;padding:10px 10px 10px 12px}
 .hr-live[hidden]{display:none}
 .hr-live .heart{font-size:22px;animation:beat var(--beat,1s) ease-in-out infinite}
 .hr-live.static .heart,.hr-live.stale .heart{animation:none;opacity:.5}
 @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.28)}30%{transform:scale(1)}}
-.hr-bpm{font-size:38px;font-weight:700;line-height:1}
+.hr-bpm{font-size:34px;font-weight:700;line-height:1}
 .hr-live .u{color:var(--muted);font-size:13px;white-space:nowrap}
-.hr-zone{font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.hr-zone{font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:3px 8px;white-space:nowrap}
 .hr-zone:empty{display:none}
 .hr-stat{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;line-height:1.35;white-space:nowrap}
-.hr-live button{flex:none;white-space:nowrap;border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:5px 10px;font-size:12px}
+.hr-live button{flex:none;white-space:nowrap;border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:5px 8px;font-size:12px}
 .hr-live button[hidden]{display:none}
 .keys{margin-top:12px;background:var(--surface);border-radius:16px;padding:12px 0}
 .keyrow{display:grid;grid-template-columns:repeat(3,1fr)}
@@ -157,11 +157,25 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 .controls{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--surface);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
 .controls .in{display:flex;gap:10px;max-width:600px;margin:0 auto}
 .controls button{border:0;border-radius:16px;height:56px;font-size:17px;font-weight:700}
+.modes{display:flex;gap:6px;max-width:600px;margin:0 auto 10px}
+.modes[hidden]{display:none}
+.modes button{flex:1;border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:8px 0;font-size:14px;font-weight:500;transition:background .2s,color .2s}
+.modes button[aria-checked="true"]{border-color:transparent;color:#fff;font-weight:700}
+.modes button[data-m="auto"][aria-checked="true"]{background:var(--ink);color:var(--surface)}
+.modes button[data-m="hike"][aria-checked="true"]{background:var(--hike)}
+.modes button[data-m="bike"][aria-checked="true"]{background:var(--bike)}
+.modes button[data-m="walk"][aria-checked="true"]{background:var(--walk)}
+.modes button[data-m="run"][aria-checked="true"]{background:var(--run)}
+.modes .short{display:none}
+.modes[data-s="idle"] [data-m="walk"],.modes[data-s="idle"] [data-m="run"]{display:none}
+.modes[data-s="active"] .long{display:none}
+.modes[data-s="active"] .short{display:inline}
+.modes[data-s="active"] button{font-size:13px;padding:7px 0}
 #btnMain{flex:1;background:var(--accent);color:#fff;transition:background .2s}
 #btnStop{flex:1;background:var(--ink);color:var(--surface)}
 #btnSim{flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--muted);padding:0 16px;font-size:14px;font-weight:500}
 #btnStop[hidden],#btnSim[hidden]{display:none}
-.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);z-index:1100;background:var(--ink);color:var(--surface);border-radius:999px;padding:9px 18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);z-index:1100;background:var(--ink);color:var(--surface);border-radius:999px;padding:9px 18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:360px){.key .num{font-size:28px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -246,7 +260,15 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
   </section>
 </main>
 
-<div class="controls"><div class="in">
+<div class="controls">
+  <div class="modes" id="modes" role="radiogroup" aria-label="운동 종류">
+    <button type="button" role="radio" data-m="auto" aria-checked="true"><span class="long">자동 인식</span><span class="short">자동</span></button>
+    <button type="button" role="radio" data-m="walk" aria-checked="false">걷기</button>
+    <button type="button" role="radio" data-m="run" aria-checked="false">달리기</button>
+    <button type="button" role="radio" data-m="hike" aria-checked="false">등산</button>
+    <button type="button" role="radio" data-m="bike" aria-checked="false">자전거</button>
+  </div>
+  <div class="in">
   <button id="btnSim" type="button">시뮬레이션</button>
   <button id="btnMain" type="button">운동 시작</button>
   <button id="btnStop" type="button" hidden>종료</button>
@@ -284,7 +306,7 @@ const CLS = {
 };
 
 // ---------- 상태 ----------
-let act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
+let mode = 'auto', act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
 let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
 let lastFix = null, heading = null, hdgFrom = null, viewing = null, viewMarks = [];
@@ -418,6 +440,7 @@ function guess(kmh, cad){
   return 'bike';
 }
 function classify(t){
+  if (mode !== 'auto') return;                                 // 직접 선택한 종목은 고정
   samples.push({t, d:dist});
   while (samples.length > 2 && samples[1].t < t - CLS.WIN_MS) samples.shift();
   const first = samples[0], span = t - first.t;
@@ -679,6 +702,7 @@ $('btnStop').onclick = () => {
   status = 'idle'; clearInterval(tick); curSpd = 0;
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
   const saved = pts.length > 1 ? saveSession() : null;
+  mode = 'auto';                                                // 다음 운동은 다시 자동 인식이 기본
   if (sim) { clearInterval(sim.timer); sim = null; startWatch(); if (!hr.ch) { hr.dev = null; hr.bpm = null; } }
   renderHist();
   if (saved) { toast('기록을 저장했습니다'); openView(saved); }
@@ -687,7 +711,8 @@ $('btnStop').onclick = () => {
 function reset(){
   kcal = 0; hr.sum = 0; hr.n = 0; hr.max = 0; pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
   steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false;
-  act = 'walk'; actKnown = false; cand = null; setAccent('walk');
+  act = mode === 'auto' ? 'walk' : mode; actKnown = mode !== 'auto'; cand = null; setAccent(act);
+  if (mode !== 'auto') actDist = {};
   trackClear();
 }
 
@@ -728,13 +753,19 @@ function renderChrome(){
   $('status').dataset.s = s;
   $('statusTxt').textContent = {idle:'준비됨, 시작을 누르면 기록합니다', paused:'일시정지됨', view:'지난 기록 요약',
     running: actKnown ? `${ACT[act]} 기록 중` : '기록 중, 운동 종류 확인 중'}[s];
-  $('btnMain').textContent = {idle:'운동 시작', running:'일시정지', paused:'계속'}[status];
+  $('btnMain').textContent = {idle:mode === 'auto' ? '운동 시작' : `${ACT[mode]} 시작`, running:'일시정지', paused:'계속'}[status];
+  $('btnMain').style.background = status === 'idle' ? `var(--${mode === 'auto' ? 'walk' : mode})` : '';
+  $('modes').dataset.s = status === 'idle' ? 'idle' : 'active';   // 운동 중에는 걷기·달리기도 선택 가능
+  if (status === 'idle' && !v) setAccent(mode === 'auto' ? 'walk' : mode);   // 선택한 종목 색으로 미리 표시
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', b.dataset.m === mode));
   $('btnStop').hidden = status === 'idle';
   $('btnSim').hidden = status !== 'idle';
   // 상단 자동 인식 표시
   const chip = $('actChip'); chip.hidden = !!v;
   const terrain = mtn.relief == null ? '' : mtn.is ? '산 지형' : '평지';
-  if (status === 'idle') { chip.dataset.s = 'idle'; $('actName').textContent = '자동 인식'; $('actSub').textContent = terrain ? `지금 위치는 ${terrain}` : '시작하면 운동 종류를 알아서 판단합니다'; }
+  if (status === 'idle' && mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[mode]; $('actSub').textContent = '직접 선택, 자동 인식 안 함'; }
+  else if (status === 'idle') { chip.dataset.s = 'idle'; $('actName').textContent = '자동 인식'; $('actSub').textContent = terrain ? `지금 위치는 ${terrain}` : '시작하면 운동 종류를 알아서 판단합니다'; }
+  else if (mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '직접 선택'; }
   else if (!actKnown) { chip.dataset.s = 'detecting'; $('actName').textContent = '확인 중'; $('actSub').textContent = '15초 정도 움직여 주세요'; }
   else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (terrain ? `, ${terrain}` : ''); }
 }
@@ -877,15 +908,29 @@ function exportGpx(s){
   a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+// ---------- 종목 선택 (선택 안 하면 자동 인식) ----------
+// 운동 중에도 언제든 바꿀 수 있음: 바꾼 순간부터 새 종목으로 기록 (지도 경로 색도 그 지점부터 바뀜)
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => {
+  const m = b.dataset.m;
+  if (m === mode) return;
+  mode = m;
+  if (status !== 'idle') {
+    cand = null;
+    if (m === 'auto') { samples = []; toast('자동 인식으로 바꿨습니다'); }
+    else { act = m; actKnown = true; setAccent(m); toast(`${ACT[m]}(으)로 바꿨습니다`); }
+  }
+  render();
+});
+
 // ---------- 시뮬레이션 (PC 테스트용: 걷기 → 달리기 → 자전거 45초씩 반복) ----------
 $('btnSim').onclick = () => {
   if (status !== 'idle') return;
   if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
   closeView(true);
   const c = map.getCenter(); let lat = c.lat, lon = c.lng, hd = Math.random()*Math.PI*2, k = 0;
-  const phases = [1.4, 3.2, 6.5];
+  const phases = mode === 'bike' ? [6.5] : mode === 'hike' ? [1.2] : [1.4, 3.2, 6.5];
   sim = {timer:setInterval(() => {
-    const base = phases[Math.floor(k/45) % 3];
+    const base = phases[Math.floor(k/45) % phases.length];
     hd += (Math.random()-.5)*.3; const v = base*(.85 + Math.random()*.3);
     lat += Math.cos(hd)*v/111320; lon += Math.sin(hd)*v/(111320*Math.cos(lat*Math.PI/180)); k++;
     if (!hr.ch) { if (!hr.dev) hr.dev = {name:'가상 심박계', gatt:{connected:false}}; onHr(Math.round(80 + Math.min(v*3.6, 15)*5 + (Math.random()-.5)*6)); }
