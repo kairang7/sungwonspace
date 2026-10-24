@@ -3,150 +3,195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1B2B34">
+<meta name="theme-color" content="#15232B">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>트레일로그 – 운동 기록</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#E9EEF0; --surface:#FFFFFF; --ink:#1B2B34; --muted:#5D6F79; --line:#CBD5DA;
-  --run:#FF5A1F; --walk:#8A4FD8; --hike:#2F7D5B; --bike:#2563C9; --accent:var(--run);
-  --warn:#B7791F; --bad:#C53030;
+  --bg:#EEF2F1; --surface:#FFFFFF; --ink:#15232B; --muted:#5E707A; --line:#D3DCDF;
+  --walk:#7C4DDB; --run:#F2541B; --hike:#2E7D57; --bike:#2266D1; --accent:var(--walk);
+  --warn:#B7791F; --bad:#C53030; --good:#2E7D57;
   color-scheme:light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
-  :root{--bg:#0E171C;--surface:#17242B;--ink:#E4ECEF;--muted:#8DA0AA;--line:#2A3B44;
-    --run:#FF7A45;--walk:#A98BE8;--hike:#4DB283;--bike:#5B8FE8;color-scheme:dark;}
+  :root{--bg:#0D161B;--surface:#16232A;--ink:#E3ECEF;--muted:#8FA2AC;--line:#26363F;
+    --walk:#A585EC;--run:#FF7A45;--hike:#4DB283;--bike:#5B8FE8;--good:#4DB283;color-scheme:dark}
 }
 *,*::before,*::after{box-sizing:inherit}
-html,body{margin:0;height:100%}
+html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
-body[data-act="walk"]{--accent:var(--walk)} body[data-act="hike"]{--accent:var(--hike)} body[data-act="bike"]{--accent:var(--bike)}
-.num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.01em}
-.wrap{max-width:560px;margin:0 auto;padding:0 0 110px}
+body[data-act="run"]{--accent:var(--run)} body[data-act="hike"]{--accent:var(--hike)} body[data-act="bike"]{--accent:var(--bike)}
+.num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
-header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
-.acts{display:flex;flex:1;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
-.acts button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-size:14px;font-weight:500;padding:8px 0;border-radius:999px;cursor:pointer}
-.acts button[aria-pressed="true"]{background:var(--accent);color:#fff}
-.acts button:disabled{opacity:.5}
-.gps{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap}
-.gps i{width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block}
-.gps[data-q="good"] i{background:var(--hike)} .gps[data-q="ok"] i{background:var(--warn)} .gps[data-q="bad"] i{background:var(--bad)}
-
-#map{height:42vh;min-height:240px;margin:0 14px;border-radius:14px;border:1px solid var(--line);z-index:0}
-.recenter{position:relative}
-.recenter button{position:absolute;right:24px;bottom:10px;z-index:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:6px 10px;font:inherit;font-size:13px}
-
-.hero{padding:14px 18px 4px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
-.hero .big{font-size:88px;font-weight:700;line-height:.85;color:var(--accent)}
-.hero .unit{font-size:15px;color:var(--muted);margin-top:6px}
-.bigrow{display:flex;align-items:flex-end;gap:10px}
-.pace{display:flex;flex-direction:column;color:var(--muted);padding-bottom:2px}
-.pace .num{font-size:26px;font-weight:600;line-height:1;color:var(--ink)}
-.pace small{font-size:12px}
-.pace[hidden]{display:none}
-.clock{font-size:13px;color:var(--muted);margin-bottom:8px}
-.clock .num{font-size:22px;font-weight:600;color:var(--ink);margin-right:4px}
-.wx{margin:12px 14px 0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 6px 8px}
-.wx-row{display:grid;grid-template-columns:repeat(3,1fr)}
-.wx-col{text-align:center;padding:0 4px}
-.wx-col+.wx-col{border-left:1px solid var(--line)}
-.wx-col small{display:block;color:var(--muted);font-size:12px}
-.wx-ic{font-size:22px;line-height:1.3}
-.wx-t{font-size:26px;font-weight:600;line-height:1.1}
-.wx-desc{font-size:12px;color:var(--ink)}
-.wx-meta{margin-top:8px;padding:0 6px;font-size:12px;color:var(--muted);text-align:center}
-.hero .side{text-align:right}
-.hero .side .num{font-size:40px;font-weight:600;line-height:1}
-.hero .side .steps{font-size:30px;margin-top:10px}
-
-.grid{display:grid;grid-template-columns:repeat(3,1fr);margin:12px 14px 0;border-top:1px solid var(--line)}
-.cell{padding:10px 4px 10px 4px;border-bottom:1px solid var(--line)}
-.cell:not(:nth-child(3n)){border-right:1px solid var(--line);}
-.cell:not(:nth-child(3n+1)){padding-left:12px}
-.cell .num{font-size:28px;font-weight:600;line-height:1.1}
-.cell small{display:block;color:var(--muted);font-size:12px}
-
-.profile{margin:14px 14px 0}
-.profile h2,.hist h2{font-size:14px;font-weight:700;margin:0 0 6px}
-.profile canvas{width:100%;height:110px;display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px}
-
-.note{margin:12px 14px 0;padding:10px 12px;border-radius:10px;background:var(--surface);border-left:4px solid var(--warn);font-size:13px}
-.note[hidden]{display:none}
-
-.hist{margin:20px 14px 0}
-.hist ul{list-style:none;margin:0;padding:0}
-.hist li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
-.hist li .meta{flex:1;font-size:13px;color:var(--muted)}
-.hist li .meta b{color:var(--ink);font-weight:500;display:block;font-size:14px}
-.hist li button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:5px 9px;font:inherit;font-size:12px}
-.empty{color:var(--muted);font-size:13px}
-
-.controls{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);display:flex;gap:10px;justify-content:center;z-index:1000}
-.controls button{font:inherit;font-weight:700;font-size:17px;border:0;border-radius:14px;padding:14px 0;cursor:pointer;flex:1;max-width:260px}
-#btnMain{background:var(--accent);color:#fff}
-#btnStop{background:var(--ink);color:var(--surface)}
-#btnStop[hidden],#btnSim[hidden]{display:none}
-#btnSim{background:none;border:1px solid var(--line)!important;color:var(--muted);flex:0 0 auto;padding:14px 14px;font-weight:500;font-size:14px}
-button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.leaflet-control-attribution{font-size:10px}
-.viewbar{position:absolute;top:10px;left:24px;right:24px;z-index:500;display:flex;align-items:center;gap:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:6px 6px 6px 10px;font-size:13px}
+/* 지도 영역 */
+.mapwrap{position:relative;height:46vh;min-height:270px}
+#map{position:absolute;inset:0;z-index:0;background:var(--line)}
+.float{position:absolute;z-index:500;background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.16);color:var(--ink)}
+.actchip{top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;border-radius:999px;padding:8px 16px 8px 12px;font-size:15px;font-weight:700;white-space:nowrap}
+.actchip i{width:12px;height:12px;border-radius:50%;background:var(--accent);flex:none}
+.actchip small{font-size:12px;font-weight:500;color:var(--muted)}
+.actchip[data-s="detecting"] i{animation:pulse 1.2s ease-in-out infinite}
+.actchip[hidden]{display:none}
+.viewbar{top:10px;left:12px;right:12px;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 6px 6px 12px;font-size:13px;border-left:4px solid var(--accent)}
 .viewbar[hidden]{display:none}
 .viewbar span{flex:1}
-.viewbar button{border:0;background:var(--ink);color:var(--surface);border-radius:8px;padding:6px 12px;font:inherit;font-size:13px}
-.hist li.on{background:color-mix(in srgb,var(--accent) 10%,transparent)}
-.pin-tip{font-family:inherit;font-size:11px;font-weight:700;padding:1px 6px}
+.viewbar button{border:0;background:var(--ink);color:var(--surface);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500}
+.gps{left:12px;bottom:30px;display:flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font-size:12px}
+.gps i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.gps[data-q="good"] i{background:var(--good)} .gps[data-q="ok"] i{background:var(--warn)} .gps[data-q="bad"] i{background:var(--bad)}
+.locate{right:12px;bottom:30px;border:0;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:500}
 .me-icon{background:none;border:0}
 .me-arrow{width:40px;height:40px;transition:transform .4s ease}
 .me-arrow svg{width:40px;height:40px;overflow:visible}
 .me-arrow circle{fill:var(--accent);stroke:#fff;stroke-width:3}
 .me-arrow path{fill:var(--accent);stroke:#fff;stroke-width:2;stroke-linejoin:round;display:none}
 .me-arrow.has-dir path{display:block}
-@media (prefers-reduced-motion:reduce){.me-arrow{transition:none}}
+.pin-tip{font-family:inherit;font-size:11px;font-weight:700;padding:1px 6px}
+.leaflet-control-attribution{font-size:10px}
+
+/* 시트 */
+.sheet{position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(120px + env(safe-area-inset-bottom,0px))}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-height:20px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status[data-s="running"]{color:var(--ink);font-weight:500}
+.status[data-s="running"] i{background:#E53E3E;animation:pulse 1.6s ease-in-out infinite}
+.status[data-s="paused"] i{background:var(--warn)}
+.status[data-s="view"] i{background:var(--accent)}
+@keyframes pulse{50%{opacity:.25}}
+
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:6px}
+.speed{display:flex;align-items:baseline;gap:6px}
+.speed .big{font-size:96px;font-weight:700;line-height:.82;color:var(--accent);letter-spacing:-.01em}
+.speed .u{font-size:16px;font-weight:500;color:var(--muted)}
+.sub{margin-top:10px;font-size:13px;color:var(--muted)}
+.sub .num{font-size:22px;font-weight:600;color:var(--ink);margin-right:3px}
+.sub[hidden]{display:none}
+.timebox{text-align:right}
+.timebox .t{font-size:44px;font-weight:600;line-height:1}
+.timebox small{display:block;font-size:12px;color:var(--muted)}
+.timebox .clock{margin-top:8px;font-size:13px;color:var(--muted)}
+.timebox .clock .num{font-size:22px;font-weight:600;color:var(--ink);margin-right:4px}
+
+.keys{margin-top:16px;background:var(--surface);border-radius:16px;padding:12px 0}
+.keyrow{display:grid;grid-template-columns:repeat(3,1fr)}
+.mix{margin:12px 14px 0;padding-top:10px;border-top:1px solid var(--line)}
+.mix[hidden]{display:none}
+.mix-bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--line)}
+.mix-bar span{display:block;height:100%}
+.mix-leg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:12px;color:var(--muted)}
+.mix-leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.mix-leg b{font-weight:600;color:var(--ink)}
+.h-mix{margin-top:8px}
+.h-mix .mix-bar{height:5px}
+.key{text-align:center;padding:0 4px}
+.key+.key{border-left:1px solid var(--line)}
+.key .num{font-size:34px;font-weight:700;line-height:1.05}
+.key small{display:block;font-size:12px;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:6px}
+.cell{padding:9px 0 9px 2px;border-bottom:1px solid var(--line)}
+.cell:not(:nth-child(3n+1)){padding-left:12px;border-left:1px solid var(--line)}
+.cell .num{font-size:26px;font-weight:600;line-height:1.1}
+.cell small{display:block;font-size:12px;color:var(--muted)}
+
+.card{background:var(--surface);border-radius:16px;padding:12px 14px;margin-top:14px}
+h2{font-size:14px;font-weight:700;margin:0 0 8px}
+.wx-row{display:grid;grid-template-columns:repeat(3,1fr)}
+.wx-col{text-align:center;padding:0 4px}
+.wx-col+.wx-col{border-left:1px solid var(--line)}
+.wx-col small{display:block;color:var(--muted);font-size:12px}
+.wx-ic{font-size:24px;line-height:1.3}
+.wx-t{font-size:28px;font-weight:600;line-height:1.05}
+.wx-desc{font-size:12px}
+.wx-meta{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center}
+.wx-meta span{margin:0 5px;white-space:nowrap}
+#chart{width:100%;height:120px;display:block}
+
+.note{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface);border-left:4px solid var(--warn);font-size:13px}
+.note[hidden]{display:none}
+
+.hist{margin-top:22px}
+.hist ul{list-style:none;margin:0;padding:0}
+.hist li{background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:8px;border:2px solid transparent;cursor:pointer}
+.hist li.on{border-color:var(--accent)}
+.h-top{display:flex;align-items:baseline;gap:6px}
+.h-top .num{font-size:30px;font-weight:700;line-height:1}
+.h-top .u{color:var(--muted);font-size:13px}
+.h-act{margin-left:auto;font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:2px 10px}
+.h-sub{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:13px;color:var(--muted)}
+.h-btns{display:flex;gap:6px;margin-top:10px}
+.h-btns button{border:1px solid var(--line);background:none;color:var(--ink);border-radius:8px;padding:5px 12px;font-size:12px}
+.h-btns .del{margin-left:auto;color:var(--bad)}
+.empty{background:var(--surface);border-radius:14px;padding:18px;color:var(--muted);font-size:13px;text-align:center}
+
+/* 하단 조작부 */
+.controls{position:fixed;left:0;right:0;bottom:0;z-index:1000;background:var(--surface);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.controls .in{display:flex;gap:10px;max-width:600px;margin:0 auto}
+.controls button{border:0;border-radius:16px;height:56px;font-size:17px;font-weight:700}
+#btnMain{flex:1;background:var(--accent);color:#fff;transition:background .2s}
+#btnStop{flex:1;background:var(--ink);color:var(--surface)}
+#btnSim{flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--muted);padding:0 16px;font-size:14px;font-weight:500}
+#btnStop[hidden],#btnSim[hidden]{display:none}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);z-index:1100;background:var(--ink);color:var(--surface);border-radius:999px;padding:9px 18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:360px){.speed .big{font-size:80px}.timebox .t{font-size:36px}.key .num{font-size:28px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
-<body data-act="run">
-<div class="wrap">
-  <header>
-    <div class="acts" role="group" aria-label="운동 종류">
-      <button data-act="walk" aria-pressed="false">걷기</button>
-      <button data-act="run" aria-pressed="true">달리기</button>
-      <button data-act="hike" aria-pressed="false">등산</button>
-      <button data-act="bike" aria-pressed="false">자전거</button>
-    </div>
-    <div class="gps" id="gps" data-q="none"><i></i><span id="gpsTxt">GPS 대기</span></div>
-  </header>
+<body data-act="walk">
 
-  <div class="recenter">
-    <div id="map"></div>
-    <div class="viewbar" id="viewBar" hidden><span id="viewTxt"></span><button id="btnCloseView" type="button">닫기</button></div>
-    <button id="btnCenter" type="button">현재 위치</button>
-  </div>
+<div class="mapwrap">
+  <div id="map"></div>
+  <div class="float actchip" id="actChip" data-s="idle"><i></i><span id="actName">자동 인식</span><small id="actSub">시작하면 운동 종류를 알아서 판단합니다</small></div>
+  <div class="float viewbar" id="viewBar" hidden><span id="viewTxt"></span><button id="btnCloseView" type="button">닫기</button></div>
+  <div class="float gps" id="gps" data-q="none"><i></i><span id="gpsTxt">GPS 찾는 중</span></div>
+  <button class="float locate" id="btnCenter" type="button">현재 위치</button>
+</div>
+
+<main class="sheet">
+  <div class="status" id="status" data-s="idle"><i></i><span id="statusTxt">준비됨</span></div>
 
   <section class="hero">
     <div>
-      <div class="bigrow">
-        <div class="big num" id="heroVal">0.0</div>
-        <div class="pace" id="paceBox"><span class="num" id="heroPace">--</span><small>페이스 분/km</small></div>
-      </div>
-      <div class="unit" id="heroUnit">현재 속도 (km/h)</div>
+      <div class="speed"><span class="big num" id="heroVal">0.0</span><span class="u">km/h</span></div>
+      <div class="sub" id="paceBox"><span class="num" id="heroPace">--</span>분/km <span id="heroUnit">현재 페이스</span></div>
     </div>
-    <div class="side">
+    <div class="timebox">
+      <div class="t num" id="time">00:00:00</div>
+      <small>운동 시간</small>
       <div class="clock"><span class="num" id="clock">--:--</span>현재 시각</div>
-      <div class="num" id="time">00:00:00</div>
-      <div class="unit">운동 시간</div>
-      <div class="num steps" id="steps">0</div>
-      <div class="unit" id="stepsUnit">걸음</div>
     </div>
   </section>
 
-  <section class="wx" aria-label="날씨">
+  <section class="keys">
+    <div class="keyrow">
+      <div class="key"><div class="num" id="dist">0.00</div><small>거리 km</small></div>
+      <div class="key"><div class="num" id="steps">0</div><small id="stepsUnit">걸음</small></div>
+      <div class="key"><div class="num" id="avg">0.0</div><small>평균 속도 km/h</small></div>
+    </div>
+    <div class="mix" id="mix" hidden></div>
+  </section>
+
+  <section class="grid">
+    <div class="cell"><div class="num" id="max">0.0</div><small>최고 속도 km/h</small></div>
+    <div class="cell"><div class="num" id="avgPace">--</div><small>평균 페이스 분/km</small></div>
+    <div class="cell"><div class="num" id="dir">--</div><small id="dirTxt">진행 방향</small></div>
+    <div class="cell"><div class="num" id="alt">--</div><small id="altLbl">고도 m</small></div>
+    <div class="cell"><div class="num" id="gain">0</div><small>누적 상승 m</small></div>
+    <div class="cell"><div class="num" id="loss">0</div><small>누적 하강 m</small></div>
+  </section>
+
+  <p class="note" id="note" hidden></p>
+
+  <section class="card" aria-label="날씨">
     <div class="wx-row">
       <div class="wx-col" id="wx0"><small>지금</small><div class="wx-ic">–</div><div class="num wx-t">--°</div><div class="wx-desc">&nbsp;</div></div>
       <div class="wx-col" id="wx30"><small>30분 후</small><div class="wx-ic">–</div><div class="num wx-t">--°</div><div class="wx-desc">&nbsp;</div></div>
@@ -155,165 +200,90 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="wx-meta" id="wxMeta">위치를 찾으면 날씨를 불러옵니다</div>
   </section>
 
-  <section class="grid">
-    <div class="cell"><div class="num" id="dist">0.00</div><small>거리 km</small></div>
-    <div class="cell"><div class="num" id="spd">0.0</div><small>현재 속도 km/h</small></div>
-    <div class="cell"><div class="num" id="avg">0.0</div><small>평균 속도 km/h</small></div>
-    <div class="cell"><div class="num" id="alt">--</div><small id="altLbl">고도 m</small></div>
-    <div class="cell"><div class="num" id="gain">0</div><small>누적 상승 m</small></div>
-    <div class="cell"><div class="num" id="max">0.0</div><small>최고 속도 km/h</small></div>
-    <div class="cell"><div class="num" id="dir">--</div><small id="dirTxt">진행 방향</small></div>
-    <div class="cell"><div class="num" id="avgPace">--</div><small>평균 페이스 분/km</small></div>
-    <div class="cell"><div class="num" id="loss">0</div><small>누적 하강 m</small></div>
-  </section>
-
-  <section class="profile">
+  <section class="card">
     <h2>고도 프로필</h2>
     <canvas id="chart" aria-label="거리별 고도 그래프"></canvas>
   </section>
-
-  <p class="note" id="note" hidden></p>
 
   <section class="hist">
     <h2>지난 기록</h2>
     <ul id="histList"></ul>
   </section>
-</div>
+</main>
 
-<div class="controls">
+<div class="controls"><div class="in">
   <button id="btnSim" type="button">시뮬레이션</button>
-  <button id="btnMain" type="button">시작</button>
+  <button id="btnMain" type="button">운동 시작</button>
   <button id="btnStop" type="button" hidden>종료</button>
-</div>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
+
+// ---------- 설정 ----------
 const ACT = {walk:'걷기', run:'달리기', hike:'등산', bike:'자전거'};
+const ACT_GPX = {walk:'walking', run:'running', hike:'hiking', bike:'cycling'};
+const CODE = ['walk','run','hike','bike'];               // 지점별 종목 저장용 번호
 const DIRS = ['북','북동','동','남동','남','남서','서','북서'];
-const HDG_STEP_M = 8;
-const STRIDE = {walk:0.7, run:1.0, hike:0.6, bike:0}; // 센서가 없을 때 쓰는 평균 보폭(m)        // 방향 계산에 쓰는 최소 이동 거리
+const STRIDE = {walk:0.7, run:1.0, hike:0.6, bike:0};    // 센서가 없을 때 쓰는 평균 보폭(m)
 const STORE = 'trailog:sessions';
-const MIN_STEP_M = 3;        // 이보다 짧은 이동은 GPS 떨림으로 보고 무시
-const MAX_ACC_M = 35;        // 정확도가 이보다 나쁘면 기록에서 제외
-const ALT_STEP_M = 3;        // 누적 상승 계산 시 무시할 고도 흔들림
+const MIN_STEP_M = 3, MAX_ACC_M = 35, ALT_STEP_M = 3, HDG_STEP_M = 8;
 
-let act = 'run', status = 'idle';   // idle | running | paused
-let pts = [], dist = 0, gain = 0, loss = 0, heading = null, hdgFrom = null, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
+// 자동 인식 기준 (필요하면 여기 숫자만 조정)
+const CLS = {
+  WIN_MS:30000,      // 최근 30초 움직임으로 판단
+  MIN_SPAN_MS:15000, // 최소 15초는 지켜본 뒤 첫 판단
+  HOLD_MS:20000,     // 다른 종목으로 20초 이상 계속 보여야 전환 (깜빡임 방지)
+  STILL_KMH:1.0,     // 이보다 느리면 멈춘 것으로 보고 판단 보류
+  RUN_KMH:6,         // 달리기 최소 속도
+  FAST_KMH:9,        // 이 속도 이상이면 걷기는 아님
+  BIKE_KMH:20,       // 이 속도 이상이면 자전거
+  RUN_CAD:135,       // 분당 걸음이 이 이상이면 달리기
+  BIKE_CAD:60,       // 빠른데 분당 걸음이 이보다 적으면 자전거
+  MTN_RELIEF_M:70,   // 반경 약 400m 안의 지형 높낮이 차가 이 이상이면 산으로 판단
+  MTN_RECHECK_M:400  // 이만큼 이동하면 산 여부 다시 확인
+};
+
+// ---------- 상태 ----------
+let act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
+let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
-let lastFix = null, viewing = null, viewMarks = [];
+let lastFix = null, heading = null, hdgFrom = null, viewing = null, viewMarks = [];
 let steps = 0, stepTimes = [], motionOn = false, motionSeen = false, gAvg = null, sm = 0, above = false, lastStepT = 0;
-
-// ---------- 날씨 (Open-Meteo, API 키 불필요) ----------
-const WX = {0:['맑음','☀️'],1:['대체로 맑음','🌤️'],2:['구름 조금','⛅'],3:['흐림','☁️'],45:['안개','🌫️'],48:['짙은 안개','🌫️'],
-  51:['약한 이슬비','🌦️'],53:['이슬비','🌦️'],55:['강한 이슬비','🌧️'],56:['어는 이슬비','🌧️'],57:['어는 이슬비','🌧️'],
-  61:['약한 비','🌦️'],63:['비','🌧️'],65:['강한 비','🌧️'],66:['어는 비','🌧️'],67:['어는 비','🌧️'],
-  71:['약한 눈','🌨️'],73:['눈','🌨️'],75:['강한 눈','❄️'],77:['싸락눈','🌨️'],80:['약한 소나기','🌦️'],81:['소나기','🌧️'],82:['강한 소나기','⛈️'],
-  85:['눈 소나기','🌨️'],86:['강한 눈 소나기','❄️'],95:['뇌우','⛈️'],96:['우박 뇌우','⛈️'],99:['우박 뇌우','⛈️']};
-let wxAt = 0, wxPos = null;
-function wxCol(id, label, temp, code, day, prec){
-  const w = WX[code] || ['정보 없음','❔'];
-  const ic = (!day && code <= 1) ? '🌙' : w[1];
-  const pr = prec > 0 ? ` ${prec.toFixed(1)}mm` : '';
-  $(id).innerHTML = `<small>${label}</small><div class="wx-ic">${ic}</div><div class="num wx-t">${temp == null ? '--' : Math.round(temp)}°</div><div class="wx-desc">${w[0]}${pr}</div>`;
-}
-function maybeWeather(fix){
-  if (Date.now() - wxAt < 10*60000 && wxPos && haversine(wxPos, fix) < 5000) return;  // 10분마다, 5km 이동 시 갱신
-  wxAt = Date.now(); wxPos = fix; loadWeather(fix.lat, fix.lon);
-}
-async function loadWeather(lat, lon){
-  // 좌표는 소수 2자리(약 1km)로 줄여서 전송
-  const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(2) + '&longitude=' + lon.toFixed(2)
-    + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,is_day'
-    + '&minutely_15=temperature_2m,precipitation,weather_code,is_day&forecast_minutely_15=8'
-    + '&hourly=temperature_2m,weather_code,precipitation,precipitation_probability,is_day&forecast_hours=3'
-    + '&wind_speed_unit=ms&timezone=auto';
-  try {
-    const r = await fetch(u); if (!r.ok) throw new Error(r.status);
-    const j = await r.json(), c = j.current, base = Date.parse(c.time);
-    wxCol('wx0', '지금', c.temperature_2m, c.weather_code, c.is_day, c.precipitation);
-    const pick = (mins) => {
-      const target = base + mins*60000, m = j.minutely_15, h = j.hourly;
-      if (m && m.time) {   // 15분 단위 예보 우선
-        const i = m.time.findIndex(t => Date.parse(t) >= target - 7*60000);
-        if (i >= 0 && m.temperature_2m[i] != null && m.weather_code[i] != null)
-          return [m.temperature_2m[i], m.weather_code[i], m.is_day[i], m.precipitation[i]];
-      }
-      const i = h.time.reduce((b, t, k) => Math.abs(Date.parse(t)-target) < Math.abs(Date.parse(h.time[b])-target) ? k : b, 0);
-      return [h.temperature_2m[i], h.weather_code[i], h.is_day[i], h.precipitation[i]];
-    };
-    wxCol('wx30', '30분 후', ...pick(30));
-    wxCol('wx60', '1시간 후', ...pick(60));
-    const h = j.hourly, hi = h.time.findIndex(t => Date.parse(t) > base);
-    const pop = hi >= 0 && h.precipitation_probability ? h.precipitation_probability[hi] : null;
-    $('wxMeta').textContent = `체감 ${Math.round(c.apparent_temperature)}°  습도 ${c.relative_humidity_2m}%  바람 ${c.wind_speed_10m.toFixed(1)}m/s`
-      + (pop != null ? `  1시간 내 강수확률 ${pop}%` : '')
-      + `  (${c.time.slice(11,16)} 기준, 날씨: Open-Meteo)`;
-  } catch (e) {
-    $('wxMeta').textContent = '날씨 정보를 불러오지 못했습니다. 인터넷 연결을 확인하세요. 2분 뒤 다시 시도합니다.';
-    wxAt = Date.now() - 8*60000;
-  }
-}
-
-// ---------- 걸음 수 (가속도 센서) ----------
-function onMotion(e){
-  const a = e.accelerationIncludingGravity;
-  if (!a || a.x == null) return;
-  motionSeen = true;
-  if (status !== 'running' || act === 'bike') return;
-  const m = Math.hypot(a.x, a.y, a.z);
-  gAvg = gAvg == null ? m : gAvg*0.97 + m*0.03;   // 중력 성분(느린 평균)
-  sm = sm*0.6 + (m - gAvg)*0.4;                   // 흔들림 성분 스무딩
-  const now = performance.now();
-  // 위로 튀는 피크 1번 = 1걸음, 너무 빠른 연속 피크(0.28초 이내)는 무시
-  if (!above && sm > 1.1 && now - lastStepT > 280) { above = true; lastStepT = now; steps++; stepTimes.push(Date.now()); }
-  else if (above && sm < 0.3) above = false;
-}
-function enableMotion(){
-  if (motionOn) return;
-  const add = () => { window.addEventListener('devicemotion', onMotion); motionOn = true; };
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    // 아이폰: 버튼을 누른 순간에만 권한 요청 가능
-    DeviceMotionEvent.requestPermission()
-      .then(r => r === 'granted' ? add() : showNote('동작 센서 권한이 거부되어 걸음 수를 이동 거리로 추정합니다.'))
-      .catch(() => {});
-  } else if ('DeviceMotionEvent' in window) add();
-}
-function shownSteps(){
-  if (act === 'bike') return null;
-  return motionSeen && !sim ? steps : Math.round(dist / STRIDE[act]);
-}
+let wxAt = 0, wxPos = null, mtn = {is:false, relief:null, pos:null, busy:false};
 
 // ---------- 지도 ----------
 const map = L.map('map', {zoomControl:false}).setView([37.5665, 126.978], 15);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom:19, attribution:'&copy; OpenStreetMap'
-}).addTo(map);
-const track = L.polyline([], {color:getAccent(), weight:5, opacity:.9}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
+const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
+const actColor = a => cssVar('--' + a) || '#7C4DDB';
+const trackLayer = L.layerGroup().addTo(map);
+let seg = null, segAct = null;
+const accCircle = L.circle([0,0], {radius:0, weight:0, fillColor:actColor('walk'), fillOpacity:.12});
 const me = L.marker([0,0], {interactive:false, keyboard:false, icon:L.divIcon({className:'me-icon', iconSize:[40,40], iconAnchor:[20,20],
   html:'<div class="me-arrow"><svg viewBox="0 0 40 40"><path d="M20 1 L28 14 L20 10.5 L12 14 Z"/><circle cx="20" cy="20" r="9"/></svg></div>'})});
-const accCircle = L.circle([0,0], {radius:0, weight:0, fillColor:getAccent(), fillOpacity:.12});
 map.on('dragstart', () => follow = false);
-$('btnCenter').onclick = () => { follow = true; if (lastFix) map.setView(lastFix, Math.max(map.getZoom(),16)); };
+$('btnCenter').onclick = () => { follow = true; if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16)); else toast('아직 위치를 찾는 중입니다'); };
 
-function getAccent(){ return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#FF5A1F'; }
-function recolor(){ const c = getAccent(); track.setStyle({color:c}); accCircle.setStyle({fillColor:c}); }
+function setAccent(a){ document.body.dataset.act = a; accCircle.setStyle({fillColor:actColor(a)}); }
+// 경로는 종목이 바뀔 때마다 새 선을 이어 그려 종목별 색으로 구분
+function trackAdd(ll, a){
+  if (!seg || segAct !== a) {
+    const tail = seg ? seg.getLatLngs().slice(-1) : [];
+    seg = L.polyline(tail.concat([ll]), {color:actColor(a), weight:5, opacity:.92, lineJoin:'round'}).addTo(trackLayer);
+    segAct = a;
+  } else seg.addLatLng(ll);
+}
+function trackClear(){ trackLayer.clearLayers(); seg = null; segAct = null; }
+function trackDraw(list){ trackClear(); list.forEach(p => trackAdd(p.ll, p.a)); }   // list: [{ll, a}]
 
-// ---------- 운동 종류 ----------
-document.querySelectorAll('.acts button').forEach(b => b.onclick = () => {
-  if (status !== 'idle') return;
-  closeView();
-  act = b.dataset.act; document.body.dataset.act = act;
-  document.querySelectorAll('.acts button').forEach(x => x.setAttribute('aria-pressed', x === b));
-  recolor(); render();
-});
-
-// ---------- 계산 ----------
+// ---------- 계산 도우미 ----------
 function haversine(a, b){
-  const R = 6371000, r = Math.PI/180;
-  const dLat = (b.lat-a.lat)*r, dLon = (b.lon-a.lon)*r;
+  const R = 6371000, r = Math.PI/180, dLat = (b.lat-a.lat)*r, dLon = (b.lon-a.lon)*r;
   const h = Math.sin(dLat/2)**2 + Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(h));
 }
@@ -322,70 +292,66 @@ function bearing(a, b){
   const x = Math.cos(a.lat*r)*Math.sin(b.lat*r) - Math.sin(a.lat*r)*Math.cos(b.lat*r)*Math.cos((b.lon-a.lon)*r);
   return (Math.atan2(y, x)/r + 360) % 360;
 }
-function updateHeading(fix){
-  if (fix.acc > MAX_ACC_M) return;
-  // 1순위: 기기가 주는 heading (이동 중일 때만 신뢰), 2순위: 직전 위치와의 방위각
-  if (fix.hdg != null && !isNaN(fix.hdg) && (fix.spd || 0) > 0.5) { heading = fix.hdg; hdgFrom = fix; }
-  else if (!hdgFrom) hdgFrom = fix;
-  else if (haversine(hdgFrom, fix) >= HDG_STEP_M) { heading = bearing(hdgFrom, fix); hdgFrom = fix; }
-  const el = me.getElement() && me.getElement().querySelector('.me-arrow');
-  if (el && heading != null) {
-    // 359°→1° 처럼 넘어갈 때 한 바퀴 도는 애니메이션 방지
-    const prev = parseFloat(el.dataset.rot || heading);
-    const rot = prev + ((heading - prev % 360 + 540) % 360 - 180);
-    el.dataset.rot = rot; el.style.transform = `rotate(${rot}deg)`; el.classList.add('has-dir');
-  }
-}
 const nowElapsed = () => elapsed + (status === 'running' ? Date.now() - resumeAt : 0);
 const fmtTime = ms => { const s = Math.floor(ms/1000); return [s/3600, s%3600/60, s%60].map(v => String(Math.floor(v)).padStart(2,'0')).join(':'); };
-const fmtPace = kmh => { if (kmh < 1) return '--'; const m = 60/kmh; return Math.floor(m) + ':' + String(Math.round((m%1)*60)%60).padStart(2,'0'); };
+const fmtPace = kmh => { if (kmh < 1) return '--'; const t = Math.round(3600/kmh); return Math.floor(t/60) + ':' + String(t%60).padStart(2,'0'); };
+const fmtN = n => n.toLocaleString('ko-KR');
+const mainAct = m => Object.keys(m || {}).sort((a, b) => m[b] - m[a])[0] || 'walk';
 
 // ---------- 위치 수신 ----------
 function onPos(p){
   const c = p.coords;
   const fix = {lat:c.latitude, lon:c.longitude, alt:c.altitude, acc:c.accuracy, t:p.timestamp || Date.now(), spd:c.speed, hdg:c.heading};
   lastFix = [fix.lat, fix.lon];
-  // GPS 상태 표시
-  const g = $('gps'); g.dataset.q = fix.acc <= 10 ? 'good' : fix.acc <= MAX_ACC_M ? 'ok' : 'bad';
-  $('gpsTxt').textContent = '±' + Math.round(fix.acc) + 'm';
+  $('gps').dataset.q = fix.acc <= 10 ? 'good' : fix.acc <= MAX_ACC_M ? 'ok' : 'bad';
+  $('gpsTxt').textContent = 'GPS ±' + Math.round(fix.acc) + 'm';
   me.setLatLng(lastFix); accCircle.setLatLng(lastFix).setRadius(fix.acc);
-  if (fix.acc <= 1000) maybeWeather(fix);
-  if (!map.hasLayer(me)) { accCircle.addTo(map); me.addTo(map); map.setView(lastFix, 16); }
+  if (fix.acc <= 1000) { maybeWeather(fix); maybeMountain(fix); }
+  if (!map.hasLayer(me)) { accCircle.addTo(map); me.addTo(map); if (!viewing) map.setView(lastFix, 16); }
   updateHeading(fix);
-  if (follow) map.panTo(lastFix, {animate:true});
-
-  // 고도 스무딩 (GPS 고도는 흔들림이 큼)
+  if (follow && !viewing) map.panTo(lastFix, {animate:true});
   if (fix.alt != null) altSmooth = altSmooth == null ? fix.alt : altSmooth*0.8 + fix.alt*0.2;
 
   if (status !== 'running' || fix.acc > MAX_ACC_M) { render(); return; }
-
   const prev = pts[pts.length-1];
-  if (!prev) { addPoint(fix); render(); return; }
+  if (!prev) { addPoint(fix, 0); classify(fix.t); render(); return; }
   const d = haversine(prev, fix), dt = (fix.t - prev.t)/1000;
-  let v = fix.spd != null && fix.spd >= 0 ? fix.spd : (dt > 0 ? d/dt : 0); // m/s
-  if (v*3.6 > 120) { render(); return; }                       // 비정상 점프 제거
+  const v = fix.spd != null && fix.spd >= 0 ? fix.spd : (dt > 0 ? d/dt : 0);   // m/s
+  if (v*3.6 > 120) { render(); return; }                                          // 비정상 점프 제거
   curSpd = curSpd*0.6 + v*3.6*0.4;
-  if (d >= MIN_STEP_M) {
-    dist += d; addPoint(fix);
-    if (curSpd > maxSpd) maxSpd = curSpd;
-  } else if (dt > 5) curSpd *= 0.5;                              // 멈춰 있으면 속도 감소
+  if (d >= MIN_STEP_M) { dist += d; addPoint(fix, d); if (curSpd > maxSpd) maxSpd = curSpd; }
+  else if (dt > 5) curSpd *= 0.5;
+  classify(fix.t);
   render();
 }
-function addPoint(fix){
+function addPoint(fix, d){
   const alt = altSmooth;
   if (alt != null) {
     if (altRef == null) altRef = alt;
     else if (alt - altRef >= ALT_STEP_M) { gain += alt - altRef; altRef = alt; }
     else if (altRef - alt >= ALT_STEP_M) { loss += altRef - alt; altRef = alt; }
   }
-  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist});
-  track.addLatLng([fix.lat, fix.lon]);
+  actDist[act] = (actDist[act] || 0) + d;
+  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a:act});
+  if (!viewing) trackAdd([fix.lat, fix.lon], act);
+}
+function updateHeading(fix){
+  if (fix.acc > MAX_ACC_M) return;
+  if (fix.hdg != null && !isNaN(fix.hdg) && (fix.spd || 0) > 0.5) { heading = fix.hdg; hdgFrom = fix; }
+  else if (!hdgFrom) hdgFrom = fix;
+  else if (haversine(hdgFrom, fix) >= HDG_STEP_M) { heading = bearing(hdgFrom, fix); hdgFrom = fix; }
+  const el = me.getElement() && me.getElement().querySelector('.me-arrow');
+  if (el && heading != null) {
+    const prev = parseFloat(el.dataset.rot || heading);
+    const rot = prev + ((heading - prev % 360 + 540) % 360 - 180);
+    el.dataset.rot = rot; el.style.transform = `rotate(${rot}deg)`; el.classList.add('has-dir');
+  }
 }
 function onErr(e){
   const msg = {1:'위치 권한이 거부되었습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.',
-               2:'위치를 찾을 수 없습니다. 실외로 이동하거나 GPS를 켜세요.',
-               3:'위치 응답 시간이 초과되었습니다. 잠시 후 다시 시도합니다.'}[e.code] || e.message;
-  showNote(msg); $('gps').dataset.q = 'bad'; $('gpsTxt').textContent = '오류';
+               2:'위치를 찾을 수 없습니다. 실외로 이동하거나 휴대폰의 위치(GPS)를 켜세요.',
+               3:'위치 응답이 늦어지고 있습니다. 계속 시도합니다.'}[e.code] || e.message;
+  showNote(msg); $('gps').dataset.q = 'bad'; $('gpsTxt').textContent = 'GPS 오류';
 }
 function startWatch(){
   if (sim || watchId != null) return;
@@ -393,210 +359,383 @@ function startWatch(){
   watchId = navigator.geolocation.watchPosition(onPos, onErr, {enableHighAccuracy:true, maximumAge:0, timeout:20000});
 }
 
-// ---------- 화면 꺼짐 방지 ----------
-async function keepAwake(){
-  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(_) {}
+// ---------- 운동 종류 자동 인식 ----------
+function guess(kmh, cad){
+  if (kmh < CLS.STILL_KMH) return null;                       // 멈춤: 판단 보류
+  if (kmh >= CLS.BIKE_KMH) return 'bike';
+  if (cad != null) {                                          // 걸음 센서가 있을 때: 속도 + 걸음 리듬
+    if (kmh >= CLS.FAST_KMH && cad < CLS.BIKE_CAD) return 'bike';
+    if (kmh >= CLS.RUN_KMH && (cad >= CLS.RUN_CAD || kmh >= CLS.FAST_KMH)) return 'run';
+    return 'walk';
+  }
+  if (kmh < 7) return 'walk';                                  // 센서가 없을 때: 속도만으로
+  if (kmh < 13) return 'run';
+  return 'bike';
 }
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && status === 'running') keepAwake();
-});
+function classify(t){
+  samples.push({t, d:dist});
+  while (samples.length > 2 && samples[1].t < t - CLS.WIN_MS) samples.shift();
+  const first = samples[0], span = t - first.t;
+  if (span < CLS.MIN_SPAN_MS) return;
+  const kmh = (dist - first.d) / (span/1000) * 3.6;
+  const cad = motionSeen && !sim ? stepTimes.filter(x => x > Date.now() - CLS.WIN_MS).length * (60000/CLS.WIN_MS) : null;
+  let g = guess(kmh, cad);
+  if (g === 'walk' && mtn.is) g = 'hike';                      // 산 지형에서 걸을 때만 등산
+  if (!g) return;
+  if (!actKnown) { switchAct(g, false); return; }
+  if (g === act) { cand = null; return; }
+  if (g !== cand) { cand = g; candSince = t; return; }
+  if (t - candSince >= CLS.HOLD_MS) switchAct(g, true);
+}
+function switchAct(a, notify){
+  const was = actKnown;
+  act = a; actKnown = true; cand = null;
+  if (!was) pts.forEach(p => p.a = a);                          // 판단 전 구간은 첫 판단 종목으로
+  if (!was) { actDist = {[a]: dist}; trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a}))); }
+  setAccent(a);
+  if (notify) toast(`${ACT[a]}(으)로 바뀐 것 같아요`);
+}
+
+// ---------- 산 지형 판단 (Open-Meteo 지형 고도, API 키 불필요) ----------
+function maybeMountain(fix){
+  if (mtn.busy || (mtn.pos && haversine(mtn.pos, fix) < CLS.MTN_RECHECK_M)) return;
+  mtn.busy = true; checkMountain(fix).finally(() => mtn.busy = false);
+}
+async function checkMountain(fix){
+  // 현재 위치와 주변 400m, 200m 지점들의 지형 고도를 받아 높낮이 차를 계산
+  const lats = [], lons = [], k = 1/111320, ck = k/Math.cos(fix.lat*Math.PI/180);
+  lats.push(fix.lat); lons.push(fix.lon);
+  [200, 400].forEach(r => { for (let i = 0; i < 8; i++) { const a = i*Math.PI/4; lats.push(fix.lat + Math.cos(a)*r*k); lons.push(fix.lon + Math.sin(a)*r*ck); } });
+  const u = 'https://api.open-meteo.com/v1/elevation?latitude=' + lats.map(v => v.toFixed(4)).join(',') + '&longitude=' + lons.map(v => v.toFixed(4)).join(',');
+  try {
+    const r = await fetch(u); if (!r.ok) throw new Error(r.status);
+    const el = (await r.json()).elevation.filter(v => v != null);
+    mtn.relief = Math.max(...el) - Math.min(...el);
+    mtn.is = mtn.relief >= CLS.MTN_RELIEF_M;
+    mtn.pos = fix;
+    render();
+  } catch(_) { mtn.pos = null; }
+}
+
+// ---------- 걸음 수 (가속도 센서) ----------
+function onMotion(e){
+  const a = e.accelerationIncludingGravity;
+  if (!a || a.x == null) return;
+  motionSeen = true;
+  if (status !== 'running' || (actKnown && act === 'bike')) return;
+  const m = Math.hypot(a.x, a.y, a.z);
+  gAvg = gAvg == null ? m : gAvg*0.97 + m*0.03;
+  sm = sm*0.6 + (m - gAvg)*0.4;
+  const now = performance.now();
+  if (!above && sm > 1.1 && now - lastStepT > 280) { above = true; lastStepT = now; steps++; stepTimes.push(Date.now()); }
+  else if (above && sm < 0.3) above = false;
+}
+function enableMotion(){
+  if (motionOn) return;
+  const add = () => { window.addEventListener('devicemotion', onMotion); motionOn = true; };
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission()
+      .then(r => r === 'granted' ? add() : showNote('동작 센서 권한이 거부되어 걸음 수는 거리로 추정하고, 운동 종류는 속도로만 판단합니다.'))
+      .catch(() => {});
+  } else if ('DeviceMotionEvent' in window) add();
+}
+function shownSteps(){
+  if (motionSeen && !sim) return steps;
+  let n = 0; for (const a in actDist) if (STRIDE[a]) n += actDist[a] / STRIDE[a];
+  return Math.round(n);
+}
+
+// ---------- 날씨 (Open-Meteo) ----------
+const WX = {0:['맑음','☀️'],1:['대체로 맑음','🌤️'],2:['구름 조금','⛅'],3:['흐림','☁️'],45:['안개','🌫️'],48:['짙은 안개','🌫️'],
+  51:['약한 이슬비','🌦️'],53:['이슬비','🌦️'],55:['강한 이슬비','🌧️'],56:['어는 이슬비','🌧️'],57:['어는 이슬비','🌧️'],
+  61:['약한 비','🌦️'],63:['비','🌧️'],65:['강한 비','🌧️'],66:['어는 비','🌧️'],67:['어는 비','🌧️'],
+  71:['약한 눈','🌨️'],73:['눈','🌨️'],75:['강한 눈','❄️'],77:['싸락눈','🌨️'],80:['약한 소나기','🌦️'],81:['소나기','🌧️'],82:['강한 소나기','⛈️'],
+  85:['눈 소나기','🌨️'],86:['강한 눈 소나기','❄️'],95:['뇌우','⛈️'],96:['우박 뇌우','⛈️'],99:['우박 뇌우','⛈️']};
+function wxCol(id, label, temp, code, day, prec){
+  const w = WX[code] || ['정보 없음','❔'], ic = (!day && code <= 1) ? '🌙' : w[1];
+  $(id).innerHTML = `<small>${label}</small><div class="wx-ic">${ic}</div><div class="num wx-t">${temp == null ? '--' : Math.round(temp)}°</div><div class="wx-desc">${w[0]}${prec > 0 ? ' ' + prec.toFixed(1) + 'mm' : ''}</div>`;
+}
+function maybeWeather(fix){
+  if (Date.now() - wxAt < 10*60000 && wxPos && haversine(wxPos, fix) < 5000) return;
+  wxAt = Date.now(); wxPos = fix; loadWeather(fix.lat, fix.lon);
+}
+async function loadWeather(lat, lon){
+  const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat.toFixed(2) + '&longitude=' + lon.toFixed(2)
+    + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,is_day'
+    + '&minutely_15=temperature_2m,precipitation,weather_code,is_day&forecast_minutely_15=8'
+    + '&hourly=temperature_2m,weather_code,precipitation,precipitation_probability,is_day&forecast_hours=3'
+    + '&wind_speed_unit=ms&timezone=auto';
+  try {
+    const r = await fetch(u); if (!r.ok) throw new Error(r.status);
+    const j = await r.json(), c = j.current, base = Date.parse(c.time), h = j.hourly;
+    wxCol('wx0', '지금', c.temperature_2m, c.weather_code, c.is_day, c.precipitation);
+    const pick = mins => {
+      const target = base + mins*60000, m = j.minutely_15;
+      if (m && m.time) {
+        const i = m.time.findIndex(t => Date.parse(t) >= target - 7*60000);
+        if (i >= 0 && m.temperature_2m[i] != null && m.weather_code[i] != null) return [m.temperature_2m[i], m.weather_code[i], m.is_day[i], m.precipitation[i]];
+      }
+      const i = h.time.reduce((b, t, k) => Math.abs(Date.parse(t)-target) < Math.abs(Date.parse(h.time[b])-target) ? k : b, 0);
+      return [h.temperature_2m[i], h.weather_code[i], h.is_day[i], h.precipitation[i]];
+    };
+    wxCol('wx30', '30분 후', ...pick(30));
+    wxCol('wx60', '1시간 후', ...pick(60));
+    const hi = h.time.findIndex(t => Date.parse(t) > base);
+    const pop = hi >= 0 && h.precipitation_probability ? h.precipitation_probability[hi] : null;
+    $('wxMeta').innerHTML = `<span>체감 ${Math.round(c.apparent_temperature)}°</span><span>습도 ${c.relative_humidity_2m}%</span><span>바람 ${c.wind_speed_10m.toFixed(1)}m/s</span>`
+      + (pop != null ? `<span>강수확률 ${pop}%</span>` : '') + `<br><span>${c.time.slice(11,16)} 기준, 날씨 Open-Meteo</span>`;
+  } catch (e) {
+    $('wxMeta').textContent = '날씨 정보를 불러오지 못했습니다. 2분 뒤 다시 시도합니다.';
+    wxAt = Date.now() - 8*60000;
+  }
+}
+
+// ---------- 화면 꺼짐 방지 ----------
+async function keepAwake(){ try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(_) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && status === 'running') keepAwake(); });
 
 // ---------- 시작 / 일시정지 / 종료 ----------
 $('btnMain').onclick = () => {
-  if (status === 'idle') { enableMotion(); closeView(); reset(); status = 'running'; resumeAt = Date.now(); startWatch(); keepAwake(); tick = setInterval(render, 1000); }
-  else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; }
+  if (status === 'idle') {
+    enableMotion(); closeView(true); reset();
+    status = 'running'; resumeAt = Date.now(); follow = true;
+    startWatch(); keepAwake(); tick = setInterval(render, 1000);
+    if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
+  } else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; samples = []; }
   else { status = 'running'; resumeAt = Date.now(); keepAwake(); }
   render();
 };
 $('btnStop').onclick = () => {
+  if (!confirm('운동을 종료하고 기록을 저장할까요?')) return;
   if (status === 'running') elapsed += Date.now() - resumeAt;
   status = 'idle'; clearInterval(tick); curSpd = 0;
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
-  if (pts.length > 1) saveSession();
-  if (sim) { clearInterval(sim.timer); sim = null; $('btnSim').hidden = false; }
-  render(); renderHist();
+  const saved = pts.length > 1 ? saveSession() : null;
+  if (sim) { clearInterval(sim.timer); sim = null; startWatch(); }
+  renderHist();
+  if (saved) { toast('기록을 저장했습니다'); openView(saved); }
+  else { toast('이동 거리가 없어 저장하지 않았습니다'); render(); }
 };
 function reset(){
-  pts = []; dist = 0; gain = 0; loss = 0; steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
-  track.setLatLngs([]);
+  pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
+  steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false;
+  act = 'walk'; actKnown = false; cand = null; setAccent('walk');
+  trackClear();
 }
 
 // ---------- 화면 갱신 ----------
-function render(){
-  if (viewing && status === 'idle') { renderView(); return; }
-  $('heroUnit').textContent = '현재 속도 (km/h)'; $('altLbl').textContent = '고도 m';
-  const ms = nowElapsed(), km = dist/1000, avg = ms > 0 ? km/(ms/3600000) : 0;
-  $('time').textContent = fmtTime(ms);
-  $('dist').textContent = km.toFixed(2);
-  $('spd').textContent = curSpd.toFixed(1);
-  $('avg').textContent = avg.toFixed(1);
-  $('max').textContent = maxSpd.toFixed(1);
-  $('alt').textContent = altSmooth == null ? '--' : Math.round(altSmooth);
-  $('gain').textContent = Math.round(gain);
-  $('loss').textContent = Math.round(loss);
-  const st = shownSteps();
-  stepTimes = stepTimes.filter(t => t > Date.now() - 30000);
-  $('steps').textContent = st == null ? '--' : st.toLocaleString('ko-KR');
-  $('stepsUnit').textContent = act === 'bike' ? '걸음 (자전거 제외)'
-    : (!motionSeen || sim) ? '걸음 (거리로 추정)'
-    : (status === 'running' && stepTimes.length > 4) ? `걸음, 분당 ${stepTimes.length*2}` : '걸음';
-  $('avgPace').textContent = fmtPace(avg);
-  $('dir').textContent = heading == null ? '--' : Math.round(heading) + '°';
-  $('dirTxt').textContent = heading == null ? '진행 방향' : '진행 방향 ' + DIRS[Math.round(heading/45) % 8];
-  $('heroVal').textContent = curSpd.toFixed(1);
-  $('heroPace').textContent = fmtPace(curSpd);
-  $('paceBox').hidden = act === 'bike';   // 자전거는 페이스를 잘 쓰지 않아 숨김
-  renderButtons();
-  drawChart();
+function setText(o){ for (const k in o) $(k).textContent = o[k]; }
+function renderMix(el, m, total){
+  const keys = CODE.filter(a => (m[a] || 0) >= 1);
+  if (!keys.length || total < 10) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<div class="mix-bar">${keys.map(a => `<span style="width:${(m[a]/total*100).toFixed(1)}%;background:var(--${a})"></span>`).join('')}</div>`
+    + `<div class="mix-leg">${keys.map(a => `<span><i style="background:var(--${a})"></i>${ACT[a]} <b>${(m[a]/1000).toFixed(2)}km</b></span>`).join('')}</div>`;
 }
-function renderButtons(){
-  $('btnMain').textContent = {idle:'시작', running:'일시정지', paused:'계속'}[status];
+function render(){
+  renderChrome();
+  if (viewing && status === 'idle') { renderView(); return; }
+  const ms = nowElapsed(), km = dist/1000, avg = ms > 0 ? km/(ms/3600000) : 0, st = shownSteps();
+  stepTimes = stepTimes.filter(t => t > Date.now() - 30000);
+  setText({
+    heroVal:curSpd.toFixed(1), heroPace:fmtPace(curSpd), heroUnit:'현재 페이스',
+    time:fmtTime(ms), dist:km.toFixed(2), avg:avg.toFixed(1), max:maxSpd.toFixed(1), avgPace:fmtPace(avg),
+    alt:altSmooth == null ? '--' : Math.round(altSmooth), altLbl:'고도 m',
+    gain:Math.round(gain), loss:Math.round(loss),
+    dir:heading == null ? '--' : Math.round(heading) + '°',
+    dirTxt:heading == null ? '진행 방향' : '진행 방향 ' + DIRS[Math.round(heading/45) % 8],
+    steps:fmtN(st),
+    stepsUnit:(!motionSeen || sim) ? '걸음 (거리로 추정)'
+      : (status === 'running' && stepTimes.length > 4 && act !== 'bike') ? `걸음, 분당 ${stepTimes.length*2}` : '걸음'
+  });
+  $('paceBox').hidden = actKnown && act === 'bike';
+  renderMix($('mix'), actDist, dist);
+  drawChart(pts);
+}
+function renderChrome(){
+  const v = viewing && status === 'idle', s = v ? 'view' : status;
+  $('status').dataset.s = s;
+  $('statusTxt').textContent = {idle:'준비됨, 시작을 누르면 기록합니다', paused:'일시정지됨', view:'지난 기록 요약',
+    running: actKnown ? `${ACT[act]} 기록 중` : '기록 중, 운동 종류 확인 중'}[s];
+  $('btnMain').textContent = {idle:'운동 시작', running:'일시정지', paused:'계속'}[status];
   $('btnStop').hidden = status === 'idle';
-  $('btnSim').hidden = status !== 'idle' || !!sim;
-  document.querySelectorAll('.acts button').forEach(b => b.disabled = status !== 'idle');
+  $('btnSim').hidden = status !== 'idle';
+  // 상단 자동 인식 표시
+  const chip = $('actChip'); chip.hidden = !!v;
+  const terrain = mtn.relief == null ? '' : mtn.is ? '산 지형' : '평지';
+  if (status === 'idle') { chip.dataset.s = 'idle'; $('actName').textContent = '자동 인식'; $('actSub').textContent = terrain ? `지금 위치는 ${terrain}` : '시작하면 운동 종류를 알아서 판단합니다'; }
+  else if (!actKnown) { chip.dataset.s = 'detecting'; $('actName').textContent = '확인 중'; $('actSub').textContent = '15초 정도 움직여 주세요'; }
+  else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (terrain ? `, ${terrain}` : ''); }
+}
+
+function drawChart(src){
+  const cv = $('chart'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0,0,w,h);
+  const muted = cssVar('--muted'), line = cssVar('--line'), c = cssVar('--accent');
+  const data = (src || []).filter(p => p.alt != null);
+  ctx.font = '12px "Noto Sans KR", sans-serif';
+  if (data.length < 2) { ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText('기록을 시작하면 고도 변화가 그려집니다', w/2, h/2+4); return; }
+  let lo = Math.min(...data.map(p => p.alt)), hi = Math.max(...data.map(p => p.alt));
+  if (hi - lo < 10) { const m = (hi+lo)/2; lo = m-5; hi = m+5; }
+  const maxD = data[data.length-1].d || 1, L0 = 40, B = 18;
+  const x = d => L0 + (d/maxD)*(w-L0-4), y = a => h-B - ((a-lo)/(hi-lo))*(h-B-8);
+  ctx.strokeStyle = line; ctx.lineWidth = 1;
+  [lo, (lo+hi)/2, hi].forEach(a => { ctx.beginPath(); ctx.moveTo(L0, y(a)); ctx.lineTo(w, y(a)); ctx.stroke(); });
+  ctx.beginPath(); ctx.moveTo(x(data[0].d), h-B);
+  data.forEach(p => ctx.lineTo(x(p.d), y(p.alt)));
+  ctx.lineTo(x(data[data.length-1].d), h-B); ctx.closePath();
+  ctx.globalAlpha = .18; ctx.fillStyle = c; ctx.fill(); ctx.globalAlpha = 1;
+  // 고도선도 종목별 색으로
+  ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+  for (let i = 1; i < data.length; i++) {
+    ctx.beginPath(); ctx.moveTo(x(data[i-1].d), y(data[i-1].alt)); ctx.lineTo(x(data[i].d), y(data[i].alt));
+    ctx.strokeStyle = data[i].a ? actColor(data[i].a) : c; ctx.stroke();
+  }
+  ctx.fillStyle = muted; ctx.textAlign = 'right';
+  ctx.fillText(Math.round(hi) + 'm', L0-6, y(hi)+4); ctx.fillText(Math.round(lo) + 'm', L0-6, y(lo)+4);
+  ctx.textAlign = 'left'; ctx.fillText('0', L0, h-3);
+  ctx.textAlign = 'right'; ctx.fillText((maxD/1000).toFixed(2) + 'km', w-2, h-3);
 }
 
 // ---------- 지난 기록 보기 ----------
 function openView(s){
-  if (status !== 'idle') return;
-  closeView();
-  // 저장된 지점으로 누적 거리와 고도 데이터 다시 계산
+  if (status !== 'idle' || !s || !s.pts || s.pts.length < 2) return;
+  closeView(true);
   let d = 0, maxAlt = null;
   const data = s.pts.map((p, i) => {
     if (i) d += haversine({lat:s.pts[i-1][0], lon:s.pts[i-1][1]}, {lat:p[0], lon:p[1]});
     if (p[2] != null && (maxAlt == null || p[2] > maxAlt)) maxAlt = p[2];
-    return {alt:p[2], d};
+    return {alt:p[2], d, a:p[4] != null ? CODE[p[4]] : s.act, ll:[p[0], p[1]]};
   });
-  viewing = Object.assign({}, s, {data, maxAlt});
-  document.body.dataset.act = s.act; recolor();
-  const ll = s.pts.map(p => [p[0], p[1]]);
-  track.setLatLngs(ll);
+  viewing = Object.assign({}, s, {data, maxAlt, mix:s.mix || {[s.act]: s.dist}});
+  setAccent(s.act);
+  trackDraw(data);
+  const ll = data.map(p => p.ll);
   const mk = (pos, color, label) => L.circleMarker(pos, {radius:7, color:'#fff', weight:3, fillColor:color, fillOpacity:1})
     .bindTooltip(label, {permanent:true, direction:'top', offset:[0,-8], className:'pin-tip'}).addTo(map);
-  viewMarks = [mk(ll[0], '#2F7D5B', '출발'), mk(ll[ll.length-1], '#C53030', '도착')];
-  follow = false; map.fitBounds(track.getBounds(), {padding:[40,40]});
+  viewMarks = [mk(ll[0], '#2E7D57', '출발'), mk(ll[ll.length-1], '#C53030', '도착')];
+  follow = false;
+  map.fitBounds(L.latLngBounds(ll), {paddingTopLeft:[30,80], paddingBottomRight:[30,60], maxZoom:17});
   const dt = new Date(s.start);
-  $('viewTxt').textContent = `${dt.toLocaleDateString('ko-KR')} ${dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ${ACT[s.act]} 기록 보는 중`;
+  $('viewTxt').textContent = `${dt.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ${ACT[s.act]}`;
   $('viewBar').hidden = false;
   document.querySelectorAll('#histList li').forEach(li => li.classList.toggle('on', li.dataset.id == s.id));
-  render(); window.scrollTo({top:0, behavior:'smooth'});
+  render();
 }
-function closeView(){
+function closeView(silent){
   if (!viewing) return;
   viewing = null;
   viewMarks.forEach(m => map.removeLayer(m)); viewMarks = [];
-  document.body.dataset.act = act; recolor();
-  track.setLatLngs(pts.map(p => [p.lat, p.lon]));
-  $('viewBar').hidden = true; follow = true;
+  setAccent(act);
+  trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a})));
+  $('viewBar').hidden = true;
   document.querySelectorAll('#histList li').forEach(li => li.classList.remove('on'));
+  if (silent) return;
+  follow = true;
   if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
   render();
 }
 function renderView(){
   const s = viewing, km = s.dist/1000, avg = s.ms > 0 ? km/(s.ms/3600000) : 0;
-  $('heroVal').textContent = avg.toFixed(1);
-  $('heroPace').textContent = fmtPace(avg);
+  setText({
+    heroVal:avg.toFixed(1), heroPace:fmtPace(avg), heroUnit:'평균 페이스',
+    time:fmtTime(s.ms), dist:km.toFixed(2), avg:avg.toFixed(1), max:(s.maxSpd || 0).toFixed(1), avgPace:fmtPace(avg),
+    alt:s.maxAlt == null ? '--' : Math.round(s.maxAlt), altLbl:'최고 고도 m',
+    gain:Math.round(s.gain || 0), loss:Math.round(s.loss || 0), dir:'--', dirTxt:'진행 방향',
+    steps:s.steps != null ? fmtN(s.steps) : '--', stepsUnit:'걸음'
+  });
   $('paceBox').hidden = s.act === 'bike';
-  $('heroUnit').textContent = '평균 속도 (km/h)';
-  $('time').textContent = fmtTime(s.ms);
-  $('steps').textContent = s.steps != null ? s.steps.toLocaleString('ko-KR') : '--';
-  $('stepsUnit').textContent = '걸음';
-  $('dist').textContent = km.toFixed(2);
-  $('spd').textContent = '--';
-  $('avg').textContent = avg.toFixed(1);
-  $('max').textContent = (s.maxSpd || 0).toFixed(1);
-  $('alt').textContent = s.maxAlt == null ? '--' : Math.round(s.maxAlt);
-  $('altLbl').textContent = '최고 고도 m';
-  $('gain').textContent = Math.round(s.gain || 0);
-  $('loss').textContent = Math.round(s.loss || 0);
-  $('avgPace').textContent = fmtPace(avg);
-  $('dir').textContent = '--'; $('dirTxt').textContent = '진행 방향';
-  renderButtons();
+  renderMix($('mix'), s.mix, s.dist);
   drawChart(s.data);
 }
-$('btnCloseView').onclick = closeView;
+$('btnCloseView').onclick = () => closeView();
 
-function drawChart(src){
-  const cv = $('chart'), dpr = window.devicePixelRatio || 1;
-  const w = cv.clientWidth, h = cv.clientHeight;
-  cv.width = w*dpr; cv.height = h*dpr;
-  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0,0,w,h);
-  const data = (src || pts).filter(p => p.alt != null);
-  const cs = getComputedStyle(document.body);
-  ctx.font = '12px "Noto Sans KR", sans-serif';
-  if (data.length < 2) { ctx.fillStyle = cs.getPropertyValue('--muted'); ctx.fillText('기록을 시작하면 고도 변화가 여기에 그려집니다', 12, h/2+4); return; }
-  let lo = Math.min(...data.map(p=>p.alt)), hi = Math.max(...data.map(p=>p.alt));
-  if (hi - lo < 10) { const m = (hi+lo)/2; lo = m-5; hi = m+5; }
-  const maxD = data[data.length-1].d || 1, pad = 8;
-  const x = d => pad + (d/maxD)*(w-pad*2), y = a => h-pad - ((a-lo)/(hi-lo))*(h-pad*2-14);
-  ctx.beginPath(); ctx.moveTo(x(data[0].d), h-pad);
-  data.forEach(p => ctx.lineTo(x(p.d), y(p.alt)));
-  ctx.lineTo(x(data[data.length-1].d), h-pad); ctx.closePath();
-  ctx.globalAlpha = .18; ctx.fillStyle = getAccent(); ctx.fill(); ctx.globalAlpha = 1;
-  ctx.beginPath(); data.forEach((p,i) => i ? ctx.lineTo(x(p.d), y(p.alt)) : ctx.moveTo(x(p.d), y(p.alt)));
-  ctx.strokeStyle = getAccent(); ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = cs.getPropertyValue('--muted');
-  ctx.fillText(Math.round(hi) + 'm', pad+2, 14);
-  ctx.fillText(Math.round(lo) + 'm', pad+2, h-pad-4);
-}
-
-// ---------- 기록 저장 / GPX 내보내기 ----------
+// ---------- 기록 저장 / 목록 / GPX ----------
 function loadSessions(){ try { return JSON.parse(localStorage.getItem(STORE)) || []; } catch(_) { return []; } }
 function saveSession(){
-  const s = {id:Date.now(), act, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(),
-             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t])};
+  const mix = {}; for (const a in actDist) if (actDist[a] >= 1) mix[a] = Math.round(actDist[a]);
+  const s = {id:Date.now(), act:mainAct(actDist), mix, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(),
+             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a)])};
   const all = loadSessions(); all.unshift(s);
-  try { localStorage.setItem(STORE, JSON.stringify(all.slice(0, 30))); }
-  catch(_) { showNote('저장 공간이 부족해 기록을 저장하지 못했습니다. 오래된 기록을 삭제하세요.'); }
+  try { localStorage.setItem(STORE, JSON.stringify(all.slice(0, 30))); return s; }
+  catch(_) { showNote('저장 공간이 부족해 기록을 저장하지 못했습니다. 오래된 기록을 삭제한 뒤 다시 시도하세요.'); return null; }
 }
 function renderHist(){
   const list = $('histList'), all = loadSessions();
-  list.innerHTML = all.length ? '' : '<li class="empty">아직 저장된 기록이 없습니다. 시작을 눌러 첫 운동을 기록하세요.</li>';
+  list.innerHTML = '';
+  if (!all.length) { list.innerHTML = '<li class="empty">아직 기록이 없습니다. 아래 운동 시작을 눌러 첫 운동을 기록해 보세요.</li>'; return; }
   all.forEach(s => {
     const li = document.createElement('li'), d = new Date(s.start);
-    li.dataset.id = s.id; if (viewing && viewing.id === s.id) li.classList.add('on');
-    li.innerHTML = `<div class="meta"><b>${ACT[s.act]} ${(s.dist/1000).toFixed(2)}km</b>${d.toLocaleDateString('ko-KR')} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} · ${fmtTime(s.ms)} · 상승 ${Math.round(s.gain)}m 하강 ${Math.round(s.loss || 0)}m${s.steps != null ? ' · ' + s.steps.toLocaleString('ko-KR') + '걸음' : ''}</div>`;
-    const bShow = Object.assign(document.createElement('button'), {textContent:'지도'});
-    const bGpx = Object.assign(document.createElement('button'), {textContent:'GPX'});
-    const bDel = Object.assign(document.createElement('button'), {textContent:'삭제'});
-    bShow.onclick = () => openView(s);
-    bGpx.onclick = () => exportGpx(s);
-    bDel.onclick = () => { if (confirm('이 기록을 삭제할까요?')) { if (viewing && viewing.id === s.id) closeView(); localStorage.setItem(STORE, JSON.stringify(loadSessions().filter(x => x.id !== s.id))); renderHist(); } };
-    li.append(bShow, bGpx, bDel); list.append(li);
+    li.dataset.id = s.id; li.tabIndex = 0; li.setAttribute('role', 'button');
+    if (viewing && viewing.id === s.id) li.classList.add('on');
+    li.innerHTML = `<div class="h-top"><span class="num">${(s.dist/1000).toFixed(2)}</span><span class="u">km</span>
+        <span class="h-act" style="background:var(--${s.act})">${ACT[s.act]}</span></div>
+      <div class="h-sub"><span>${d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span>${fmtTime(s.ms)}</span>${s.steps != null ? `<span>${fmtN(s.steps)}걸음</span>` : ''}<span>상승 ${Math.round(s.gain)}m</span></div>
+      <div class="mix h-mix"></div>
+      <div class="h-btns"><button type="button" data-k="gpx">GPX 내보내기</button><button type="button" class="del" data-k="del">삭제</button></div>`;
+    renderMix(li.querySelector('.h-mix'), s.mix || {[s.act]: s.dist}, s.dist);
+    if (!s.mix || Object.keys(s.mix).length < 2) li.querySelector('.h-mix').hidden = true;   // 한 종목뿐이면 막대 생략
+    li.onclick = e => {
+      const k = e.target.dataset && e.target.dataset.k;
+      if (k === 'gpx') return exportGpx(s);
+      if (k === 'del') {
+        if (!confirm('이 기록을 삭제할까요?')) return;
+        if (viewing && viewing.id === s.id) closeView();
+        localStorage.setItem(STORE, JSON.stringify(loadSessions().filter(x => x.id !== s.id)));
+        renderHist(); toast('기록을 삭제했습니다'); return;
+      }
+      if (status !== 'idle') return toast('운동 중에는 지난 기록을 열 수 없습니다');
+      openView(s); window.scrollTo({top:0, behavior:'smooth'});
+    };
+    li.onkeydown = e => { if (e.key === 'Enter' && e.target === li) li.click(); };
+    list.append(li);
   });
 }
 function exportGpx(s){
-  const type = {walk:'walking', run:'running', hike:'hiking', bike:'cycling'}[s.act];
+  const type = ACT_GPX[s.act];
   const trk = s.pts.map(p => `<trkpt lat="${p[0]}" lon="${p[1]}">${p[2] != null ? `<ele>${p[2]}</ele>` : ''}<time>${new Date(p[3]).toISOString()}</time></trkpt>`).join('\n');
   const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Trailog" xmlns="http://www.topografix.com/GPX/1/1">\n<trk><name>${type} ${new Date(s.start).toISOString()}</name><type>${type}</type><trkseg>\n${trk}\n</trkseg></trk></gpx>`;
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([gpx], {type:'application/gpx+xml'}));
-  a.download = `trailog_${type}_${new Date(s.start).toISOString().slice(0,16).replace(/[:T]/g,'')}.gpx`;
+  a.download = `trailog_${type}_${new Date(s.start).toISOString().slice(0,16).replace(/[:T-]/g,'')}.gpx`;
   a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ---------- 시뮬레이션 (PC에서 테스트용) ----------
+// ---------- 시뮬레이션 (PC 테스트용: 걷기 → 달리기 → 자전거 45초씩 반복) ----------
 $('btnSim').onclick = () => {
+  if (status !== 'idle') return;
   if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  closeView(true);
   const c = map.getCenter(); let lat = c.lat, lon = c.lng, hd = Math.random()*Math.PI*2, k = 0;
-  const base = {walk:1.4, run:3.2, hike:1.3, bike:6.5}[act];       // m/s
+  const phases = [1.4, 3.2, 6.5];
   sim = {timer:setInterval(() => {
-    hd += (Math.random()-.5)*.4; const v = base*(.8 + Math.random()*.4);
+    const base = phases[Math.floor(k/45) % 3];
+    hd += (Math.random()-.5)*.3; const v = base*(.85 + Math.random()*.3);
     lat += Math.cos(hd)*v/111320; lon += Math.sin(hd)*v/(111320*Math.cos(lat*Math.PI/180)); k++;
-    onPos({timestamp:Date.now(), coords:{latitude:lat, longitude:lon, accuracy:5+Math.random()*6, speed:v, heading:(hd*180/Math.PI % 360 + 360) % 360,
-           altitude:120 + 40*Math.sin(k/60) + (act==='hike' ? k*.4 : 0) + (Math.random()-.5)*2}});
+    onPos({timestamp:Date.now(), coords:{latitude:lat, longitude:lon, accuracy:5+Math.random()*6, speed:v,
+      heading:(hd*180/Math.PI % 360 + 360) % 360, altitude:120 + 30*Math.sin(k/50) + (Math.random()-.5)*2}});
   }, 1000)};
-  showNote('시뮬레이션 모드입니다. 지도 중심에서 가상의 경로로 1초마다 위치가 들어옵니다.');
+  toast('시뮬레이션: 걷기, 달리기, 자전거를 45초씩 번갈아 기록합니다');
   $('btnMain').click();
 };
 
 // ---------- 공통 ----------
 function showNote(t){ const n = $('note'); n.textContent = t; n.hidden = false; }
-if (!window.isSecureContext) showNote('위치 기능은 HTTPS 주소(또는 localhost)에서만 동작합니다. 휴대폰에서는 HTTPS로 배포된 주소로 접속하세요.');
-window.addEventListener('resize', () => render());
+let toastT = null;
+function toast(t){ const el = $('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2400); }
+if (!window.isSecureContext) showNote('위치 기능은 HTTPS 주소(또는 localhost)에서만 동작합니다.');
 const updClock = () => $('clock').textContent = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
 updClock(); setInterval(updClock, 1000);
-startWatch(); render(); renderHist();
+window.addEventListener('resize', () => render());
+
+// 첫 화면: 마지막 기록 요약
+setAccent('walk');
+renderHist();
+const last = loadSessions()[0];
+if (last) openView(last); else render();
+startWatch();
 })();
 </script>
 </body>
