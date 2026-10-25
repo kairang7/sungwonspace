@@ -14,6 +14,7 @@
 :root{
   --bg:#EEF2F1; --surface:#FFFFFF; --ink:#15232B; --muted:#5E707A; --line:#D3DCDF;
   --walk:#7C4DDB; --run:#F2541B; --hike:#2E7D57; --bike:#2266D1; --accent:var(--walk);
+  --car:#D6336C; --bus:#0F9488; --taxi:#C28A0E; --subway:#4B5D6E; --train:#9A4A12; --stay:#8FA2AC;
   --warn:#B7791F; --bad:#C53030; --good:#2E7D57;
   color-scheme:light;
   box-sizing:border-box;
@@ -21,12 +22,12 @@
 }
 @media (prefers-color-scheme:dark){
   :root{--bg:#0D161B;--surface:#16232A;--ink:#E3ECEF;--muted:#8FA2AC;--line:#26363F;
-    --walk:#A585EC;--run:#FF7A45;--hike:#4DB283;--bike:#5B8FE8;--good:#4DB283;color-scheme:dark}
+    --walk:#A585EC;--run:#FF7A45;--hike:#4DB283;--bike:#5B8FE8;--car:#F06595;--bus:#2DD4BF;--taxi:#E5B33D;--subway:#9AAAB9;--train:#E08A3C;--stay:#6B7F89;--good:#4DB283;color-scheme:dark}
 }
 *,*::before,*::after{box-sizing:inherit}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
-body[data-act="run"]{--accent:var(--run)} body[data-act="hike"]{--accent:var(--hike)} body[data-act="bike"]{--accent:var(--bike)}
+body[data-act="run"]{--accent:var(--run)} body[data-act="car"]{--accent:var(--car)} body[data-act="bus"]{--accent:var(--bus)} body[data-act="taxi"]{--accent:var(--taxi)} body[data-act="subway"]{--accent:var(--subway)} body[data-act="train"]{--accent:var(--train)} body[data-act="stay"]{--accent:var(--stay)} body[data-act="hike"]{--accent:var(--hike)} body[data-act="bike"]{--accent:var(--bike)}
 .num{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-variant-numeric:tabular-nums}
 button{font:inherit;cursor:pointer}
 button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -35,12 +36,16 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .mapwrap{position:relative;height:46vh;min-height:270px}
 #map{position:absolute;inset:0;z-index:0;background:var(--line)}
 .float{position:absolute;z-index:500;background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.16);color:var(--ink)}
+.kinds{top:10px;left:50%;transform:translateX(-50%);display:flex;gap:2px;border-radius:999px;padding:4px}
+.kinds[hidden]{display:none}
+.kinds button{border:0;background:none;color:var(--muted);font-size:14px;font-weight:700;padding:8px 18px;border-radius:999px;white-space:nowrap}
+.kinds button[aria-checked="true"]{background:var(--ink);color:var(--surface)}
 .actchip{top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;border-radius:999px;padding:8px 16px 8px 12px;font-size:15px;font-weight:700;white-space:nowrap}
 .actchip i{width:12px;height:12px;border-radius:50%;background:var(--accent);flex:none}
 .actchip small{font-size:12px;font-weight:500;color:var(--muted)}
 .actchip[data-s="detecting"] i{animation:pulse 1.2s ease-in-out infinite}
 .actchip[hidden]{display:none}
-.viewbar{top:10px;left:12px;right:12px;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 6px 6px 12px;font-size:13px;border-left:4px solid var(--accent)}
+.viewbar{top:62px;left:12px;right:12px;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 6px 6px 12px;font-size:13px;border-left:4px solid var(--accent)}
 .viewbar[hidden]{display:none}
 .viewbar span{flex:1}
 .viewbar button{border:0;background:var(--ink);color:var(--surface);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500}
@@ -58,7 +63,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .leaflet-control-attribution{font-size:10px}
 
 /* 시트 */
-.sheet{overflow-x:hidden;position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(170px + env(safe-area-inset-bottom,0px))}
+.sheet{overflow-x:hidden;position:relative;z-index:1;max-width:600px;margin:-18px auto 0;background:var(--bg);border-radius:20px 20px 0 0;padding:14px 16px calc(215px + env(safe-area-inset-bottom,0px))}
 .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-height:20px}
 .status i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .status[data-s="running"]{color:var(--ink);font-weight:500}
@@ -159,6 +164,19 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 .controls button{border:0;border-radius:16px;height:56px;font-size:17px;font-weight:700}
 .modes{display:flex;gap:6px;max-width:600px;margin:0 auto 10px}
 .modes[hidden]{display:none}
+.modes{overflow-x:auto;scrollbar-width:none}
+.modes::-webkit-scrollbar{display:none}
+.modes[data-k="travel"]{display:grid;grid-template-columns:repeat(4,1fr)}
+.modes[data-k="travel"] button{padding:7px 0}
+.modes button.veh{border-color:var(--accent);color:var(--accent);font-weight:700}
+#tlCard[hidden]{display:none}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:10px 88px 1fr auto;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.tl li:last-child{border-bottom:0}
+.tl i{width:10px;height:10px;border-radius:50%}
+.tl .tm{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tl .r{text-align:right;color:var(--muted);white-space:nowrap}
+.tl .empty-tl{display:block;color:var(--muted);border:0}
 .modes button{flex:1;border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:8px 0;font-size:14px;font-weight:500;transition:background .2s,color .2s}
 .modes button[aria-checked="true"]{border-color:transparent;color:#fff;font-weight:700}
 .modes button[data-m="auto"][aria-checked="true"]{background:var(--ink);color:var(--surface)}
@@ -175,7 +193,7 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 #btnStop{flex:1;background:var(--ink);color:var(--surface)}
 #btnSim{flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--muted);padding:0 16px;font-size:14px;font-weight:500}
 #btnStop[hidden],#btnSim[hidden]{display:none}
-.toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);z-index:1100;background:var(--ink);color:var(--surface);border-radius:999px;padding:9px 18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:calc(200px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);z-index:1100;background:var(--ink);color:var(--surface);border-radius:999px;padding:9px 18px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:360px){.key .num{font-size:28px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -185,6 +203,10 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 
 <div class="mapwrap">
   <div id="map"></div>
+  <div class="float kinds" id="kinds" role="radiogroup" aria-label="기록 종류">
+    <button type="button" role="radio" data-k="exercise" aria-checked="true">운동 기록</button>
+    <button type="button" role="radio" data-k="travel" aria-checked="false">이동 기록</button>
+  </div>
   <div class="float actchip" id="actChip" data-s="idle"><i></i><span id="actName">자동 인식</span><small id="actSub">시작하면 운동 종류를 알아서 판단합니다</small></div>
   <div class="float viewbar" id="viewBar" hidden><span id="viewTxt"></span><button id="btnCloseView" type="button">닫기</button></div>
   <div class="float gps" id="gps" data-q="none"><i></i><span id="gpsTxt">GPS 찾는 중</span></div>
@@ -226,6 +248,11 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
     <div class="mix" id="mix" hidden></div>
   </section>
 
+  <section class="card" id="tlCard" hidden>
+    <h2>이동 타임라인</h2>
+    <ul class="tl" id="tlList"></ul>
+  </section>
+
   <section class="grid">
     <div class="cell"><div class="num" id="avg">0.0</div><small>평균 속도 km/h</small></div>
     <div class="cell"><div class="num" id="max">0.0</div><small>최고 속도 km/h</small></div>
@@ -261,13 +288,7 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 </main>
 
 <div class="controls">
-  <div class="modes" id="modes" role="radiogroup" aria-label="운동 종류">
-    <button type="button" role="radio" data-m="auto" aria-checked="true"><span class="long">자동 인식</span><span class="short">자동</span></button>
-    <button type="button" role="radio" data-m="walk" aria-checked="false">걷기</button>
-    <button type="button" role="radio" data-m="run" aria-checked="false">달리기</button>
-    <button type="button" role="radio" data-m="hike" aria-checked="false">등산</button>
-    <button type="button" role="radio" data-m="bike" aria-checked="false">자전거</button>
-  </div>
+  <div class="modes" id="modes" role="radiogroup" aria-label="종류 선택"></div>
   <div class="in">
   <button id="btnSim" type="button">시뮬레이션</button>
   <button id="btnMain" type="button">운동 시작</button>
@@ -282,9 +303,16 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 const $ = id => document.getElementById(id);
 
 // ---------- 설정 ----------
-const ACT = {walk:'걷기', run:'달리기', hike:'등산', bike:'자전거'};
-const ACT_GPX = {walk:'walking', run:'running', hike:'hiking', bike:'cycling'};
-const CODE = ['walk','run','hike','bike'];               // 지점별 종목 저장용 번호
+const ACT = {walk:'걷기', run:'달리기', hike:'등산', bike:'자전거', car:'자동차', bus:'버스', taxi:'택시', subway:'지하철', train:'기차', stay:'머무름'};
+const ACT_GPX = {walk:'walking', run:'running', hike:'hiking', bike:'cycling', car:'driving', bus:'bus', taxi:'taxi', subway:'subway', train:'train', stay:'stationary'};
+const CODE = ['walk','run','hike','bike','car','bus','taxi','subway','train','stay'];   // 지점별 종류 저장용 번호
+const VEH = ['car','bus','taxi'];                        // 도로 차량 (GPS로는 서로 구분 불가 → 사용자가 표시)
+const MOTOR = [...VEH, 'subway', 'train'];
+const FOOT = ['walk','run','hike'];
+const MODES = {
+  exercise:{idle:['auto','hike','bike'], active:['auto','walk','run','hike','bike']},
+  travel:{idle:[], active:['auto','walk','bike','car','bus','taxi','subway','train']}
+};
 const DIRS = ['북','북동','동','남동','남','남서','서','북서'];
 const STRIDE = {walk:0.7, run:1.0, hike:0.6, bike:0};    // 센서가 없을 때 쓰는 평균 보폭(m)
 const STORE = 'trailog:sessions';
@@ -304,8 +332,20 @@ const CLS = {
   MTN_RELIEF_M:70,   // 반경 약 400m 안의 지형 높낮이 차가 이 이상이면 산으로 판단
   MTN_RECHECK_M:400  // 이만큼 이동하면 산 여부 다시 확인
 };
+// 이동 기록 판단 기준
+const TRV = {
+  WALK_KMH:7,        // 이보다 느리면 걷기
+  BIKE_MAX_KMH:25,   // 걸음 없이 7~25km/h면 자전거, 그 이상은 차량 (센서 없으면 18km/h 기준)
+  TRAIN_KMH:130,     // 이 속도 이상이면 기차
+  STAY_MS:5*60000,   // 5분 이상 멈춰 있으면 머무름
+  GAP_MS:90000,      // GPS가 90초 이상 끊겼다가
+  GAP_MIN_M:800,     // 800m 이상 떨어진 곳에서 다시 잡히면 지하철(또는 타고 있던 차량)
+  VEH_STEP_M:20,     // 차량 이동 중에는 20m마다 한 점만 저장 (저장 공간 절약)
+  MAX_KMH:350        // 이보다 빠른 점프는 오류로 보고 무시
+};
 
 // ---------- 상태 ----------
+let kind = localStorage.getItem('trailog:kind') === 'travel' ? 'travel' : 'exercise', vehLabel = 'car', stillFrom = null, stayAt = null;
 let mode = 'auto', act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
 let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
@@ -331,14 +371,18 @@ $('btnCenter').onclick = () => { follow = true; if (lastFix) map.setView(lastFix
 function setAccent(a){ document.body.dataset.act = a; accCircle.setStyle({fillColor:actColor(a)}); }
 // 경로는 종목이 바뀔 때마다 새 선을 이어 그려 종목별 색으로 구분
 function trackAdd(ll, a){
+  if (a === 'stay') {   // 머무른 곳은 선 대신 점으로 표시
+    L.circleMarker(ll, {radius:7, color:'#fff', weight:2, fillColor:actColor('stay'), fillOpacity:1}).bindTooltip('머무름').addTo(trackLayer);
+    return;
+  }
   if (!seg || segAct !== a) {
     const tail = seg ? seg.getLatLngs().slice(-1) : [];
-    seg = L.polyline(tail.concat([ll]), {color:actColor(a), weight:5, opacity:.92, lineJoin:'round'}).addTo(trackLayer);
+    seg = L.polyline(tail.concat([ll]), {color:actColor(a), weight:5, opacity:.92, lineJoin:'round', dashArray:a === 'subway' ? '2 9' : null}).addTo(trackLayer);
     segAct = a;
   } else seg.addLatLng(ll);
 }
 function trackClear(){ trackLayer.clearLayers(); seg = null; segAct = null; }
-function trackDraw(list){ trackClear(); list.forEach(p => trackAdd(p.ll, p.a)); }   // list: [{ll, a}]
+function trackDraw(list){ trackClear(); list.forEach(p => { if (p.a !== 'stay' || p.s) trackAdd(p.ll, p.a); }); }   // list: [{ll, a, s}]
 
 // ---------- 계산 도우미 ----------
 function haversine(a, b){
@@ -373,34 +417,52 @@ function onPos(p){
 
   if (status !== 'running' || fix.acc > MAX_ACC_M) { render(); return; }
   const prev = pts[pts.length-1];
-  if (!prev) { addPoint(fix, 0); classify(fix.t); render(); return; }
-  const d = haversine(prev, fix), dt = (fix.t - prev.t)/1000;
+  if (!prev) { addPoint(fix, 0); classify(fix); render(); return; }
+  const d = haversine(prev, fix), dt = (fix.t - prev.t)/1000, travel = kind === 'travel';
+  // 이동 기록: GPS가 오래 끊겼다가 멀리서 다시 잡히면 지하철(차량 탑승 중이었으면 그 차량) 구간으로 처리
+  if (travel && dt*1000 >= TRV.GAP_MS && d >= TRV.GAP_MIN_M && d/dt*3.6 <= TRV.MAX_KMH) {
+    const gapAct = MOTOR.includes(act) ? act : 'subway';
+    if (act === 'stay') { markStay({lat:prev.lat, lon:prev.lon, t:prev.t + 1}); switchAct('walk', false); }
+    dist += d; addPoint(fix, d, gapAct); samples = []; stillFrom = null;
+    toast(`${ACT[gapAct]} 구간으로 기록했습니다`); render(); return;
+  }
+  // 머무는 중: 80m 이상 벗어나야 다시 이동으로 봄 (그 전의 GPS 흔들림은 무시)
+  if (travel && act === 'stay') {
+    if (haversine(stayAt || prev, fix) < 80) { curSpd = 0; render(); return; }
+    markStay(fix); switchAct('walk', false); samples = []; stillFrom = null;
+  }
   const v = fix.spd != null && fix.spd >= 0 ? fix.spd : (dt > 0 ? d/dt : 0);   // m/s
-  if (v*3.6 > 120) { render(); return; }                                          // 비정상 점프 제거
+  if (v*3.6 > (travel ? TRV.MAX_KMH : 120)) { render(); return; }                // 비정상 점프 제거
   curSpd = curSpd*0.6 + v*3.6*0.4;
-  if (d >= MIN_STEP_M) { dist += d; addPoint(fix, d); if (curSpd > maxSpd) maxSpd = curSpd; }
+  const minStep = travel && MOTOR.includes(act) ? TRV.VEH_STEP_M : MIN_STEP_M;
+  if (d >= minStep) { dist += d; addPoint(fix, d); if (curSpd > maxSpd) maxSpd = curSpd; }
   else if (dt > 5) curSpd *= 0.5;
-  classify(fix.t);
+  classify(fix);
   render();
 }
-function addPoint(fix, d){
-  const alt = altSmooth;
+function addPoint(fix, d, aOverride){
+  const alt = altSmooth, a = aOverride || act;
   if (alt != null) {
     if (altRef == null) altRef = alt;
     else if (alt - altRef >= ALT_STEP_M) { gain += alt - altRef; altRef = alt; }
     else if (altRef - alt >= ALT_STEP_M) { loss += altRef - alt; altRef = alt; }
   }
-  actDist[act] = (actDist[act] || 0) + d;
+  actDist[a] = (actDist[a] || 0) + d;
   const prev = pts[pts.length-1];
   if (prev && d > 0) {
     const dt = Math.min((fix.t - prev.t)/1000, 60);
     let j = pts.length - 1; while (j > 0 && pts[j-1].t >= fix.t - 30000) j--;
     const q = pts[j], dd = dist - q.d;
     const grade = (dd >= 15 && alt != null && q.alt != null) ? (alt - q.alt)/dd : 0;
-    if (dt > 0) kcal += kcalStep(act, d/dt*3.6, grade, dt, kg());
+    if (dt > 0) kcal += kcalStep(a, d/dt*3.6, grade, dt, kg());
   }
-  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a:act, hr:hrLive() ? hr.bpm : null});
-  if (!viewing) trackAdd([fix.lat, fix.lon], act);
+  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a, hr:hrLive() ? hr.bpm : null});
+  if (!viewing) trackAdd([fix.lat, fix.lon], a);
+}
+// 머무름 시작·끝 표시점 (거리 없음). start에는 실제로 멈추기 시작한 시각을 함께 저장
+function markStay(fix, start){
+  pts.push({lat:fix.lat, lon:fix.lon, alt:altSmooth, t:fix.t, d:dist, a:'stay', hr:null, s:start || null});
+  if (start && !viewing) trackAdd([fix.lat, fix.lon], 'stay');
 }
 function updateHeading(fix){
   if (fix.acc > MAX_ACC_M) return;
@@ -439,16 +501,39 @@ function guess(kmh, cad){
   if (kmh < 13) return 'run';
   return 'bike';
 }
-function classify(t){
-  if (mode !== 'auto') return;                                 // 직접 선택한 종목은 고정
+function guessTravel(kmh, cad){
+  if (kmh < CLS.STILL_KMH) return null;
+  if (kmh >= TRV.TRAIN_KMH) return 'train';
+  if (cad != null) {
+    if (kmh < TRV.WALK_KMH && cad >= 40) return 'walk';
+    if (kmh < 4) return 'walk';                                 // 아주 느린 차량 정체는 구분이 어려워 걷기로
+    if (cad < 40 && kmh <= TRV.BIKE_MAX_KMH && kmh >= TRV.WALK_KMH) return 'bike';
+    return kmh < TRV.WALK_KMH ? 'walk' : 'car';
+  }
+  if (kmh < TRV.WALK_KMH) return 'walk';
+  if (kmh < 18) return 'bike';
+  return 'car';
+}
+function classify(fix){
+  const t = fix.t;
+  if (mode !== 'auto') return;                                 // 직접 선택한 종류는 고정
   samples.push({t, d:dist});
   while (samples.length > 2 && samples[1].t < t - CLS.WIN_MS) samples.shift();
   const first = samples[0], span = t - first.t;
   if (span < CLS.MIN_SPAN_MS) return;
   const kmh = (dist - first.d) / (span/1000) * 3.6;
   const cad = motionSeen && !sim ? stepTimes.filter(x => x > Date.now() - CLS.WIN_MS).length * (60000/CLS.WIN_MS) : null;
-  let g = guess(kmh, cad);
-  if (g === 'walk' && mtn.is) g = 'hike';                      // 산 지형에서 걸을 때만 등산
+  let g = kind === 'travel' ? guessTravel(kmh, cad) : guess(kmh, cad);
+  if (kind === 'travel') {
+    if (!g) {   // 멈춤이 5분 넘게 이어지면 머무름
+      if (stillFrom == null) stillFrom = t - CLS.WIN_MS/2;
+      if (act !== 'stay' && t - stillFrom >= TRV.STAY_MS) { stayAt = fix; markStay(fix, stillFrom); switchAct('stay', false); toast('머무름으로 기록합니다'); }
+      return;
+    }
+    stillFrom = null;
+    if (act === 'stay') { markStay(fix); switchAct(g === 'car' ? vehLabel : g, false); return; }   // 다시 움직이면 바로 전환
+    if (g === 'car') g = VEH.includes(act) ? act : vehLabel;   // 차량 종류는 사용자가 표시한 것 유지
+  } else if (g === 'walk' && mtn.is) g = 'hike';               // 산 지형에서 걸을 때만 등산
   if (!g) return;
   if (!actKnown) { switchAct(g, false); return; }
   if (g === act) { cand = null; return; }
@@ -460,8 +545,17 @@ function switchAct(a, notify){
   act = a; actKnown = true; cand = null;
   if (!was) pts.forEach(p => p.a = a);                          // 판단 전 구간은 첫 판단 종목으로
   if (!was) { actDist = {[a]: dist}; trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a}))); }
+  if (!VEH.includes(a) && a !== 'stay') vehLabel = 'car';
   setAccent(a);
   if (notify) toast(`${ACT[a]}(으)로 바뀐 것 같아요`);
+}
+// 방금까지의 차량 구간을 다른 차량 종류로 바꿔 표시 (예: 자동차로 잡힌 걸 버스로)
+function relabelVehicle(m){
+  for (let i = pts.length - 1; i >= 0 && VEH.includes(pts[i].a); i--) pts[i].a = m;
+  actDist = {};
+  for (let i = 1; i < pts.length; i++) { const a = pts[i].a; actDist[a] = (actDist[a] || 0) + (pts[i].d - pts[i-1].d); }
+  if (pts.length) actDist[pts[0].a] = actDist[pts[0].a] || 0;
+  if (!viewing) trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s})));
 }
 
 // ---------- 산 지형 판단 (Open-Meteo 지형 고도, API 키 불필요) ----------
@@ -488,6 +582,7 @@ async function checkMountain(fix){
 // ---------- 칼로리 ----------
 // 걷기·등산·달리기는 ACSM 대사 공식(속도와 오르막 경사 반영), 자전거는 운동 강도표(MET) 기준
 function met(a, kmh, grade){
+  if (!FOOT.includes(a) && a !== 'bike') return 0;                       // 차량·지하철·머무름은 운동 칼로리 없음
   const v = kmh*1000/60, g = Math.min(Math.max(grade || 0, 0), 0.3);   // m/분, 오르막만 반영
   if (a === 'bike') return kmh < 16 ? 4 : kmh < 19 ? 6.8 : kmh < 22 ? 8 : kmh < 25 ? 10 : kmh < 30 ? 12 : 15.8;
   if (a === 'run') return (0.2*v + 0.9*v*g + 3.5) / 3.5;
@@ -611,7 +706,7 @@ function onMotion(e){
   const a = e.accelerationIncludingGravity;
   if (!a || a.x == null) return;
   motionSeen = true;
-  if (status !== 'running' || (actKnown && act === 'bike')) return;
+  if (status !== 'running' || (actKnown && !FOOT.includes(act))) return;
   const m = Math.hypot(a.x, a.y, a.z);
   gAvg = gAvg == null ? m : gAvg*0.97 + m*0.03;
   sm = sm*0.6 + (m - gAvg)*0.4;
@@ -697,7 +792,7 @@ $('btnMain').onclick = () => {
   render();
 };
 $('btnStop').onclick = () => {
-  if (!confirm('운동을 종료하고 기록을 저장할까요?')) return;
+  if (!confirm(kind === 'travel' ? '이동 기록을 종료하고 저장할까요?' : '운동을 종료하고 기록을 저장할까요?')) return;
   if (status === 'running') elapsed += Date.now() - resumeAt;
   status = 'idle'; clearInterval(tick); curSpd = 0;
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
@@ -710,7 +805,7 @@ $('btnStop').onclick = () => {
 };
 function reset(){
   kcal = 0; hr.sum = 0; hr.n = 0; hr.max = 0; pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
-  steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false;
+  steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false; stillFrom = null; vehLabel = 'car';
   act = mode === 'auto' ? 'walk' : mode; actKnown = mode !== 'auto'; cand = null; setAccent(act);
   if (mode !== 'auto') actDist = {};
   trackClear();
@@ -742,8 +837,9 @@ function render(){
     stepsUnit:(!motionSeen || sim) ? '걸음 (거리로 추정)'
       : (status === 'running' && stepTimes.length > 4 && act !== 'bike') ? `걸음, 분당 ${stepTimes.length*2}` : '걸음'
   });
-  $('paceBox').hidden = actKnown && act === 'bike';
+  $('paceBox').hidden = actKnown && !FOOT.includes(act);
   renderMix($('mix'), actDist, dist);
+  renderTimeline(kind === 'travel' ? pts : null);
   drawChart(pts);
 }
 function renderChrome(){
@@ -751,23 +847,74 @@ function renderChrome(){
   $('profileLbl').textContent = age ? `체중 kg, ${age}세` : '체중 kg, 나이 입력';
   const v = viewing && status === 'idle', s = v ? 'view' : status;
   $('status').dataset.s = s;
-  $('statusTxt').textContent = {idle:'준비됨, 시작을 누르면 기록합니다', paused:'일시정지됨', view:'지난 기록 요약',
-    running: actKnown ? `${ACT[act]} 기록 중` : '기록 중, 운동 종류 확인 중'}[s];
-  $('btnMain').textContent = {idle:mode === 'auto' ? '운동 시작' : `${ACT[mode]} 시작`, running:'일시정지', paused:'계속'}[status];
-  $('btnMain').style.background = status === 'idle' ? `var(--${mode === 'auto' ? 'walk' : mode})` : '';
-  $('modes').dataset.s = status === 'idle' ? 'idle' : 'active';   // 운동 중에는 걷기·달리기도 선택 가능
-  if (status === 'idle' && !v) setAccent(mode === 'auto' ? 'walk' : mode);   // 선택한 종목 색으로 미리 표시
-  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-checked', b.dataset.m === mode));
+  const tv = kind === 'travel';
+  $('statusTxt').textContent = {idle:tv ? '이동 기록 준비됨, 시작하면 이동 수단을 알아서 판단합니다' : '운동 기록 준비됨, 시작을 누르면 기록합니다',
+    paused:'일시정지됨', view:'지난 기록 요약',
+    running: actKnown ? (tv ? `${ACT[act]} ${act === 'stay' ? '중' : '이동 중'}` : `${ACT[act]} 기록 중`) : (tv ? '이동 기록 중, 이동 수단 확인 중' : '기록 중, 운동 종류 확인 중')}[s];
+  $('btnMain').textContent = {idle:tv ? '이동 기록 시작' : mode === 'auto' ? '운동 시작' : `${ACT[mode]} 시작`, running:'일시정지', paused:'계속'}[status];
+  $('btnMain').style.background = status === 'idle' ? (tv ? 'var(--ink)' : `var(--${mode === 'auto' ? 'walk' : mode})`) : '';
+  $('btnMain').style.color = status === 'idle' && tv ? 'var(--surface)' : '';
+  if (status === 'idle' && !v) setAccent(tv || mode === 'auto' ? 'walk' : mode);   // 선택한 종목 색으로 미리 표시
+  renderModes();
+  $('kinds').hidden = status !== 'idle';
+  document.querySelectorAll('#kinds button').forEach(b => b.setAttribute('aria-checked', b.dataset.k === kind));
   $('btnStop').hidden = status === 'idle';
   $('btnSim').hidden = status !== 'idle';
   // 상단 자동 인식 표시
-  const chip = $('actChip'); chip.hidden = !!v;
+  const chip = $('actChip'); chip.hidden = !!v || status === 'idle';
   const terrain = mtn.relief == null ? '' : mtn.is ? '산 지형' : '평지';
   if (status === 'idle' && mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[mode]; $('actSub').textContent = '직접 선택, 자동 인식 안 함'; }
   else if (status === 'idle') { chip.dataset.s = 'idle'; $('actName').textContent = '자동 인식'; $('actSub').textContent = terrain ? `지금 위치는 ${terrain}` : '시작하면 운동 종류를 알아서 판단합니다'; }
   else if (mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '직접 선택'; }
   else if (!actKnown) { chip.dataset.s = 'detecting'; $('actName').textContent = '확인 중'; $('actSub').textContent = '15초 정도 움직여 주세요'; }
-  else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (terrain ? `, ${terrain}` : ''); }
+  else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (!tv && terrain ? `, ${terrain}` : ''); }
+}
+
+let modesSig = '';
+function renderModes(){
+  const el = $('modes'), list = MODES[kind][status === 'idle' ? 'idle' : 'active'];
+  el.hidden = !list.length;
+  el.dataset.k = kind;
+  const sig = kind + list.join();
+  if (sig !== modesSig) {
+    modesSig = sig;
+    el.innerHTML = list.map(m => `<button type="button" role="radio" data-m="${m}">${m === 'auto' ? (status === 'idle' ? '자동 인식' : '자동') : ACT[m]}</button>`).join('');
+  }
+  el.querySelectorAll('button').forEach(b => {
+    const m = b.dataset.m, on = m === mode;
+    b.setAttribute('aria-checked', on);
+    b.style.background = on ? (m === 'auto' ? 'var(--ink)' : `var(--${m})`) : '';
+    b.style.color = on ? (m === 'auto' ? 'var(--surface)' : '#fff') : '';
+    b.style.borderColor = on ? 'transparent' : '';
+    // 자동 인식 중 차량 종류 표시
+    b.classList.toggle('veh', kind === 'travel' && mode === 'auto' && status !== 'idle' && VEH.includes(m) && VEH.includes(act) && m === act);
+  });
+}
+// 지점 목록을 같은 종류끼리 묶어 타임라인으로
+function timelineOf(list){
+  const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const p = list[i], dd = i ? p.d - list[i-1].d : 0, last = out[out.length-1];
+    if (last && last.a === p.a) { last.e = p.t; last.dist += dd; }
+    else {
+      const start = p.a === 'stay' && p.s ? p.s : (last ? last.e : p.t);
+      if (last && p.a === 'stay' && p.s) last.e = Math.min(last.e, p.s);
+      out.push({a:p.a, s:start, e:p.t, dist:dd});
+    }
+  }
+  return out.filter(g => g.e - g.s >= 30000 || g.dist >= 50);   // 아주 짧은 조각은 생략
+}
+function renderTimeline(list){
+  const card = $('tlCard');
+  if (!list) { card.hidden = true; return; }
+  card.hidden = false;
+  const tl = timelineOf(list), live = status !== 'idle' && !viewing;
+  if (live && tl.length) tl[tl.length-1].e = Date.now();
+  const hm = t => new Date(t).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
+  const dur = ms => { const m = Math.round(ms/60000); return m >= 60 ? `${Math.floor(m/60)}시간 ${m%60}분` : `${m}분`; };
+  $('tlList').innerHTML = tl.length ? tl.map(g => `<li><i style="background:var(--${g.a})"></i><span class="tm">${hm(g.s)}–${hm(g.e)}</span><b>${ACT[g.a]}</b>`
+    + `<span class="r">${g.a === 'stay' ? '' : (g.dist/1000).toFixed(1) + 'km, '}${dur(g.e - g.s)}</span></li>`).join('')
+    : '<li class="empty-tl">움직이기 시작하면 구간별로 기록됩니다</li>';
 }
 
 function drawChart(src){
@@ -808,7 +955,8 @@ function openView(s){
   const data = s.pts.map((p, i) => {
     if (i) d += haversine({lat:s.pts[i-1][0], lon:s.pts[i-1][1]}, {lat:p[0], lon:p[1]});
     if (p[2] != null && (maxAlt == null || p[2] > maxAlt)) maxAlt = p[2];
-    return {alt:p[2], d, t:p[3], a:p[4] != null ? CODE[p[4]] : s.act, ll:[p[0], p[1]]};
+    const a = p[4] != null ? CODE[p[4]] : s.act;
+    return {alt:p[2], d, t:p[3], a, ll:[p[0], p[1]], s:p[6] || null};
   });
   viewing = Object.assign({}, s, {data, maxAlt, mix:s.mix || {[s.act]: s.dist}, kcal:s.kcal != null ? s.kcal : kcalOf(data)});
   setAccent(s.act);
@@ -820,7 +968,7 @@ function openView(s){
   follow = false;
   map.fitBounds(L.latLngBounds(ll), {paddingTopLeft:[30,80], paddingBottomRight:[30,60], maxZoom:17});
   const dt = new Date(s.start);
-  $('viewTxt').textContent = `${dt.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ${ACT[s.act]}`;
+  $('viewTxt').textContent = `${dt.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ${s.kind === 'travel' ? '이동 기록' : ACT[s.act]}`;
   $('viewBar').hidden = false;
   document.querySelectorAll('#histList li').forEach(li => li.classList.toggle('on', li.dataset.id == s.id));
   render();
@@ -849,8 +997,9 @@ function renderView(){
     kcalRate:s.ms > 60000 ? fmtN(Math.round(s.kcal/(s.ms/3600000))) : '--',
     steps:s.steps != null ? fmtN(s.steps) : '--', stepsUnit:'걸음'
   });
-  $('paceBox').hidden = s.act === 'bike';
+  $('paceBox').hidden = !FOOT.includes(s.act);
   renderMix($('mix'), s.mix, s.dist);
+  renderTimeline(s.kind === 'travel' ? s.data : null);
   drawChart(s.data);
 }
 $('btnCloseView').onclick = () => closeView();
@@ -859,9 +1008,9 @@ $('btnCloseView').onclick = () => closeView();
 function loadSessions(){ try { return JSON.parse(localStorage.getItem(STORE)) || []; } catch(_) { return []; } }
 function saveSession(){
   const mix = {}; for (const a in actDist) if (actDist[a] >= 1) mix[a] = Math.round(actDist[a]);
-  const s = {id:Date.now(), act:mainAct(actDist), mix, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(), kcal:Math.round(kcal), weight:kg(),
+  const s = {id:Date.now(), kind, act:mainAct(actDist), mix, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(), kcal:Math.round(kcal), weight:kg(),
              avgHr:hr.n ? Math.round(hr.sum/hr.n) : null, maxHr:hr.n ? hr.max : null,
-             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr])};
+             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr, p.s || null])};
   const all = loadSessions(); all.unshift(s);
   try { localStorage.setItem(STORE, JSON.stringify(all.slice(0, 30))); return s; }
   catch(_) { showNote('저장 공간이 부족해 기록을 저장하지 못했습니다. 오래된 기록을 삭제한 뒤 다시 시도하세요.'); return null; }
@@ -869,15 +1018,15 @@ function saveSession(){
 function renderHist(){
   const list = $('histList'), all = loadSessions();
   list.innerHTML = '';
-  if (!all.length) { list.innerHTML = '<li class="empty">아직 기록이 없습니다. 아래 운동 시작을 눌러 첫 운동을 기록해 보세요.</li>'; return; }
+  if (!all.length) { list.innerHTML = '<li class="empty">아직 기록이 없습니다. 위에서 운동 기록이나 이동 기록을 고르고 시작해 보세요.</li>'; return; }
   all.forEach(s => {
     const li = document.createElement('li'), d = new Date(s.start);
     li.dataset.id = s.id; li.tabIndex = 0; li.setAttribute('role', 'button');
     if (viewing && viewing.id === s.id) li.classList.add('on');
     li.innerHTML = `<div class="h-top"><span class="num">${(s.dist/1000).toFixed(2)}</span><span class="u">km</span>
-        <span class="h-act" style="background:var(--${s.act})">${ACT[s.act]}</span></div>
+        <span class="h-act" style="background:var(--${s.act})">${s.kind === 'travel' ? '이동, ' : ''}${ACT[s.act]}</span></div>
       <div class="h-sub"><span>${d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}</span>
-        <span>${fmtTime(s.ms)}</span>${s.steps != null ? `<span>${fmtN(s.steps)}걸음</span>` : ''}${s.kcal != null ? `<span>${fmtN(s.kcal)}kcal</span>` : ''}${s.avgHr ? `<span>평균 심박 ${s.avgHr}</span>` : ''}<span>상승 ${Math.round(s.gain)}m</span></div>
+        <span>${fmtTime(s.ms)}</span>${s.steps != null ? `<span>${fmtN(s.steps)}걸음</span>` : ''}${s.kcal != null ? `<span>${fmtN(s.kcal)}kcal</span>` : ''}${s.avgHr ? `<span>평균 심박 ${s.avgHr}</span>` : ''}${s.kind === 'travel' ? '' : `<span>상승 ${Math.round(s.gain)}m</span>`}</div>
       <div class="mix h-mix"></div>
       <div class="h-btns"><button type="button" data-k="gpx">GPX 내보내기</button><button type="button" class="del" data-k="del">삭제</button></div>`;
     renderMix(li.querySelector('.h-mix'), s.mix || {[s.act]: s.dist}, s.dist);
@@ -910,8 +1059,19 @@ function exportGpx(s){
 
 // ---------- 종목 선택 (선택 안 하면 자동 인식) ----------
 // 운동 중에도 언제든 바꿀 수 있음: 바꾼 순간부터 새 종목으로 기록 (지도 경로 색도 그 지점부터 바뀜)
-document.querySelectorAll('#modes button').forEach(b => b.onclick = () => {
+$('modes').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
   const m = b.dataset.m;
+  // 이동 기록: 자동차/버스/택시는 자동 인식은 유지하면서 지금 타고 있는 차량 종류만 표시
+  if (kind === 'travel' && VEH.includes(m)) {
+    vehLabel = m; mode = 'auto';
+    if (status !== 'idle') {
+      if (VEH.includes(act)) relabelVehicle(m);
+      cand = null; act = m; actKnown = true; setAccent(m); stillFrom = null;
+      toast(`${ACT[m]}(으)로 표시합니다`);
+    }
+    render(); return;
+  }
   if (m === mode) return;
   mode = m;
   if (status !== 'idle') {
@@ -919,6 +1079,13 @@ document.querySelectorAll('#modes button').forEach(b => b.onclick = () => {
     if (m === 'auto') { samples = []; toast('자동 인식으로 바꿨습니다'); }
     else { act = m; actKnown = true; setAccent(m); toast(`${ACT[m]}(으)로 바꿨습니다`); }
   }
+  render();
+};
+// 운동 기록 / 이동 기록 선택 (다음 접속 때도 유지)
+document.querySelectorAll('#kinds button').forEach(b => b.onclick = () => {
+  if (status !== 'idle') return;
+  kind = b.dataset.k; mode = 'auto';
+  localStorage.setItem('trailog:kind', kind);
   render();
 });
 
@@ -928,16 +1095,22 @@ $('btnSim').onclick = () => {
   if (watchId != null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
   closeView(true);
   const c = map.getCenter(); let lat = c.lat, lon = c.lng, hd = Math.random()*Math.PI*2, k = 0;
-  const phases = mode === 'bike' ? [6.5] : mode === 'hike' ? [1.2] : [1.4, 3.2, 6.5];
+  // [속도 m/s, 초, 'gap'이면 GPS 끊김(지하철)]
+  const phases = kind === 'travel' ? [[1.4,40],[10,150,'gap'],[1.4,40],[13,70],[1.4,30],[0,400],[1.4,30]]
+    : mode === 'bike' ? [[6.5,45]] : mode === 'hike' ? [[1.2,45]] : [[1.4,45],[3.2,45],[6.5,45]];
+  const total = phases.reduce((a, p) => a + p[1], 0);
   sim = {timer:setInterval(() => {
-    const base = phases[Math.floor(k/45) % phases.length];
-    hd += (Math.random()-.5)*.3; const v = base*(.85 + Math.random()*.3);
+    let x = k % total, ph = phases[0];
+    for (const p of phases) { if (x < p[1]) { ph = p; break; } x -= p[1]; }
+    const base = ph[0];
+    hd += (Math.random()-.5)*.3; const v = base ? base*(.85 + Math.random()*.3) : 0;
     lat += Math.cos(hd)*v/111320; lon += Math.sin(hd)*v/(111320*Math.cos(lat*Math.PI/180)); k++;
+    if (ph[2] === 'gap') return;
     if (!hr.ch) { if (!hr.dev) hr.dev = {name:'가상 심박계', gatt:{connected:false}}; onHr(Math.round(80 + Math.min(v*3.6, 15)*5 + (Math.random()-.5)*6)); }
     onPos({timestamp:Date.now(), coords:{latitude:lat, longitude:lon, accuracy:5+Math.random()*6, speed:v,
       heading:(hd*180/Math.PI % 360 + 360) % 360, altitude:120 + 30*Math.sin(k/50) + (Math.random()-.5)*2}});
   }, 1000)};
-  toast('시뮬레이션: 걷기, 달리기, 자전거를 45초씩 번갈아 기록합니다');
+  toast(kind === 'travel' ? '시뮬레이션: 걷기, 지하철, 걷기, 차량, 걷기, 머무름 순서로 기록합니다' : '시뮬레이션: 걷기, 달리기, 자전거를 45초씩 번갈아 기록합니다');
   $('btnMain').click();
 };
 
