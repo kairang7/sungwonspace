@@ -166,7 +166,7 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 .modes[hidden]{display:none}
 .modes{overflow-x:auto;scrollbar-width:none}
 .modes::-webkit-scrollbar{display:none}
-.modes[data-k="travel"]{display:grid;grid-template-columns:repeat(4,1fr)}
+.modes[data-k="travel"]{display:grid;grid-template-columns:repeat(3,1fr)}
 .modes[data-k="travel"] button{padding:7px 0}
 .modes button.veh{border-color:var(--accent);color:var(--accent);font-weight:700}
 #tlCard[hidden]{display:none}
@@ -223,7 +223,7 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
     </div>
     <div class="timebox">
       <div class="t num" id="time">00:00:00</div>
-      <small>운동 시간</small>
+      <small id="timeLbl">운동 시간</small>
       <div class="clock"><span class="num" id="clock">--:--</span>현재 시각</div>
     </div>
   </section>
@@ -311,7 +311,7 @@ const MOTOR = [...VEH, 'subway', 'train'];
 const FOOT = ['walk','run','hike'];
 const MODES = {
   exercise:{idle:['auto','hike','bike'], active:['auto','walk','run','hike','bike']},
-  travel:{idle:[], active:['auto','walk','bike','car','bus','taxi','subway','train']}
+  travel:{idle:['walk','car','bus','taxi','subway','train'], active:['walk','car','bus','taxi','subway','train']}   // 이동 기록은 직접 선택만
 };
 const DIRS = ['북','북동','동','남동','남','남서','서','북서'];
 const STRIDE = {walk:0.7, run:1.0, hike:0.6, bike:0};    // 센서가 없을 때 쓰는 평균 보폭(m)
@@ -332,21 +332,15 @@ const CLS = {
   MTN_RELIEF_M:70,   // 반경 약 400m 안의 지형 높낮이 차가 이 이상이면 산으로 판단
   MTN_RECHECK_M:400  // 이만큼 이동하면 산 여부 다시 확인
 };
-// 이동 기록 판단 기준
+// 이동 기록 설정
 const TRV = {
-  WALK_KMH:7,        // 이보다 느리면 걷기
-  BIKE_MAX_KMH:25,   // 걸음 없이 7~25km/h면 자전거, 그 이상은 차량 (센서 없으면 18km/h 기준)
-  TRAIN_KMH:130,     // 이 속도 이상이면 기차
-  STAY_MS:5*60000,   // 5분 이상 멈춰 있으면 머무름
-  GAP_MS:90000,      // GPS가 90초 이상 끊겼다가
-  GAP_MIN_M:800,     // 800m 이상 떨어진 곳에서 다시 잡히면 지하철(또는 타고 있던 차량)
-  VEH_STEP_M:20,     // 차량 이동 중에는 20m마다 한 점만 저장 (저장 공간 절약)
+  VEH_STEP_M:20,     // 걷기 외 이동 중에는 20m마다 한 점만 저장 (저장 공간 절약)
   MAX_KMH:350        // 이보다 빠른 점프는 오류로 보고 무시
 };
 
 // ---------- 상태 ----------
 let kind = localStorage.getItem('trailog:kind') === 'travel' ? 'travel' : 'exercise', vehLabel = 'car', stillFrom = null, stayAt = null;
-let mode = 'auto', act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
+let mode = kind === 'travel' ? 'walk' : 'auto', act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
 let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
 let elapsed = 0, resumeAt = 0, watchId = null, tick = null, wakeLock = null, sim = null, follow = true;
 let lastFix = null, heading = null, hdgFrom = null, viewing = null, viewMarks = [];
@@ -419,22 +413,10 @@ function onPos(p){
   const prev = pts[pts.length-1];
   if (!prev) { addPoint(fix, 0); classify(fix); render(); return; }
   const d = haversine(prev, fix), dt = (fix.t - prev.t)/1000, travel = kind === 'travel';
-  // 이동 기록: GPS가 오래 끊겼다가 멀리서 다시 잡히면 지하철(차량 탑승 중이었으면 그 차량) 구간으로 처리
-  if (travel && dt*1000 >= TRV.GAP_MS && d >= TRV.GAP_MIN_M && d/dt*3.6 <= TRV.MAX_KMH) {
-    const gapAct = MOTOR.includes(act) ? act : 'subway';
-    if (act === 'stay') { markStay({lat:prev.lat, lon:prev.lon, t:prev.t + 1}); switchAct('walk', false); }
-    dist += d; addPoint(fix, d, gapAct); samples = []; stillFrom = null;
-    toast(`${ACT[gapAct]} 구간으로 기록했습니다`); render(); return;
-  }
-  // 머무는 중: 80m 이상 벗어나야 다시 이동으로 봄 (그 전의 GPS 흔들림은 무시)
-  if (travel && act === 'stay') {
-    if (haversine(stayAt || prev, fix) < 80) { curSpd = 0; render(); return; }
-    markStay(fix); switchAct('walk', false); samples = []; stillFrom = null;
-  }
   const v = fix.spd != null && fix.spd >= 0 ? fix.spd : (dt > 0 ? d/dt : 0);   // m/s
   if (v*3.6 > (travel ? TRV.MAX_KMH : 120)) { render(); return; }                // 비정상 점프 제거
   curSpd = curSpd*0.6 + v*3.6*0.4;
-  const minStep = travel && MOTOR.includes(act) ? TRV.VEH_STEP_M : MIN_STEP_M;
+  const minStep = travel && act !== 'walk' ? TRV.VEH_STEP_M : MIN_STEP_M;
   if (d >= minStep) { dist += d; addPoint(fix, d); if (curSpd > maxSpd) maxSpd = curSpd; }
   else if (dt > 5) curSpd *= 0.5;
   classify(fix);
@@ -454,7 +436,7 @@ function addPoint(fix, d, aOverride){
     let j = pts.length - 1; while (j > 0 && pts[j-1].t >= fix.t - 30000) j--;
     const q = pts[j], dd = dist - q.d;
     const grade = (dd >= 15 && alt != null && q.alt != null) ? (alt - q.alt)/dd : 0;
-    if (dt > 0) kcal += kcalStep(a, d/dt*3.6, grade, dt, kg());
+    if (dt > 0 && (kind !== 'travel' || a === 'walk')) kcal += kcalStep(a, d/dt*3.6, grade, dt, kg());   // 이동 기록은 걷기만 칼로리 반영
   }
   pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a, hr:hrLive() ? hr.bpm : null});
   if (!viewing) trackAdd([fix.lat, fix.lon], a);
@@ -501,39 +483,17 @@ function guess(kmh, cad){
   if (kmh < 13) return 'run';
   return 'bike';
 }
-function guessTravel(kmh, cad){
-  if (kmh < CLS.STILL_KMH) return null;
-  if (kmh >= TRV.TRAIN_KMH) return 'train';
-  if (cad != null) {
-    if (kmh < TRV.WALK_KMH && cad >= 40) return 'walk';
-    if (kmh < 4) return 'walk';                                 // 아주 느린 차량 정체는 구분이 어려워 걷기로
-    if (cad < 40 && kmh <= TRV.BIKE_MAX_KMH && kmh >= TRV.WALK_KMH) return 'bike';
-    return kmh < TRV.WALK_KMH ? 'walk' : 'car';
-  }
-  if (kmh < TRV.WALK_KMH) return 'walk';
-  if (kmh < 18) return 'bike';
-  return 'car';
-}
 function classify(fix){
   const t = fix.t;
-  if (mode !== 'auto') return;                                 // 직접 선택한 종류는 고정
+  if (kind === 'travel' || mode !== 'auto') return;            // 이동 기록과 직접 선택은 자동 인식 안 함
   samples.push({t, d:dist});
   while (samples.length > 2 && samples[1].t < t - CLS.WIN_MS) samples.shift();
   const first = samples[0], span = t - first.t;
   if (span < CLS.MIN_SPAN_MS) return;
   const kmh = (dist - first.d) / (span/1000) * 3.6;
   const cad = motionSeen && !sim ? stepTimes.filter(x => x > Date.now() - CLS.WIN_MS).length * (60000/CLS.WIN_MS) : null;
-  let g = kind === 'travel' ? guessTravel(kmh, cad) : guess(kmh, cad);
-  if (kind === 'travel') {
-    if (!g) {   // 멈춤이 5분 넘게 이어지면 머무름
-      if (stillFrom == null) stillFrom = t - CLS.WIN_MS/2;
-      if (act !== 'stay' && t - stillFrom >= TRV.STAY_MS) { stayAt = fix; markStay(fix, stillFrom); switchAct('stay', false); toast('머무름으로 기록합니다'); }
-      return;
-    }
-    stillFrom = null;
-    if (act === 'stay') { markStay(fix); switchAct(g === 'car' ? vehLabel : g, false); return; }   // 다시 움직이면 바로 전환
-    if (g === 'car') g = VEH.includes(act) ? act : vehLabel;   // 차량 종류는 사용자가 표시한 것 유지
-  } else if (g === 'walk' && mtn.is) g = 'hike';               // 산 지형에서 걸을 때만 등산
+  let g = guess(kmh, cad);
+  if (g === 'walk' && mtn.is) g = 'hike';               // 산 지형에서 걸을 때만 등산
   if (!g) return;
   if (!actKnown) { switchAct(g, false); return; }
   if (g === act) { cand = null; return; }
@@ -797,7 +757,7 @@ $('btnStop').onclick = () => {
   status = 'idle'; clearInterval(tick); curSpd = 0;
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
   const saved = pts.length > 1 ? saveSession() : null;
-  mode = 'auto';                                                // 다음 운동은 다시 자동 인식이 기본
+  mode = kind === 'travel' ? 'walk' : 'auto';                   // 다음 기록 기본값: 운동은 자동 인식, 이동은 걷기
   if (sim) { clearInterval(sim.timer); sim = null; startWatch(); if (!hr.ch) { hr.dev = null; hr.bpm = null; } }
   renderHist();
   if (saved) { toast('기록을 저장했습니다'); openView(saved); }
@@ -847,14 +807,15 @@ function renderChrome(){
   $('profileLbl').textContent = age ? `체중 kg, ${age}세` : '체중 kg, 나이 입력';
   const v = viewing && status === 'idle', s = v ? 'view' : status;
   $('status').dataset.s = s;
-  const tv = kind === 'travel';
-  $('statusTxt').textContent = {idle:tv ? '이동 기록 준비됨, 시작하면 이동 수단을 알아서 판단합니다' : '운동 기록 준비됨, 시작을 누르면 기록합니다',
+  const tv = kind === 'travel' || !!(v && viewing.kind === 'travel');
+  $('timeLbl').textContent = tv ? '이동 시간' : '운동 시간';
+  $('statusTxt').textContent = {idle:tv ? '이동 기록 준비됨, 이동 수단을 고르고 시작하세요' : '운동 기록 준비됨, 시작을 누르면 기록합니다',
     paused:'일시정지됨', view:'지난 기록 요약',
     running: actKnown ? (tv ? `${ACT[act]} ${act === 'stay' ? '중' : '이동 중'}` : `${ACT[act]} 기록 중`) : (tv ? '이동 기록 중, 이동 수단 확인 중' : '기록 중, 운동 종류 확인 중')}[s];
-  $('btnMain').textContent = {idle:tv ? '이동 기록 시작' : mode === 'auto' ? '운동 시작' : `${ACT[mode]} 시작`, running:'일시정지', paused:'계속'}[status];
-  $('btnMain').style.background = status === 'idle' ? (tv ? 'var(--ink)' : `var(--${mode === 'auto' ? 'walk' : mode})`) : '';
-  $('btnMain').style.color = status === 'idle' && tv ? 'var(--surface)' : '';
-  if (status === 'idle' && !v) setAccent(tv || mode === 'auto' ? 'walk' : mode);   // 선택한 종목 색으로 미리 표시
+  $('btnMain').textContent = {idle:kind === 'travel' ? `${ACT[mode]} 이동 시작` : mode === 'auto' ? '운동 시작' : `${ACT[mode]} 시작`, running:'일시정지', paused:'계속'}[status];
+  $('btnMain').style.background = status === 'idle' ? `var(--${mode === 'auto' ? 'walk' : mode})` : '';
+  $('btnMain').style.color = '';
+  if (status === 'idle' && !v) setAccent(mode === 'auto' ? 'walk' : mode);   // 선택한 종목 색으로 미리 표시
   renderModes();
   $('kinds').hidden = status !== 'idle';
   document.querySelectorAll('#kinds button').forEach(b => b.setAttribute('aria-checked', b.dataset.k === kind));
@@ -1040,7 +1001,7 @@ function renderHist(){
         localStorage.setItem(STORE, JSON.stringify(loadSessions().filter(x => x.id !== s.id)));
         renderHist(); toast('기록을 삭제했습니다'); return;
       }
-      if (status !== 'idle') return toast('운동 중에는 지난 기록을 열 수 없습니다');
+      if (status !== 'idle') return toast(kind === 'travel' ? '이동 중에는 지난 기록을 열 수 없습니다' : '운동 중에는 지난 기록을 열 수 없습니다');
       openView(s); window.scrollTo({top:0, behavior:'smooth'});
     };
     li.onkeydown = e => { if (e.key === 'Enter' && e.target === li) li.click(); };
@@ -1062,16 +1023,6 @@ function exportGpx(s){
 $('modes').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   const m = b.dataset.m;
-  // 이동 기록: 자동차/버스/택시는 자동 인식은 유지하면서 지금 타고 있는 차량 종류만 표시
-  if (kind === 'travel' && VEH.includes(m)) {
-    vehLabel = m; mode = 'auto';
-    if (status !== 'idle') {
-      if (VEH.includes(act)) relabelVehicle(m);
-      cand = null; act = m; actKnown = true; setAccent(m); stillFrom = null;
-      toast(`${ACT[m]}(으)로 표시합니다`);
-    }
-    render(); return;
-  }
   if (m === mode) return;
   mode = m;
   if (status !== 'idle') {
@@ -1084,7 +1035,7 @@ $('modes').onclick = e => {
 // 운동 기록 / 이동 기록 선택 (다음 접속 때도 유지)
 document.querySelectorAll('#kinds button').forEach(b => b.onclick = () => {
   if (status !== 'idle') return;
-  kind = b.dataset.k; mode = 'auto';
+  kind = b.dataset.k; mode = kind === 'travel' ? 'walk' : 'auto';
   localStorage.setItem('trailog:kind', kind);
   render();
 });
@@ -1096,13 +1047,13 @@ $('btnSim').onclick = () => {
   closeView(true);
   const c = map.getCenter(); let lat = c.lat, lon = c.lng, hd = Math.random()*Math.PI*2, k = 0;
   // [속도 m/s, 초, 'gap'이면 GPS 끊김(지하철)]
-  const phases = kind === 'travel' ? [[1.4,40],[10,150,'gap'],[1.4,40],[13,70],[1.4,30],[0,400],[1.4,30]]
+  const phases = kind === 'travel' ? (mode === 'walk' ? [[1.4,60]] : mode === 'train' ? [[40,60]] : mode === 'subway' ? [[12,60]] : [[11,60]])
     : mode === 'bike' ? [[6.5,45]] : mode === 'hike' ? [[1.2,45]] : [[1.4,45],[3.2,45],[6.5,45]];
   const total = phases.reduce((a, p) => a + p[1], 0);
   sim = {timer:setInterval(() => {
     let x = k % total, ph = phases[0];
     for (const p of phases) { if (x < p[1]) { ph = p; break; } x -= p[1]; }
-    const base = ph[0];
+    const base = kind === 'travel' ? ({walk:1.4, car:11, bus:9, taxi:11, subway:12, train:40}[act] || 1.4) : ph[0];   // 이동 기록은 고른 수단 속도로
     hd += (Math.random()-.5)*.3; const v = base ? base*(.85 + Math.random()*.3) : 0;
     lat += Math.cos(hd)*v/111320; lon += Math.sin(hd)*v/(111320*Math.cos(lat*Math.PI/180)); k++;
     if (ph[2] === 'gap') return;
@@ -1110,7 +1061,7 @@ $('btnSim').onclick = () => {
     onPos({timestamp:Date.now(), coords:{latitude:lat, longitude:lon, accuracy:5+Math.random()*6, speed:v,
       heading:(hd*180/Math.PI % 360 + 360) % 360, altitude:120 + 30*Math.sin(k/50) + (Math.random()-.5)*2}});
   }, 1000)};
-  toast(kind === 'travel' ? '시뮬레이션: 걷기, 지하철, 걷기, 차량, 걷기, 머무름 순서로 기록합니다' : '시뮬레이션: 걷기, 달리기, 자전거를 45초씩 번갈아 기록합니다');
+  toast(kind === 'travel' ? '시뮬레이션: 아래 버튼으로 이동 수단을 바꿔 보세요' : '시뮬레이션: 걷기, 달리기, 자전거를 45초씩 번갈아 기록합니다');
   $('btnMain').click();
 };
 
