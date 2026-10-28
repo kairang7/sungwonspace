@@ -52,7 +52,17 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 .gps{left:12px;bottom:30px;display:flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font-size:12px}
 .gps i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .gps[data-q="good"] i{background:var(--good)} .gps[data-q="ok"] i{background:var(--warn)} .gps[data-q="bad"] i{background:var(--bad)}
-.locate{right:12px;bottom:30px;border:0;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:500}
+.locate{right:12px;bottom:26px;border:0;border-radius:50%;width:44px;height:44px;padding:0;display:grid;place-items:center;color:var(--muted)}
+.locate svg{width:24px;height:24px}
+.locate.on{color:var(--accent)}
+.locate.on .dot{fill:currentColor}
+.locate .i-nav{display:none}
+.locate.heading .i-nav{display:block}
+.locate.heading .i-cross{display:none}
+.locate.on .i-nav path{fill:currentColor}
+.northbtn{right:16px;bottom:80px;width:36px;height:36px;border:0;border-radius:50%;padding:0;display:grid;place-items:center}
+.northbtn[hidden]{display:none}
+.northbtn svg{width:24px;height:24px}
 .me-icon{background:none;border:0}
 .me-arrow{width:40px;height:40px;transition:transform .4s ease}
 .me-arrow svg{width:40px;height:40px;overflow:visible}
@@ -139,7 +149,12 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 .wx-desc{font-size:12px}
 .wx-meta{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center}
 .wx-meta span{margin:0 5px;white-space:nowrap}
-#chart{width:100%;height:120px;display:block}
+#chart{width:100%;height:130px;display:block}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chart-head h2{margin:0}
+.seg{display:flex;background:var(--bg);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;color:var(--muted);font-size:13px;font-weight:500;padding:5px 14px;border-radius:999px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 
 .note{margin:14px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface);border-left:4px solid var(--warn);font-size:13px}
 .note[hidden]{display:none}
@@ -210,7 +225,20 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
   <div class="float actchip" id="actChip" data-s="idle"><i></i><span id="actName">자동 인식</span><small id="actSub">시작하면 운동 종류를 알아서 판단합니다</small></div>
   <div class="float viewbar" id="viewBar" hidden><span id="viewTxt"></span><button id="btnCloseView" type="button">닫기</button></div>
   <div class="float gps" id="gps" data-q="none"><i></i><span id="gpsTxt">GPS 찾는 중</span></div>
-  <button class="float locate" id="btnCenter" type="button">현재 위치</button>
+  <button class="float locate" id="btnCenter" type="button" aria-label="현재 위치로 이동" title="현재 위치로 이동">
+    <svg class="i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="7"/><circle class="dot" cx="12" cy="12" r="2.5"/>
+      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/>
+    </svg>
+    <svg class="i-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 2.5 L19.5 20.5 L12 16.5 L4.5 20.5 Z"/>
+    </svg>
+  </button>
+  <button class="float northbtn" id="btnNorth" type="button" aria-label="북쪽을 위로" title="북쪽을 위로" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true" id="northIcon">
+      <path d="M12 2 L16 12 L8 12 Z" fill="#DC2626"/><path d="M12 22 L16 12 L8 12 Z" fill="currentColor" opacity=".45"/>
+    </svg>
+  </button>
 </div>
 
 <main class="sheet">
@@ -277,7 +305,13 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
   </section>
 
   <section class="card">
-    <h2>고도 프로필</h2>
+    <div class="chart-head">
+      <h2 id="chartTitle">고도 프로필</h2>
+      <div class="seg" id="chartSeg" role="group" aria-label="그래프 종류">
+        <button type="button" data-c="alt" aria-pressed="true">고도</button>
+        <button type="button" data-c="spd" aria-pressed="false">속도</button>
+      </div>
+    </div>
     <canvas id="chart" aria-label="거리별 고도 그래프"></canvas>
   </section>
 
@@ -297,6 +331,8 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+<script src="native-bridge.js" onerror="this.remove()"></script>
 <script>
 (() => {
 'use strict';
@@ -335,10 +371,17 @@ const CLS = {
 // 이동 기록 설정
 const TRV = {
   VEH_STEP_M:20,     // 걷기 외 이동 중에는 20m마다 한 점만 저장 (저장 공간 절약)
+  AUTO_BUS:true,     // 버스 정류장에서 기다리다 빠르게 출발하면 자동으로 버스로 전환
+  STOP_WAIT_MS:20000,// 정류장 근처에서 20초 이상 멈춰 있으면 정류장 대기로 봄
+  STOP_R_M:35,       // 정류장으로 인정하는 거리
+  BUS_KMH:15,        // 정류장 대기 후 최근 20초 평균 속도가 이 이상이면 버스 탑승
+  STOP_LEAVE_M:150,  // 걸어서 정류장에서 이만큼 멀어지면 대기 해제
   MAX_KMH:350        // 이보다 빠른 점프는 오류로 보고 무시
 };
 
 // ---------- 상태 ----------
+const DRAFT = 'trailog:draft';
+let bus = {win:[], stillSince:null, checked:false, stop:null, departT:null}, draftTimer = null;
 let kind = localStorage.getItem('trailog:kind') === 'travel' ? 'travel' : 'exercise', vehLabel = 'car', stillFrom = null, stayAt = null;
 let mode = kind === 'travel' ? 'walk' : 'auto', act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
 let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
@@ -350,7 +393,8 @@ let hr = {dev:null, ch:null, bpm:null, at:0, sum:0, n:0, max:0, want:false, retr
 let wxAt = 0, wxPos = null, mtn = {is:false, relief:null, pos:null, busy:false};
 
 // ---------- 지도 ----------
-const map = L.map('map', {zoomControl:false}).setView([37.5665, 126.978], 15);
+const canRotate = typeof L.Map.prototype.setBearing === 'function';   // 지도 회전 플러그인
+const map = L.map('map', {zoomControl:false, rotate:canRotate, touchRotate:false, shiftKeyRotate:false, rotateControl:false, bearing:0}).setView([37.5665, 126.978], 15);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
 const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 const actColor = a => cssVar('--' + a) || '#7C4DDB';
@@ -359,8 +403,52 @@ let seg = null, segAct = null;
 const accCircle = L.circle([0,0], {radius:0, weight:0, fillColor:actColor('walk'), fillOpacity:.12});
 const me = L.marker([0,0], {interactive:false, keyboard:false, icon:L.divIcon({className:'me-icon', iconSize:[40,40], iconAnchor:[20,20],
   html:'<div class="me-arrow"><svg viewBox="0 0 40 40"><path d="M20 1 L28 14 L20 10.5 L12 14 Z"/><circle cx="20" cy="20" r="9"/></svg></div>'})});
-map.on('dragstart', () => follow = false);
-$('btnCenter').onclick = () => { follow = true; if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16)); else toast('아직 위치를 찾는 중입니다'); };
+let gpsLost = true, lastGoodAt = 0, hadGood = false;   // GPS 신호를 다시 잡으면 지도를 현재 위치로
+// 지도 방향: north = 북쪽이 위, heading = 진행 방향이 위 (설정은 다음 접속 때도 유지)
+let orient = localStorage.getItem('trailog:orient') === 'heading' ? 'heading' : 'north', bearTween = null;
+const getBear = () => canRotate ? (map.getBearing() || 0) : 0;
+function setBear(target, instant){
+  if (!canRotate) return;
+  cancelAnimationFrame(bearTween);
+  const from = getBear(), diff = ((target - from) % 360 + 540) % 360 - 180;   // 짧은 쪽으로 회전
+  if (instant || Math.abs(diff) < 1) { map.setBearing((target + 360) % 360); afterBear(); return; }
+  const t0 = performance.now();
+  const step = now => {
+    const k = Math.min((now - t0)/350, 1), e = 1 - (1-k)*(1-k);
+    map.setBearing((from + diff*e + 360) % 360); afterBear();
+    if (k < 1) bearTween = requestAnimationFrame(step);
+  };
+  bearTween = requestAnimationFrame(step);
+}
+function applyBearing(instant){
+  if (viewing || orient === 'north') return setBear(0, instant);
+  if (follow && heading != null) setBear(-heading, instant);
+}
+function afterBear(){
+  const b = getBear();
+  $('btnNorth').hidden = Math.abs(((b + 180) % 360) - 180) < 1;
+  $('northIcon').style.transform = `rotate(${b}deg)`;
+  paintArrow();
+}
+const paintLocate = () => {
+  const el = $('btnCenter');
+  el.classList.toggle('on', follow && !viewing);
+  el.classList.toggle('heading', orient === 'heading' && canRotate);
+  el.setAttribute('aria-label', orient === 'heading' ? '진행 방향 위로 보기 중, 누르면 북쪽 위로' : '현재 위치로 이동, 다시 누르면 진행 방향 위로');
+};
+map.on('dragstart', () => { follow = false; paintLocate(); });
+// 현재 위치 버튼: 따라가는 중이 아니면 → 현재 위치로 / 따라가는 중이면 → 지도 방향 전환 (북쪽 위 ↔ 진행 방향 위)
+$('btnCenter').onclick = () => {
+  if (!lastFix) { toast('아직 위치를 찾는 중입니다'); return; }
+  if (follow && !viewing && canRotate) {
+    orient = orient === 'north' ? 'heading' : 'north';
+    localStorage.setItem('trailog:orient', orient);
+    toast(orient === 'heading' ? (heading == null ? '움직이면 진행 방향이 위로 오게 지도가 돌아갑니다' : '진행 방향이 위로 오게 지도를 돌렸습니다') : '북쪽이 위로 오게 되돌렸습니다');
+  }
+  follow = true; paintLocate(); applyBearing();
+  map.setView(lastFix, Math.max(map.getZoom(), 16));
+};
+$('btnNorth').onclick = () => { orient = 'north'; localStorage.setItem('trailog:orient', orient); paintLocate(); setBear(0); toast('북쪽이 위로 오게 되돌렸습니다'); };
 
 function setAccent(a){ document.body.dataset.act = a; accCircle.setStyle({fillColor:actColor(a)}); }
 // 경로는 종목이 바뀔 때마다 새 선을 이어 그려 종목별 색으로 구분
@@ -400,6 +488,15 @@ function onPos(p){
   const c = p.coords;
   const fix = {lat:c.latitude, lon:c.longitude, alt:c.altitude, acc:c.accuracy, t:p.timestamp || Date.now(), spd:c.speed, hdg:c.heading};
   lastFix = [fix.lat, fix.lon];
+  if (fix.acc <= MAX_ACC_M) {
+    // 처음 잡혔거나, 끊겼다가(오류 또는 15초 이상 정확한 신호 없음) 다시 잡히면 지도를 현재 위치 가운데로
+    if (gpsLost || Date.now() - lastGoodAt > 15000) {
+      follow = true;
+      if (!viewing && map.hasLayer(me)) map.setView(lastFix, Math.max(map.getZoom(), 16));
+      if (hadGood) toast('GPS 신호를 다시 찾았습니다');
+    }
+    gpsLost = false; hadGood = true; lastGoodAt = Date.now();
+  }
   $('gps').dataset.q = fix.acc <= 10 ? 'good' : fix.acc <= MAX_ACC_M ? 'ok' : 'bad';
   $('gpsTxt').textContent = 'GPS ±' + Math.round(fix.acc) + 'm';
   me.setLatLng(lastFix); accCircle.setLatLng(lastFix).setRadius(fix.acc);
@@ -420,6 +517,7 @@ function onPos(p){
   if (d >= minStep) { dist += d; addPoint(fix, d); if (curSpd > maxSpd) maxSpd = curSpd; }
   else if (dt > 5) curSpd *= 0.5;
   classify(fix);
+  if (travel) watchBus(fix);
   render();
 }
 function addPoint(fix, d, aOverride){
@@ -451,14 +549,20 @@ function updateHeading(fix){
   if (fix.hdg != null && !isNaN(fix.hdg) && (fix.spd || 0) > 0.5) { heading = fix.hdg; hdgFrom = fix; }
   else if (!hdgFrom) hdgFrom = fix;
   else if (haversine(hdgFrom, fix) >= HDG_STEP_M) { heading = bearing(hdgFrom, fix); hdgFrom = fix; }
+  paintArrow();
+  if (orient === 'heading') applyBearing();
+}
+// 내 위치 화살표: 화면에서의 방향 = 진행 방향 + 지도 회전 각도
+function paintArrow(){
   const el = me.getElement() && me.getElement().querySelector('.me-arrow');
-  if (el && heading != null) {
-    const prev = parseFloat(el.dataset.rot || heading);
-    const rot = prev + ((heading - prev % 360 + 540) % 360 - 180);
-    el.dataset.rot = rot; el.style.transform = `rotate(${rot}deg)`; el.classList.add('has-dir');
-  }
+  if (!el || heading == null) return;
+  const want = heading + getBear();
+  const prev = parseFloat(el.dataset.rot || want);
+  const rot = prev + ((want - prev % 360 + 540) % 360 - 180);
+  el.dataset.rot = rot; el.style.transform = `rotate(${rot}deg)`; el.classList.add('has-dir');
 }
 function onErr(e){
+  gpsLost = true;
   const msg = {1:'위치 권한이 거부되었습니다. 브라우저 설정에서 이 사이트의 위치 권한을 허용하세요.',
                2:'위치를 찾을 수 없습니다. 실외로 이동하거나 휴대폰의 위치(GPS)를 켜세요.',
                3:'위치 응답이 늦어지고 있습니다. 계속 시도합니다.'}[e.code] || e.message;
@@ -483,6 +587,98 @@ function guess(kmh, cad){
   if (kmh < 13) return 'run';
   return 'bike';
 }
+// ---------- 버스 자동 전환 (이동 기록, 걷기 중일 때만) ----------
+// 정류장 위치는 OpenStreetMap(Overpass) 자료로 확인 (API 키 불필요)
+async function findBusStop(fix){
+  const q = `[out:json][timeout:10];(node(around:${TRV.STOP_R_M},${fix.lat.toFixed(5)},${fix.lon.toFixed(5)})[highway=bus_stop];`
+    + `node(around:${TRV.STOP_R_M},${fix.lat.toFixed(5)},${fix.lon.toFixed(5)})[public_transport=platform][bus=yes];);out 5;`;
+  try {
+    const r = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
+    if (!r.ok) return null;
+    const el = (await r.json()).elements || [];
+    if (!el.length) return null;
+    el.sort((a, b) => haversine(fix, a) - haversine(fix, b));
+    const t = el[0].tags || {};
+    return {name:t['name:ko'] || t.name || '버스 정류장', lat:el[0].lat, lon:el[0].lon};
+  } catch(_) { return null; }
+}
+function busWinKmh(sec){
+  const w = bus.win, last = w[w.length-1];
+  let i = w.length - 1; while (i > 0 && w[i-1].t >= last.t - sec*1000) i--;
+  const span = (last.t - w[i].t)/1000;
+  return span >= sec*0.6 ? (last.d - w[i].d)/span*3.6 : null;
+}
+function watchBus(fix){
+  if (!TRV.AUTO_BUS || status !== 'running' || act !== 'walk') { bus.win = []; bus.stillSince = null; bus.stop = null; bus.checked = false; return; }
+  bus.win.push({t:fix.t, d:dist});
+  while (bus.win.length > 2 && bus.win[0].t < fix.t - 60000) bus.win.shift();
+  const v = busWinKmh(20);
+  if (v == null) return;
+  if (v < 1.5) {                                   // 멈춰 있음
+    if (bus.stillSince == null) bus.stillSince = fix.t;
+    bus.departT = null;
+    if (!bus.stop && !bus.checked && fix.t - bus.stillSince >= TRV.STOP_WAIT_MS) {
+      bus.checked = true;
+      findBusStop(fix).then(st => {
+        if (st && act === 'walk' && status === 'running') { bus.stop = st; toast(`${st.name} 정류장에서 대기 중`); render(); }
+      });
+    }
+    return;
+  }
+  if (bus.departT == null) bus.departT = fix.t - 10000;   // 출발 시점(대략)
+  bus.stillSince = null;
+  if (!bus.stop) { bus.checked = false; return; }
+  const cad = motionSeen && !sim ? stepTimes.filter(x => x > Date.now() - 20000).length * 3 : null;
+  if (v >= TRV.BUS_KMH && (cad == null || cad < 40)) {   // 빠르게 움직이는데 걸음이 없음 → 버스
+    const from = bus.departT, name = bus.stop.name;
+    mode = 'bus'; act = 'bus'; setAccent('bus');
+    relabelSince(from, 'bus');
+    bus.stop = null; bus.win = [];
+    toast(`${name}에서 버스에 탄 것 같아요. 아니면 걷기를 누르세요`);
+  } else if (v < 8 && haversine(bus.stop, fix) > TRV.STOP_LEAVE_M) { bus.stop = null; bus.checked = false; }   // 걸어서 떠남
+}
+// 지정 시각 이후의 걷기 구간을 다른 수단으로 바꿈
+function relabelSince(t0, a){
+  for (let i = pts.length - 1; i >= 0 && pts[i].t >= t0; i--) if (pts[i].a === 'walk') pts[i].a = a;
+  actDist = {};
+  for (let i = 1; i < pts.length; i++) { const x = pts[i].a; actDist[x] = (actDist[x] || 0) + (pts[i].d - pts[i-1].d); }
+  if (!viewing) trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s})));
+}
+
+// ---------- 임시저장 (기록 중 앱이 닫혀도 이어서 기록) ----------
+function saveDraft(){
+  if (status === 'idle' || !pts.length) return;
+  const d = {v:1, kind, mode, act, actKnown, dist, actDist, gain, loss, maxSpd, kcal, steps, hrSum:hr.sum, hrN:hr.n, hrMax:hr.max,
+    elapsed:nowElapsed(), savedAt:Date.now(),
+    pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr, p.s || null, +p.d.toFixed(1)])};
+  try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch(_) {}
+}
+const clearDraft = () => { try { localStorage.removeItem(DRAFT); } catch(_) {} };
+function startDraftTimer(){ clearInterval(draftTimer); draftTimer = setInterval(saveDraft, 10000); }
+window.addEventListener('pagehide', saveDraft);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveDraft(); });
+function restoreDraft(d){
+  kind = d.kind; mode = d.mode; act = d.act; actKnown = d.actKnown; dist = d.dist; actDist = d.actDist || {};
+  gain = d.gain; loss = d.loss; maxSpd = d.maxSpd; kcal = d.kcal; steps = d.steps || 0;
+  hr.sum = d.hrSum || 0; hr.n = d.hrN || 0; hr.max = d.hrMax || 0;
+  elapsed = d.elapsed; samples = []; cand = null; curSpd = 0; altRef = null;
+  pts = d.pts.map(p => ({lat:p[0], lon:p[1], alt:p[2], t:p[3], a:CODE[p[4]] || 'walk', hr:p[5], s:p[6], d:p[7]}));
+  status = 'paused'; setAccent(act);
+  trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s})));
+  const last = pts[pts.length-1]; if (last) map.setView([last.lat, last.lon], 16);
+  startDraftTimer();
+}
+function checkDraft(){
+  let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT)); } catch(_) {}
+  if (!d || !d.pts || d.pts.length < 2) { clearDraft(); return false; }
+  const what = d.kind === 'travel' ? '이동' : '운동', when = new Date(d.savedAt).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  if (confirm(`끝내지 못한 ${what} 기록이 있습니다.\n(${when}까지, ${fmtTime(d.elapsed)}, ${(d.dist/1000).toFixed(2)}km)\n\n이어서 기록할까요?\n확인: 이어서 기록 (일시정지 상태로 열림)\n취소: 저장 또는 삭제 선택`)) {
+    restoreDraft(d); toast('이어서 기록합니다. 계속을 누르세요'); return true;
+  }
+  if (confirm('지금까지의 기록을 저장하고 끝낼까요?\n확인: 저장\n취소: 삭제')) { restoreDraft(d); finishRecording(); return true; }
+  clearDraft(); return false;
+}
+
 function classify(fix){
   const t = fix.t;
   if (kind === 'travel' || mode !== 'auto') return;            // 이동 기록과 직접 선택은 자동 인식 안 함
@@ -745,24 +941,34 @@ $('btnMain').onclick = () => {
     if (!weight) askWeight();
     closeView(true); reset();
     status = 'running'; resumeAt = Date.now(); follow = true;
-    startWatch(); keepAwake(); tick = setInterval(render, 1000);
+    startWatch(); keepAwake(); clearInterval(tick); tick = setInterval(render, 1000); clearDraft(); startDraftTimer();
+    if (window.TrailogNative) TrailogNative.recording(true);   // 앱: 화면 꺼져도 위치 기록
     if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
-  } else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; samples = []; }
-  else { status = 'running'; resumeAt = Date.now(); keepAwake(); }
+  } else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; samples = []; bus.win = []; saveDraft(); }
+  else {
+    enableMotion(); status = 'running'; resumeAt = Date.now(); keepAwake(); startWatch();
+    if (window.TrailogNative) TrailogNative.recording(true);
+    if (!tick) tick = setInterval(render, 1000);
+  }
   render();
 };
 $('btnStop').onclick = () => {
   if (!confirm(kind === 'travel' ? '이동 기록을 종료하고 저장할까요?' : '운동을 종료하고 기록을 저장할까요?')) return;
+  finishRecording();
+};
+function finishRecording(){
   if (status === 'running') elapsed += Date.now() - resumeAt;
-  status = 'idle'; clearInterval(tick); curSpd = 0;
+  status = 'idle'; clearInterval(tick); tick = null; clearInterval(draftTimer); curSpd = 0; bus.stop = null; bus.win = [];
+  if (window.TrailogNative) TrailogNative.recording(false);
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
   const saved = pts.length > 1 ? saveSession() : null;
   mode = kind === 'travel' ? 'walk' : 'auto';                   // 다음 기록 기본값: 운동은 자동 인식, 이동은 걷기
   if (sim) { clearInterval(sim.timer); sim = null; startWatch(); if (!hr.ch) { hr.dev = null; hr.bpm = null; } }
   renderHist();
+  clearDraft();
   if (saved) { toast('기록을 저장했습니다'); openView(saved); }
   else { toast('이동 거리가 없어 저장하지 않았습니다'); render(); }
-};
+}
 function reset(){
   kcal = 0; hr.sum = 0; hr.n = 0; hr.max = 0; pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
   steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false; stillFrom = null; vehLabel = 'car';
@@ -803,6 +1009,7 @@ function render(){
   drawChart(pts);
 }
 function renderChrome(){
+  paintLocate();
   renderHr();
   $('profileLbl').textContent = age ? `체중 kg, ${age}세` : '체중 kg, 나이 입력';
   const v = viewing && status === 'idle', s = v ? 'view' : status;
@@ -826,7 +1033,7 @@ function renderChrome(){
   const terrain = mtn.relief == null ? '' : mtn.is ? '산 지형' : '평지';
   if (status === 'idle' && mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[mode]; $('actSub').textContent = '직접 선택, 자동 인식 안 함'; }
   else if (status === 'idle') { chip.dataset.s = 'idle'; $('actName').textContent = '자동 인식'; $('actSub').textContent = terrain ? `지금 위치는 ${terrain}` : '시작하면 운동 종류를 알아서 판단합니다'; }
-  else if (mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '직접 선택'; }
+  else if (mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = bus.stop ? `${bus.stop.name} 정류장 대기` : '직접 선택'; }
   else if (!actKnown) { chip.dataset.s = 'detecting'; $('actName').textContent = '확인 중'; $('actSub').textContent = '15초 정도 움직여 주세요'; }
   else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (!tv && terrain ? `, ${terrain}` : ''); }
 }
@@ -878,7 +1085,60 @@ function renderTimeline(list){
     : '<li class="empty-tl">움직이기 시작하면 구간별로 기록됩니다</li>';
 }
 
+// 그래프 종류: 고도(거리 기준) / 속도(시간 기준, 멈춘 구간이 보이도록). 선택은 다음 접속 때도 유지
+let chartKind = localStorage.getItem('trailog:chart') === 'spd' ? 'spd' : 'alt';
+$('chartSeg').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  chartKind = b.dataset.c; localStorage.setItem('trailog:chart', chartKind); render();
+};
 function drawChart(src){
+  $('chartTitle').textContent = chartKind === 'spd' ? '속도 프로필' : '고도 프로필';
+  document.querySelectorAll('#chartSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === chartKind));
+  return chartKind === 'spd' ? drawSpeed(src) : drawAlt(src);
+}
+function drawSpeed(src){
+  const cv = $('chart'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0,0,w,h);
+  const muted = cssVar('--muted'), line = cssVar('--line'), c = cssVar('--accent');
+  const list = (src || []).filter(p => p.t != null && p.d != null);
+  ctx.font = '12px "Noto Sans KR", sans-serif';
+  if (list.length < 3) { ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText('기록을 시작하면 속도 변화가 그려집니다', w/2, h/2+4); return; }
+  // 지점 사이 속도 계산 → 부드럽게 (60초 넘게 비면 선을 끊음)
+  const t0 = list[0].t, ser = []; let ema = null;
+  for (let i = 1; i < list.length; i++) {
+    const dt = (list[i].t - list[i-1].t)/1000;
+    if (dt <= 0) continue;
+    if (dt > 60) { ser.push(null); ema = null; continue; }
+    const v = Math.min((list[i].d - list[i-1].d)/dt*3.6, 200);
+    ema = ema == null ? v : ema*0.6 + v*0.4;
+    ser.push({m:(list[i].t - t0)/60000, v:ema, a:list[i].a});
+  }
+  const pts2 = ser.filter(Boolean);
+  if (pts2.length < 2) { ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.fillText('조금 더 움직이면 속도 변화가 그려집니다', w/2, h/2+4); return; }
+  const maxM = Math.max(pts2[pts2.length-1].m, 0.1);
+  const top = Math.max(5, Math.ceil(Math.max(...pts2.map(p => p.v)) / 5) * 5);
+  const L0 = 40, B = 18, x = m => L0 + (m/maxM)*(w-L0-4), y = v => h-B - (v/top)*(h-B-8);
+  ctx.strokeStyle = line; ctx.lineWidth = 1;
+  [0, top/2, top].forEach(v => { ctx.beginPath(); ctx.moveTo(L0, y(v)); ctx.lineTo(w, y(v)); ctx.stroke(); });
+  // 평균 속도 점선
+  const span = (list[list.length-1].t - t0)/3600000, avg = span > 0 ? (list[list.length-1].d - list[0].d)/1000/span : 0;
+  if (avg > 0) { ctx.setLineDash([4,4]); ctx.strokeStyle = muted; ctx.beginPath(); ctx.moveTo(L0, y(avg)); ctx.lineTo(w, y(avg)); ctx.stroke(); ctx.setLineDash([]); }
+  // 속도선 (종류별 색, 끊긴 구간은 이어 그리지 않음)
+  ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+  for (let i = 1; i < ser.length; i++) {
+    const a = ser[i-1], b = ser[i]; if (!a || !b) continue;
+    ctx.beginPath(); ctx.moveTo(x(a.m), y(a.v)); ctx.lineTo(x(b.m), y(b.v));
+    ctx.strokeStyle = b.a ? actColor(b.a) : c; ctx.stroke();
+  }
+  ctx.fillStyle = muted; ctx.textAlign = 'right';
+  ctx.fillText(top + '', L0-6, y(top)+4); ctx.fillText('0', L0-6, y(0)+4);
+  ctx.fillText('km/h', L0-6, y(top/2)+4);
+  ctx.textAlign = 'left'; ctx.fillText('0분', L0, h-3);
+  if (avg > 0) ctx.fillText(`평균 ${avg.toFixed(1)}`, L0+4, y(avg)-4);
+  ctx.textAlign = 'right'; ctx.fillText(Math.round(maxM) + '분', w-2, h-3);
+}
+function drawAlt(src){
   const cv = $('chart'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
   cv.width = w*dpr; cv.height = h*dpr;
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0,0,w,h);
@@ -927,6 +1187,7 @@ function openView(s){
     .bindTooltip(label, {permanent:true, direction:'top', offset:[0,-8], className:'pin-tip'}).addTo(map);
   viewMarks = [mk(ll[0], '#2E7D57', '출발'), mk(ll[ll.length-1], '#C53030', '도착')];
   follow = false;
+  setBear(0, true);
   map.fitBounds(L.latLngBounds(ll), {paddingTopLeft:[30,80], paddingBottomRight:[30,60], maxZoom:17});
   const dt = new Date(s.start);
   $('viewTxt').textContent = `${dt.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'})} ${dt.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} ${s.kind === 'travel' ? '이동 기록' : ACT[s.act]}`;
@@ -942,9 +1203,10 @@ function closeView(silent){
   trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a})));
   $('viewBar').hidden = true;
   document.querySelectorAll('#histList li').forEach(li => li.classList.remove('on'));
-  if (silent) return;
+  if (silent) { applyBearing(true); return; }
   follow = true;
   if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
+  applyBearing(true);
   render();
 }
 function renderView(){
@@ -1053,7 +1315,8 @@ $('btnSim').onclick = () => {
   sim = {timer:setInterval(() => {
     let x = k % total, ph = phases[0];
     for (const p of phases) { if (x < p[1]) { ph = p; break; } x -= p[1]; }
-    const base = kind === 'travel' ? ({walk:1.4, car:11, bus:9, taxi:11, subway:12, train:40}[act] || 1.4) : ph[0];   // 이동 기록은 고른 수단 속도로
+    let base = kind === 'travel' ? ({walk:1.4, car:11, bus:9, taxi:11, subway:12, train:40}[act] || 1.4) : ph[0];   // 이동 기록은 고른 수단 속도로
+    if (kind === 'travel' && act === 'walk') { const x2 = k % 150; base = x2 < 40 ? 1.4 : x2 < 80 ? 0 : 9; }       // 걷다가 정류장 대기 후 출발
     hd += (Math.random()-.5)*.3; const v = base ? base*(.85 + Math.random()*.3) : 0;
     lat += Math.cos(hd)*v/111320; lon += Math.sin(hd)*v/(111320*Math.cos(lat*Math.PI/180)); k++;
     if (ph[2] === 'gap') return;
@@ -1078,7 +1341,7 @@ window.addEventListener('resize', () => render());
 setAccent('walk');
 renderHist();
 const last = loadSessions()[0];
-if (last) openView(last); else render();
+if (!checkDraft()) { if (last) openView(last); else render(); } else render();
 startWatch();
 })();
 </script>
