@@ -458,10 +458,90 @@ function trackAdd(ll, a){
     return;
   }
   if (!seg || segAct !== a) {
-    const tail = seg ? seg.getLatLngs().slice(-1) : [];
+    const tail = seg ? seg._raw.slice(-1) : [];
     seg = L.polyline(tail.concat([ll]), {color:actColor(a), weight:5, opacity:.92, lineJoin:'round', dashArray:a === 'subway' ? '2 9' : null}).addTo(trackLayer);
-    segAct = a;
-  } else seg.addLatLng(ll);
+    seg._raw = tail.concat([ll]); segAct = a;
+  } else {
+    seg._raw.push(ll);
+    if (!seg._routed) seg.addLatLng(ll);
+  }
+  if (a === 'subway') scheduleSubwayRoute(seg);
+}
+
+// ---------- 지하철 구간을 실제 노선 모양으로 그리기 (지도 표시만, 거리 계산은 그대로) ----------
+// OpenStreetMap 철도 자료(Overpass)로 출발점과 도착점 사이 선로를 따라가는 최단 경로를 찾음
+const railCache = {};
+function scheduleSubwayRoute(sg){ clearTimeout(sg._rt); sg._rt = setTimeout(() => routeSubway(sg), 1500); }
+async function routeSubway(sg){
+  const raw = sg._raw; if (!raw || raw.length < 2) return;
+  const A = raw[0], B = raw[raw.length-1];
+  const dAB = haversine({lat:A[0], lon:A[1]}, {lat:B[0], lon:B[1]});
+  if (dAB < 300 || dAB > 60000) return;
+  const key = [A, B].map(p => (+p[0]).toFixed(4) + ',' + (+p[1]).toFixed(4)).join('|');
+  let path = railCache[key];
+  if (!path) { try { path = JSON.parse(localStorage.getItem('trailog:rail:' + key)); } catch(_) {} }
+  if (!path) {
+    if (sg._busy) { sg._again = true; return; }
+    sg._busy = true;
+    path = await findRailPath(A, B);
+    sg._busy = false;
+    if (path) { railCache[key] = path; try { localStorage.setItem('trailog:rail:' + key, JSON.stringify(path)); } catch(_) {} }
+    if (sg._again) { sg._again = false; scheduleSubwayRoute(sg); return; }
+  }
+  if (!path || !trackLayer.hasLayer(sg)) return;
+  const now = sg._raw[sg._raw.length-1];
+  if (now[0] !== B[0] || now[1] !== B[1]) { scheduleSubwayRoute(sg); return; }   // 그 사이 끝점이 바뀜
+  sg.setLatLngs([A, ...path, B]); sg.setStyle({dashArray:null}); sg._routed = true;
+  if (viewing) {   // 지난 기록 보기 중이면 노선까지 보이게 다시 맞춤
+    const bd = L.latLngBounds([]);
+    trackLayer.eachLayer(l => { if (l.getLatLngs) bd.extend(l.getBounds()); else if (l.getLatLng) bd.extend(l.getLatLng()); });
+    if (bd.isValid()) map.fitBounds(bd, {paddingTopLeft:[30,120], paddingBottomRight:[30,60], maxZoom:17});
+  }
+}
+async function findRailPath(A, B){
+  const pad = 0.012;
+  const S = Math.min(A[0], B[0]) - pad, N = Math.max(A[0], B[0]) + pad, W = Math.min(A[1], B[1]) - pad, E = Math.max(A[1], B[1]) + pad;
+  const q = `[out:json][timeout:25];way["railway"~"^(subway|light_rail|rail)$"](${S.toFixed(4)},${W.toFixed(4)},${N.toFixed(4)},${E.toFixed(4)});out body;>;out skel qt;`;
+  let els;
+  try {
+    const r = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
+    if (!r.ok) return null;
+    els = (await r.json()).elements || [];
+  } catch(_) { return null; }
+  const pos = new Map(), adj = new Map();
+  els.forEach(e => { if (e.type === 'node') pos.set(e.id, [e.lat, e.lon]); });
+  const link = (u, v, w) => { if (!adj.has(u)) adj.set(u, []); adj.get(u).push([v, w]); };
+  els.forEach(e => {
+    if (e.type !== 'way' || !e.nodes) return;
+    const k = e.tags && e.tags.railway === 'rail' ? 1.3 : 1;   // 일반 철도보다 지하철 선로를 우선
+    for (let i = 1; i < e.nodes.length; i++) {
+      const u = e.nodes[i-1], v = e.nodes[i], pu = pos.get(u), pv = pos.get(v);
+      if (!pu || !pv) continue;
+      const w = haversine({lat:pu[0], lon:pu[1]}, {lat:pv[0], lon:pv[1]}) * k;
+      link(u, v, w); link(v, u, w);
+    }
+  });
+  if (!adj.size) return null;
+  const nearest = P => { let best = null, bd = Infinity;
+    for (const id of adj.keys()) { const q2 = pos.get(id), d = haversine({lat:P[0], lon:P[1]}, {lat:q2[0], lon:q2[1]}); if (d < bd) { bd = d; best = id; } }
+    return bd <= 800 ? best : null; };
+  const s0 = nearest(A), t0 = nearest(B);
+  if (s0 == null || t0 == null || s0 === t0) return null;
+  // 다익스트라 최단 경로 (이진 힙)
+  const dist = new Map([[s0, 0]]), prev = new Map(), heap = [[0, s0]];
+  const push = it => { heap.push(it); let i = heap.length - 1; while (i) { const p2 = (i-1) >> 1; if (heap[p2][0] <= heap[i][0]) break; [heap[p2], heap[i]] = [heap[i], heap[p2]]; i = p2; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0;
+    for (;;) { const l = 2*i+1, r2 = l+1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r2 < heap.length && heap[r2][0] < heap[m][0]) m = r2; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } }
+    return top; };
+  while (heap.length) {
+    const [d, u] = pop();
+    if (u === t0) break;
+    if (d > (dist.get(u) ?? Infinity)) continue;
+    for (const [v, w] of adj.get(u) || []) { const nd = d + w; if (nd < (dist.get(v) ?? Infinity)) { dist.set(v, nd); prev.set(v, u); push([nd, v]); } }
+  }
+  if (!prev.has(t0)) return null;
+  const out = []; for (let u = t0; u != null; u = prev.get(u)) out.push(pos.get(u));
+  return out.reverse();
 }
 function trackClear(){ trackLayer.clearLayers(); seg = null; segAct = null; }
 function trackDraw(list){ trackClear(); list.forEach(p => { if (p.a !== 'stay' || p.s) trackAdd(p.ll, p.a); }); }   // list: [{ll, a, s}]
