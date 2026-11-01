@@ -34,6 +34,25 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);ou
 
 /* 지도 영역 */
 .mapwrap{position:relative;height:46vh;min-height:270px}
+/* 지도 전체 화면 */
+body.full .mapwrap{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);bottom:var(--ctrlH,90px);height:auto;min-height:0;z-index:5}
+body.full .sheet{display:none}
+body.full .modes{display:none!important}
+body.full .gps{bottom:96px}
+body.full .locate{bottom:92px}
+body.full .northbtn{bottom:146px}
+.fullbtn{top:10px;right:12px;width:44px;height:44px;border:0;border-radius:50%;padding:0;display:grid;place-items:center;color:var(--ink)}
+.fullbtn svg{width:22px;height:22px}
+.fullbtn .i-shrink{display:none}
+body.full .fullbtn .i-grow{display:none}
+body.full .fullbtn .i-shrink{display:block}
+.fsbar{left:12px;right:12px;bottom:12px;display:none;align-items:center;gap:6px;border-radius:16px;padding:8px 14px;cursor:pointer}
+body.full .fsbar{display:flex}
+.fsbar .v{display:flex;flex-direction:column;align-items:flex-start;flex:1;min-width:0}
+.fsbar .v+.v{border-left:1px solid var(--line);padding-left:12px}
+.fsbar .num{font-size:26px;font-weight:700;line-height:1.05;white-space:nowrap}
+.fsbar #fsSpd{color:var(--accent)}
+.fsbar small{font-size:11px;color:var(--muted);white-space:nowrap}
 #map{position:absolute;inset:0;z-index:0;background:var(--line)}
 .float{position:absolute;z-index:500;background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.16);color:var(--ink)}
 .kinds{top:10px;left:50%;transform:translateX(-50%);display:flex;gap:2px;border-radius:999px;padding:4px}
@@ -149,6 +168,26 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 .wx-desc{font-size:12px}
 .wx-meta{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);text-align:center}
 .wx-meta span{margin:0 5px;white-space:nowrap}
+.bus-cfg{border:0;background:none;color:var(--muted);font-size:12px;padding:2px 0;text-decoration:underline}
+.bus-form{display:flex;gap:8px}
+.bus-form input{flex:1;min-width:0;font:inherit;font-size:16px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.bus-form button{border:0;border-radius:10px;padding:0 18px;background:var(--bus,#2266D1);color:#fff;font-weight:700}
+.bus-form[hidden]{display:none}
+.bus-api{margin-bottom:8px}
+.bus-api input{font-size:14px}
+.bus-host{margin-top:4px;font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.bus-out{margin-top:10px;font-size:13px;color:var(--muted)}
+.bus-it{padding:9px 0;border-top:1px solid var(--line);color:var(--ink)}
+.bus-it:first-child{border-top:0}
+.bus-stop{font-size:13px;color:var(--muted)}
+.bus-stop b{color:var(--ink);font-weight:600}
+.bus-arr{display:flex;flex-wrap:wrap;gap:2px 14px;margin-top:3px;font-size:15px}
+.bus-arr .first{font-weight:700;color:var(--accent)}
+.bus-row{display:flex;gap:10px;align-items:baseline;margin-top:5px}
+.bus-rt{flex:0 0 auto;min-width:52px;font-weight:700;font-size:15px;color:var(--ink)}
+.bus-row .bus-arr{margin-top:0}
+.bus-dest{font-size:12px;color:var(--muted)}
+.bus-meta{margin-top:8px;font-size:12px;color:var(--muted)}
 #chart{width:100%;height:130px;display:block}
 .chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .chart-head h2{margin:0}
@@ -234,6 +273,15 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
       <path d="M12 2.5 L19.5 20.5 L12 16.5 L4.5 20.5 Z"/>
     </svg>
   </button>
+  <button class="float fullbtn" id="btnFull" type="button" aria-label="지도 크게 보기" title="지도 크게 보기">
+    <svg class="i-grow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    <svg class="i-shrink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+  </button>
+  <div class="float fsbar" id="fsBar" role="button" tabindex="0" aria-label="기록 정보, 누르면 지도 작게 보기">
+    <div class="v"><span class="num" id="fsSpd">0.0</span><small>km/h</small></div>
+    <div class="v"><span class="num" id="fsDist">0.00</span><small>km</small></div>
+    <div class="v"><span class="num" id="fsTime">00:00:00</span><small id="fsTimeLbl">운동 시간</small></div>
+  </div>
   <button class="float northbtn" id="btnNorth" type="button" aria-label="북쪽을 위로" title="북쪽을 위로" hidden>
     <svg viewBox="0 0 24 24" aria-hidden="true" id="northIcon">
       <path d="M12 2 L16 12 L8 12 Z" fill="#DC2626"/><path d="M12 22 L16 12 L8 12 Z" fill="currentColor" opacity=".45"/>
@@ -302,6 +350,20 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
       <div class="wx-col" id="wx60"><small>1시간 후</small><div class="wx-ic">–</div><div class="num wx-t">--°</div><div class="wx-desc">&nbsp;</div></div>
     </div>
     <div class="wx-meta" id="wxMeta">위치를 찾으면 날씨를 불러옵니다</div>
+  </section>
+
+  <section class="card" aria-label="버스 도착 정보">
+    <div class="chart-head"><h2>버스 도착 정보</h2><button class="bus-cfg" id="busCfg" type="button">중계 주소</button></div>
+    <form class="bus-form bus-api" id="busApiForm" autocomplete="off" hidden>
+      <input id="busApiIn" type="url" inputmode="url" spellcheck="false" placeholder="https://trailog-bus.kairang7.workers.dev" aria-label="중계 주소">
+      <button type="submit">저장</button>
+    </form>
+    <form class="bus-form" id="busForm" autocomplete="off">
+      <input id="busNo" type="text" inputmode="text" maxlength="12" placeholder="버스 번호 (비우면 모든 버스)" aria-label="버스 번호">
+      <button type="submit">조회</button>
+    </form>
+    <div class="bus-host" id="busHost"></div>
+    <div class="bus-out" id="busOut">현재 위치에서 반경 400m 정류장의 도착 정보를 보여줍니다 (번호를 비우고 조회하면 모든 버스)</div>
   </section>
 
   <section class="card">
@@ -403,7 +465,9 @@ let seg = null, segAct = null;
 const accCircle = L.circle([0,0], {radius:0, weight:0, fillColor:actColor('walk'), fillOpacity:.12});
 const me = L.marker([0,0], {interactive:false, keyboard:false, icon:L.divIcon({className:'me-icon', iconSize:[40,40], iconAnchor:[20,20],
   html:'<div class="me-arrow"><svg viewBox="0 0 40 40"><path d="M20 1 L28 14 L20 10.5 L12 14 Z"/><circle cx="20" cy="20" r="9"/></svg></div>'})});
-let gpsLost = true, lastGoodAt = 0, hadGood = false;   // GPS 신호를 다시 잡으면 지도를 현재 위치로
+let gpsLost = true, lastGoodAt = 0, hadGood = false;
+let hiddenAt = 0;   // 마지막으로 화면을 벗어난 시각
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') hiddenAt = Date.now(); });   // GPS 신호를 다시 잡으면 지도를 현재 위치로
 // 지도 방향: north = 북쪽이 위, heading = 진행 방향이 위 (설정은 다음 접속 때도 유지)
 let orient = localStorage.getItem('trailog:orient') === 'heading' ? 'heading' : 'north', bearTween = null;
 const getBear = () => canRotate ? (map.getBearing() || 0) : 0;
@@ -569,13 +633,19 @@ function onPos(p){
   const fix = {lat:c.latitude, lon:c.longitude, alt:c.altitude, acc:c.accuracy, t:p.timestamp || Date.now(), spd:c.speed, hdg:c.heading};
   lastFix = [fix.lat, fix.lon];
   if (fix.acc <= MAX_ACC_M) {
-    // 처음 잡혔거나, 끊겼다가(오류 또는 15초 이상 정확한 신호 없음) 다시 잡히면 지도를 현재 위치 가운데로
-    if (gpsLost || Date.now() - lastGoodAt > 15000) {
+    // 처음 잡혔거나, 끊겼다가(오류 또는 15초 이상 정확한 신호 없음) 다시 잡히면 지도를 현재 위치 가운데로.
+    // 받은 시각이 아니라 위치가 측정된 시각으로 판단 → 백그라운드에서 측정된 위치가 돌아온 뒤 한꺼번에 들어와도 오판하지 않음
+    const gap = fix.t - lastGoodAt;
+    if (gpsLost || gap > 15000) {
       follow = true;
       if (!viewing && map.hasLayer(me)) map.setView(lastFix, Math.max(map.getZoom(), 16));
-      if (hadGood) toast('GPS 신호를 다시 찾았습니다');
+      if (hadGood) {
+        const wasHidden = hiddenAt && hiddenAt < fix.t && hiddenAt > lastGoodAt - 1000;
+        if (wasHidden && status === 'running') toast(`화면을 벗어난 ${Math.round(gap/1000)}초 동안 위치가 기록되지 않았습니다`);
+        else if (!wasHidden) toast('GPS 신호를 다시 찾았습니다');
+      }
     }
-    gpsLost = false; hadGood = true; lastGoodAt = Date.now();
+    gpsLost = false; hadGood = true; lastGoodAt = Math.max(lastGoodAt, fix.t);
   }
   $('gps').dataset.q = fix.acc <= 10 ? 'good' : fix.acc <= MAX_ACC_M ? 'ok' : 'bad';
   $('gpsTxt').textContent = 'GPS ±' + Math.round(fix.acc) + 'm';
@@ -1010,6 +1080,91 @@ async function loadWeather(lat, lon){
   }
 }
 
+// ---------- 버스 도착 정보 (공공데이터 서울·경기, 인증키는 Cloudflare Worker 에 숨김) ----------
+const BUS_API = 'trailog:busApi', BUS_NO = 'trailog:busNo';
+const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BUS_API_DEF = 'https://trailog-bus.kairang7.workers.dev';
+let busTimer = null, busLeft = 0;
+// 앞뒤 공백·끝의 / 제거, 소문자, https:// 가 없으면 붙임
+const busApiNorm = v => { v = String(v || '').trim().replace(/\/+$/, '').toLowerCase(); return v && !/^[a-z]+:\/\//.test(v) ? 'https://' + v : v; };
+function busApi(){ return busApiNorm(localStorage.getItem(BUS_API)) || BUS_API_DEF; }
+function busHostShow(){
+  const u = busApi();
+  $('busHost').textContent = '중계: ' + u.replace(/^https:\/\//, '') + (u === BUS_API_DEF ? ' (기본)' : '');
+}
+// 앱 WebView 의 prompt() 는 기존 값을 채워 주지 않아서 카드 안 입력칸을 씀
+function busApiEdit(){
+  const f = $('busApiForm');
+  if (!f.hidden) { f.hidden = true; return; }
+  f.hidden = false; $('busApiIn').value = busApi(); $('busApiIn').focus();
+}
+$('busApiForm').onsubmit = e => {
+  e.preventDefault();
+  const u = busApiNorm($('busApiIn').value);
+  if (u && !/^https:\/\/[^\s/]+\.[^\s]+$/.test(u)) { toast('https:// 로 시작하는 주소를 입력하세요'); return; }
+  if (!u || u === BUS_API_DEF) localStorage.removeItem(BUS_API); else localStorage.setItem(BUS_API, u);   // 비우면 기본 주소
+  $('busApiForm').hidden = true; $('busApiIn').blur(); busHostShow();
+  toast('중계 주소 저장: ' + busApi().replace(/^https:\/\//, ''));
+};
+function busLog(m){ console.warn(m); if (window.TrailogNative && TrailogNative.log) TrailogNative.log(m); }   // 앱: 진단 로그
+async function loadBus(no, quiet){
+  const api = busApi(), out = $('busOut');
+  if (!lastFix) { out.textContent = '현재 위치를 아직 찾지 못했습니다. 잠시 후 다시 조회하세요'; return; }
+  const what = no ? `${no}번 버스` : '근처 모든 버스';
+  if (!quiet) out.textContent = `${what} 도착 정보를 찾는 중…`;
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
+  try {
+    const url = `${api}/bus?lat=${lastFix[0].toFixed(5)}&lon=${lastFix[1].toFixed(5)}${no ? '&no=' + encodeURIComponent(no) : ''}`;
+    const r = await fetch(url, {signal:ac.signal})   // 네트워크 단계 실패만 "연결 실패"로
+      .catch(e => { throw e.name === 'AbortError' ? e : new Error(`연결 실패 (${e.message}) – 주소 오류·인터넷 끊김·CORS 차단`); });
+    const j = await r.json().catch(() => ({error:'응답 형식 오류'}));
+    if (!r.ok || j.error) throw new Error('HTTP ' + r.status + (j.error ? ' ' + j.error : ''));
+    if (j.errors && j.errors.length) busLog(`버스 조회 일부 실패 (${api}): ${j.errors.join(' / ')}`);
+    const t = new Date(j.at).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+    const err = j.errors && j.errors.length ? `<div class="bus-meta">일부 조회 실패: ${escH(j.errors.join(' / '))}</div>` : '';
+    if (!j.items.length) {
+      const near = j.stops.length ? '근처 정류장: ' + j.stops.map(s => `${escH(s.name)} ${s.dist}m`).join(', ') : '반경 400m 안에 정류장이 없습니다';
+      out.innerHTML = (no ? `${escH(no)}번 버스가 근처 정류장에 서지 않거나 운행 정보가 없습니다.` : '근처 정류장에 도착 예정인 버스가 없습니다.')
+        + `<div class="bus-meta">${near}</div>${err}`;
+      return;
+    }
+    const arr = b => `<div class="bus-arr"><span class="first">${escH(b.arr1 || '도착 정보 없음')}</span>${b.arr2 ? `<span>다음 ${escH(b.arr2)}</span>` : ''}</div>`;
+    const stop = b => `<div class="bus-stop"><b>${escH(b.stopName)}</b> ${b.dist}m${b.stopNo ? ' · ' + escH(b.stopNo) : ''}`;
+    let html;
+    if (no) html = j.items.map(b => `<div class="bus-it">${stop(b)}${b.dest ? ' · ' + escH(b.dest) : ''}</div>${arr(b)}</div>`).join('');
+    else {   // 번호 없음: 정류장별로 묶고 줄마다 노선 번호
+      const g = new Map();
+      j.items.forEach(b => { const k = b.stopName + '|' + b.dist + '|' + b.stopNo; if (!g.has(k)) g.set(k, []); g.get(k).push(b); });
+      html = [...g.values()].map(bs => `<div class="bus-it">${stop(bs[0])}</div>`
+        + bs.map(b => `<div class="bus-row"><span class="bus-rt">${escH(b.route)}</span><div>${arr(b)}${b.dest ? `<div class="bus-dest">${escH(b.dest)}</div>` : ''}</div></div>`).join('')
+        + '</div>').join('');
+    }
+    out.innerHTML = html   // 결과가 있으면 일부 실패(활용신청 안 된 API 등)는 숨김
+      + `<div class="bus-meta">${no ? escH(j.no) + '번' : '모든 버스'} · ${t} 기준${busLeft > 0 ? ' · 30초마다 갱신' : ''} · 공공데이터포털</div>`;
+  } catch (e) {
+    const why = e.name === 'AbortError' ? '응답 시간 초과 (12초)' : e.message;
+    out.textContent = '버스 정보를 불러오지 못했습니다: ' + why;
+    busLog(`버스 조회 실패: ${api}/bus${no ? '?no=' + no : ''} → ${why}`);   // 위치(lat·lon)는 로그에 남기지 않음
+  } finally { clearTimeout(to); }
+}
+function startBus(no){
+  clearInterval(busTimer); busLeft = 10;   // 30초마다 10번(5분) 자동 갱신
+  loadBus(no);
+  busTimer = setInterval(() => {
+    if (--busLeft <= 0) clearInterval(busTimer);
+    if (document.visibilityState === 'visible') loadBus(no, true);
+  }, 30000);
+}
+$('busNo').value = localStorage.getItem(BUS_NO) || '';
+$('busForm').onsubmit = e => {
+  e.preventDefault();
+  const no = $('busNo').value.replace(/\s+/g, '').toUpperCase();
+  $('busNo').value = no; $('busNo').blur(); localStorage.setItem(BUS_NO, no);
+  startBus(no);
+};
+$('busCfg').onclick = busApiEdit;
+busHostShow();
+
 // ---------- 화면 꺼짐 방지 ----------
 async function keepAwake(){ try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(_) {} }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && status === 'running') keepAwake(); });
@@ -1066,6 +1221,29 @@ function renderMix(el, m, total){
   el.innerHTML = `<div class="mix-bar">${keys.map(a => `<span style="width:${(m[a]/total*100).toFixed(1)}%;background:var(--${a})"></span>`).join('')}</div>`
     + `<div class="mix-leg">${keys.map(a => `<span><i style="background:var(--${a})"></i>${ACT[a]} <b>${(m[a]/1000).toFixed(2)}km</b></span>`).join('')}</div>`;
 }
+// ---------- 지도 전체 화면 (선택은 다음 접속 때도 유지) ----------
+function syncFs(){
+  $('fsSpd').textContent = $('heroVal').textContent;
+  $('fsDist').textContent = $('dist').textContent;
+  $('fsTime').textContent = $('time').textContent;
+  $('fsTimeLbl').textContent = $('timeLbl').textContent;
+}
+function setFull(on){
+  document.body.classList.toggle('full', on);
+  localStorage.setItem('trailog:full', on ? '1' : '0');
+  $('btnFull').setAttribute('aria-label', on ? '지도 작게 보기' : '지도 크게 보기');
+  fitFull();
+}
+function fitFull(){
+  // 하단 버튼 높이만큼 지도를 띄움
+  document.body.style.setProperty('--ctrlH', document.querySelector('.controls').offsetHeight + 'px');
+  setTimeout(() => { map.invalidateSize(); if (follow && lastFix && !viewing) map.panTo(lastFix, {animate:false}); }, 60);
+}
+$('btnFull').onclick = () => setFull(!document.body.classList.contains('full'));
+$('fsBar').onclick = () => setFull(false);
+$('fsBar').onkeydown = e => { if (e.key === 'Enter') setFull(false); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('full')) setFull(false); });
+
 function render(){
   renderChrome();
   if (viewing && status === 'idle') { renderView(); return; }
@@ -1087,6 +1265,7 @@ function render(){
   renderMix($('mix'), actDist, dist);
   renderTimeline(kind === 'travel' ? pts : null);
   drawChart(pts);
+  syncFs();
 }
 function renderChrome(){
   paintLocate();
@@ -1304,6 +1483,7 @@ function renderView(){
   renderMix($('mix'), s.mix, s.dist);
   renderTimeline(s.kind === 'travel' ? s.data : null);
   drawChart(s.data);
+  syncFs();
 }
 $('btnCloseView').onclick = () => closeView();
 
@@ -1415,7 +1595,8 @@ function toast(t){ const el = $('toast'); el.textContent = t; el.classList.add('
 if (!window.isSecureContext) showNote('위치 기능은 HTTPS 주소(또는 localhost)에서만 동작합니다.');
 const updClock = () => $('clock').textContent = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
 updClock(); setInterval(updClock, 1000);
-window.addEventListener('resize', () => render());
+window.addEventListener('resize', () => { render(); if (document.body.classList.contains('full')) fitFull(); });
+if (localStorage.getItem('trailog:full') === '1') setFull(true);
 
 // 첫 화면: 마지막 기록 요약
 setAccent('walk');
