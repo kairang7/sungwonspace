@@ -66,6 +66,8 @@ body.full .fsbar{display:flex}
 .actchip[hidden]{display:none}
 .buswait{top:58px;left:50%;transform:translateX(-50%);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;background:var(--bus);color:#fff}
 .buswait[hidden]{display:none}
+.buswait[data-mode="ask"]{background:var(--car);white-space:normal;text-align:center}
+.buswait button{margin-left:6px;border:0;border-radius:999px;padding:3px 10px;background:#fff;color:var(--ink);font-weight:700;font-size:13px}
 .viewbar{top:62px;left:12px;right:12px;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 6px 6px 12px;font-size:13px;border-left:4px solid var(--accent)}
 .viewbar[hidden]{display:none}
 .viewbar span{flex:1}
@@ -135,6 +137,12 @@ body.full .fsbar{display:flex}
 .hr-stat{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;line-height:1.35;white-space:nowrap}
 .hr-live button{flex:none;white-space:nowrap;border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:5px 8px;font-size:12px}
 .hr-live button[hidden]{display:none}
+.hr-view{margin-top:8px;background:var(--surface);border-radius:14px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.hr-view[hidden]{display:none}
+.hr-view .mix-leg b{font-weight:600}
+.hr-view .row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.hr-view .row span{flex:1;min-width:0}
+.hr-view button{flex:none;border:1px solid var(--line);background:none;color:var(--ink);border-radius:8px;padding:5px 10px;font-size:12px}
 .keys{margin-top:12px;background:var(--surface);border-radius:16px;padding:12px 0}
 .keyrow{display:grid;grid-template-columns:repeat(3,1fr)}
 .mix{margin:12px 14px 0;padding-top:10px;border-top:1px solid var(--line)}
@@ -190,6 +198,46 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
 .bus-row .bus-arr{margin-top:0}
 .bus-dest{font-size:12px;color:var(--muted)}
 .bus-meta{margin-top:8px;font-size:12px;color:var(--muted)}
+.bus-go{cursor:pointer}
+.bus-go:active{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.bus-more{margin-left:auto;flex:0 0 auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.bus-it .bus-more{float:right}
+/* 노선도 (카카오맵 노선 화면 형태) */
+.rt{position:fixed;inset:0;z-index:1050;display:flex;flex-direction:column;background:var(--surface);color:var(--ink);--rc:#4CA332}
+.rt[hidden]{display:none}
+.rt-head{background:var(--rc);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 14px}
+.rt-top{display:flex;align-items:center;gap:8px}
+.rt-back{border:0;background:none;color:inherit;font-size:24px;line-height:1;padding:4px 8px 4px 0}
+.rt-type{font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.7);border-radius:999px;padding:1px 8px}
+.rt-no{font-family:"Barlow Condensed",sans-serif;font-size:30px;font-weight:700;line-height:1.1}
+.rt-ends{margin-top:6px;font-size:15px;font-weight:600}
+.rt-sub{margin-top:2px;font-size:12px;opacity:.9}
+.rt-sum{padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.rt-sum b{color:var(--rc);font-weight:700}
+.rt-list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 0 96px}
+.rt-stop{position:relative;display:grid;grid-template-columns:96px 28px 1fr;min-height:58px;align-items:center}
+.rt-rail{align-self:stretch;position:relative}
+.rt-rail::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:4px;margin-left:-2px;background:var(--rc)}
+.rt-stop:first-child .rt-rail::before{top:50%}
+.rt-stop:last-child .rt-rail::before{bottom:50%}
+.rt-rail i{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--surface);border:3px solid var(--rc)}
+.rt-txt{padding:8px 12px 8px 6px;min-width:0}
+.rt-txt b{display:block;font-weight:500;font-size:15px;line-height:1.3}
+.rt-txt small{font-size:12px;color:var(--muted)}
+.rt-chip{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;border-radius:4px;padding:0 5px;vertical-align:1px}
+.rt-turn .rt-chip{background:var(--line);color:var(--ink)}
+.rt-mine{background:color-mix(in srgb,var(--rc) 12%,transparent)}
+.rt-mine .rt-txt b{font-weight:700}
+.rt-mine .rt-chip.me{background:var(--rc);color:#fff}
+.rt-mine .rt-rail i{width:16px;height:16px;margin:-8px 0 0 -8px;background:var(--rc);border-color:var(--surface);box-shadow:0 0 0 2px var(--rc)}
+.rt-bus{position:absolute;left:0;width:124px;display:flex;align-items:center;justify-content:flex-end;gap:4px;transform:translateY(-50%);z-index:2;pointer-events:none}
+.rt-bus.at{top:50%} .rt-bus.go{top:100%}
+.rt-bus svg{flex:0 0 auto;width:26px;height:26px;margin-right:1px;border-radius:50%;background:var(--rc);padding:4px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.rt-plate{font-size:11px;line-height:1.25;text-align:right;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1px 5px;white-space:nowrap}
+.rt-plate em{font-style:normal;color:var(--rc);font-weight:700}
+.rt-msg{padding:24px 16px;color:var(--muted);font-size:14px}
+.rt-ref{position:absolute;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));border:0;border-radius:999px;padding:10px 16px;background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.rt-ref small{font-weight:400;color:var(--muted);margin-left:6px}
 #chart{width:100%;height:130px;display:block}
 .chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .chart-head h2{margin:0}
@@ -316,6 +364,10 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
       <span class="hr-stat" id="hrStat"></span>
       <button id="btnHrOff" type="button">해제</button>
     </div>
+    <div class="hr-view" id="hrView" hidden>
+      <div id="hrZones"></div>
+      <div class="row"><span id="hrSrc"></span><button id="btnHrFetch" type="button">심박 다시 가져오기</button></div>
+    </div>
   </section>
 
   <section class="keys">
@@ -375,6 +427,7 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
       <div class="seg" id="chartSeg" role="group" aria-label="그래프 종류">
         <button type="button" data-c="alt" aria-pressed="true">고도</button>
         <button type="button" data-c="spd" aria-pressed="false">속도</button>
+        <button type="button" data-c="hr" aria-pressed="false">심박</button>
       </div>
     </div>
     <canvas id="chart" aria-label="거리별 고도 그래프"></canvas>
@@ -394,6 +447,17 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
   <button id="btnStop" type="button" hidden>종료</button>
 </div></div>
 <div class="toast" id="toast" role="status"></div>
+
+<div class="rt" id="rtView" hidden role="dialog" aria-label="버스 노선도">
+  <div class="rt-head">
+    <div class="rt-top"><button class="rt-back" id="rtBack" type="button" aria-label="닫기">←</button><span class="rt-type" id="rtType" hidden></span><span class="rt-no" id="rtNo"></span></div>
+    <div class="rt-ends" id="rtEnds"></div>
+    <div class="rt-sub" id="rtSub"></div>
+  </div>
+  <div class="rt-sum" id="rtSum"></div>
+  <div class="rt-list" id="rtList"></div>
+  <button class="rt-ref" id="rtRef" type="button">⟳ 새로고침<small id="rtAt"></small></button>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
@@ -436,26 +500,35 @@ const CLS = {
 // 이동 기록 설정
 const TRV = {
   VEH_STEP_M:20,     // 걷기 외 이동 중에는 20m마다 한 점만 저장 (저장 공간 절약)
-  AUTO_BUS:true,     // 걷기 중 "버스 탑승 후보"일 때 빠르게 움직이면 자동으로 버스로 전환
-  // 탑승 후보 (a) 정류장 대기: 멈춰 있으면 Worker /stops 의 공식 정류장(서울·경기)으로 확인
-  STOP_WAIT_MS:20000,// 이만큼 멈춰 있으면 정류장 확인
-  STILL_KMH:1.5,     // 최근 20초 평균 속도가 이보다 느리면 멈춤
-  STOP_R_M:50,       // 공식 정류장으로 인정하는 거리
-  STOP_LEAVE_M:150,  // 걸어서 정류장에서 이만큼 멀어지면 후보 해제
-  // 탑승 후보 (b) 버스 도착 정보 검색
-  SEARCH_VALID_MS:15*60000, // 검색 후 이 시간 동안 후보 (검색한 번호를 전환 시 기록)
-  // 전환
-  BUS_WIN_S:15,      // 최근 15초 평균 속도로 판단
-  BUS_KMH:12,        // 이 이상이면 버스 탑승
-  STEP_MAX_SPM:40,   // 걸음 리듬(분당)이 이보다 적어야 함 (가속도 센서가 있을 때만 확인)
-  DEPART_KMH:7,      // 전환 시 이 속도 아래였던 마지막 지점부터 버스로 고침 (최대 2분 전까지)
-  MAX_KMH:350        // 이보다 빠른 점프는 오류로 보고 무시
+  MAX_KMH:350,       // 이보다 빠른 점프는 오류로 보고 무시
+  // 기록 공백·GPS 끊김
+  GAP_MS:60000,      // GPS 가 이보다 오래 끊겼다 다시 잡히면 그동안 가장 오래 골라 둔 수단으로 그 구간을 기록 (지하철이면 선로로 그림)
+  RESUME_GAP_M:30,   // 일시정지·앱 종료 뒤 처음 잡힌 위치가 이보다 멀면 "기록 공백" (거리·시간·칼로리 제외, 지도엔 회색 점선)
+  // 지하철
+  SUB_ACC_M:300,     // 지하철을 고른 동안은 이 오차까지의 대략적 위치도 받음 (지나간 역 추정용, 지도엔 노선만)
+  SUB_OFF_RAIL_M:150,// 지하철 구간 끝(시작)점이 선로에서 이보다 멀면 근처 역에서 선로를 끊고, 역↔그 지점은 걷기 "추정 구간"
+  SUB_STATION_R_M:600,// 근처 지하철역을 찾는 반경
+  WALK_MS:1.2,       // 추정 구간 걷는 속도 (m/s, 역에 도착·출발한 시각 추정용)
+  // 걷기 → 차량 자동 전환 (버스/택시/자동차)
+  AUTO_BUS:true,
+  STOP_CACHE_M:300,  // 걷는 동안 이만큼 움직일 때마다 주변 공식 정류장(Worker /stops)을 미리 받아 둠
+  STOP_FETCH_R_M:400,// 미리 받는 반경 (Worker 최대 400)
+  BOARD_WIN_S:30,    // 최근 30초 평균 속도로 차량 탑승 판단
+  BOARD_KMH:12,      // 이 이상이면 차량 탑승
+  STEP_MAX_SPM:80,   // 버스 진동이 걸음으로 잡힐 수 있어 분당 80걸음 미만이면 통과 (가속도 센서가 있을 때만)
+  DEPART_KMH:7,      // 거슬러 올라가 속도가 이 아래였던 마지막 지점 = 출발 지점 (여기부터 소급 적용)
+  DEPART_BACK_MS:180000, // 출발 지점은 최대 3분 전까지
+  STOP_NEAR_M:60,    // 출발 지점이 공식 정류장 이 거리 안이면 버스
+  SEARCH_VALID_MS:15*60000, // 최근 15분 안에 버스 도착 정보를 조회했으면 정류장 판단 없이 버스 (조회한 번호 기록)
+  ASK_WAIT_MS:120000 // 정류장이 아니면 알림으로 버스/택시/자동차를 묻고, 2분 안에 답이 없으면 자동차로 확정
 };
 
 // ---------- 상태 ----------
 const DRAFT = 'trailog:draft';
-let bus = {win:[], stillSince:null, checked:false, stop:null, cand:'', held:false}, draftTimer = null;
+let bus = {win:[], cand:'', held:false}, draftTimer = null;
 let busSearch = null, rides = [];   // 최근 버스 도착 정보 검색 {no, t, used} / 자동 전환한 버스 [[시작 시각, 번호], ...]
+let modeLog = [], subs = [];        // 수단 변경 이력 [[시각, 수단], ...] / 지하철 구간 역 이름 [[첫 지하철 지점 시각, 승차역, 하차역], ...]
+let resumeGap = false, ingesting = false;   // 다음 위치가 일시정지·앱 종료 뒤 첫 위치인지 / 파일에서 몰아 넣는 중인지
 let kind = localStorage.getItem('trailog:kind') === 'travel' ? 'travel' : 'exercise', vehLabel = 'car', stillFrom = null, stayAt = null;
 let mode = kind === 'travel' ? 'walk' : 'auto', act = 'walk', actKnown = false, cand = null, candSince = 0, status = 'idle';
 let pts = [], samples = [], dist = 0, actDist = {}, gain = 0, loss = 0, maxSpd = 0, curSpd = 0, altSmooth = null, altRef = null;
@@ -473,7 +546,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, a
 const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 const actColor = a => cssVar('--' + a) || '#7C4DDB';
 const trackLayer = L.layerGroup().addTo(map);
-let seg = null, segAct = null;
+let seg = null, segKey = null, lastLL = null;
 const accCircle = L.circle([0,0], {radius:0, weight:0, fillColor:actColor('walk'), fillOpacity:.12});
 const me = L.marker([0,0], {interactive:false, keyboard:false, icon:L.divIcon({className:'me-icon', iconSize:[40,40], iconAnchor:[20,20],
   html:'<div class="me-arrow"><svg viewBox="0 0 40 40"><path d="M20 1 L28 14 L20 10.5 L12 14 Z"/><circle cx="20" cy="20" r="9"/></svg></div>'})});
@@ -528,42 +601,75 @@ $('btnNorth').onclick = () => { orient = 'north'; localStorage.setItem('trailog:
 
 function setAccent(a){ document.body.dataset.act = a; accCircle.setStyle({fillColor:actColor(a)}); }
 // 경로는 종목이 바뀔 때마다 새 선을 이어 그려 종목별 색으로 구분
-function trackAdd(ll, a){
+// k: 'gap' = 기록 공백 (앞 지점과 회색 점선, 거리 없음) / 'est' = 추정 구간 (역 ↔ 실제 위치, 옅은 점선)
+function trackAdd(ll, a, k){
   if (a === 'stay') {   // 머무른 곳은 선 대신 점으로 표시
     L.circleMarker(ll, {radius:7, color:'#fff', weight:2, fillColor:actColor('stay'), fillOpacity:1}).bindTooltip('머무름').addTo(trackLayer);
     return;
   }
-  if (!seg || segAct !== a) {
-    const tail = seg ? seg._raw.slice(-1) : [];
-    seg = L.polyline(tail.concat([ll]), {color:actColor(a), weight:5, opacity:.92, lineJoin:'round', dashArray:a === 'subway' ? '2 9' : null}).addTo(trackLayer);
-    seg._raw = tail.concat([ll]); segAct = a;
+  if (k === 'gap') {
+    if (lastLL) L.polyline([lastLL, ll], {color:'#8FA2AC', weight:4, opacity:.85, dashArray:'4 10'}).bindTooltip('기록 공백').addTo(trackLayer);
+    seg = null; segKey = null; lastLL = ll;
+    return;
+  }
+  const key = a + (k === 'est' ? '~' : '');
+  if (!seg || segKey !== key) {
+    const tail = lastLL ? [lastLL] : [];
+    const style = k === 'est' ? {color:actColor(a), weight:4, opacity:.5, dashArray:'3 8'}
+      : {color:actColor(a), weight:5, opacity:.92, dashArray:a === 'subway' ? '2 9' : null};
+    seg = L.polyline(tail.concat([ll]), Object.assign(style, {lineJoin:'round'})).addTo(trackLayer);
+    if (k === 'est') seg.bindTooltip('추정 구간 (역 ↔ 실제 위치)');
+    seg._raw = tail.concat([ll]); segKey = key;
   } else {
     seg._raw.push(ll);
     if (!seg._routed) seg.addLatLng(ll);
   }
-  if (a === 'subway') scheduleSubwayRoute(seg);
+  lastLL = ll;
+  if (a === 'subway' && k !== 'est') scheduleSubwayRoute(seg);
 }
 
-// ---------- 지하철 구간을 실제 노선 모양으로 그리기 (지도 표시만, 거리 계산은 그대로) ----------
-// OpenStreetMap 철도 자료(Overpass)로 출발점과 도착점 사이 선로를 따라가는 최단 경로를 찾음
-const railCache = {};
+// ---------- 지하철 구간을 실제 노선 모양으로 그리기 (지도 표시) ----------
+// OpenStreetMap 철도 자료(Overpass)로 출발점 → (지하에서 받은 대략적 위치들) → 도착점 선로를 따라가는 최단 경로를 찾음
+const railCache = {}, graphCache = {}, stationCache = {};
+function diagLog(m){ console.warn(m); if (window.TrailogNative && TrailogNative.log) TrailogNative.log(m); }   // 앱: 진단 로그
+const hhmm = t => new Date(t).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
+const llKey = p => (+p[0]).toFixed(4) + ',' + (+p[1]).toFixed(4);
 function scheduleSubwayRoute(sg){ clearTimeout(sg._rt); sg._rt = setTimeout(() => routeSubway(sg), 1500); }
+// 지하에서 받은 대략적 위치 중 1km 이상 떨어진 것만 경유지로 (지나간 역 추정)
+function viaPoints(raw){
+  const out = [], A = raw[0], B = raw[raw.length-1];
+  for (let i = 1; i < raw.length - 1; i++) {
+    const p = {lat:raw[i][0], lon:raw[i][1]}, last = out.length ? out[out.length-1] : {lat:A[0], lon:A[1]};
+    if (haversine(last, p) >= 1000 && haversine(p, {lat:B[0], lon:B[1]}) >= 1000) out.push(p);
+  }
+  return out.slice(0, 8);
+}
 async function routeSubway(sg){
   const raw = sg._raw; if (!raw || raw.length < 2) return;
   const A = raw[0], B = raw[raw.length-1];
   const dAB = haversine({lat:A[0], lon:A[1]}, {lat:B[0], lon:B[1]});
-  if (dAB < 300 || dAB > 60000) return;
-  const key = [A, B].map(p => (+p[0]).toFixed(4) + ',' + (+p[1]).toFixed(4)).join('|');
+  const tag = `지하철 경로 (${(dAB/1000).toFixed(1)}km, 점 ${raw.length}개)`;
+  if (dAB < 300) return;
+  if (dAB > 60000) { if (!sg._skipLogged) { sg._skipLogged = true; diagLog(`${tag}: 그리지 않음 (60km 넘음)`); } return; }
+  const via = viaPoints(raw);
+  const key = [A, B].map(llKey).join('|') + (via.length ? '|' + via.length : '');
   let path = railCache[key];
   if (!path) { try { path = JSON.parse(localStorage.getItem('trailog:rail:' + key)); } catch(_) {} }
-  if (!path) {
+  if (path) { if (sg._logged !== key) diagLog(`${tag}: 저장된 경로 사용 (${path.length}점)`); }
+  else {
     if (sg._busy) { sg._again = true; return; }
     sg._busy = true;
-    path = await findRailPath(A, B);
+    diagLog(`${tag}: 선로 경로 찾기 시작` + (via.length ? `, 경유 위치 ${via.length}곳` : ''));
+    const r = await findRailPath(A, B, via);
     sg._busy = false;
-    if (path) { railCache[key] = path; try { localStorage.setItem('trailog:rail:' + key, JSON.stringify(path)); } catch(_) {} }
+    path = r.path;
+    if (path) {
+      railCache[key] = path; try { localStorage.setItem('trailog:rail:' + key, JSON.stringify(path)); } catch(_) {}
+      diagLog(`${tag}: 경로 찾음, 선로 ${(r.len/1000).toFixed(1)}km (${path.length}점)`);
+    } else diagLog(`${tag}: 실패 → ${r.why}`);
     if (sg._again) { sg._again = false; scheduleSubwayRoute(sg); return; }
   }
+  sg._logged = key;
   if (!path || !trackLayer.hasLayer(sg)) return;
   const now = sg._raw[sg._raw.length-1];
   if (now[0] !== B[0] || now[1] !== B[1]) { scheduleSubwayRoute(sg); return; }   // 그 사이 끝점이 바뀜
@@ -574,16 +680,45 @@ async function routeSubway(sg){
     if (bd.isValid()) map.fitBounds(bd, {paddingTopLeft:[30,120], paddingBottomRight:[30,60], maxZoom:17});
   }
 }
-async function findRailPath(A, B){
+// Overpass 요청: 한 번에 하나씩 (동시에 여러 개 보내면 429·502), 서버가 바쁘면 4초·10초 뒤 다시, 그래도 안 되면 다른 서버
+const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter'];
+let opQueue = Promise.resolve();
+function overpass(q, what){
+  const job = opQueue.then(() => overpassNow(q, what));
+  opQueue = job.catch(() => {});
+  return job;
+}
+async function overpassNow(q, what){
+  let why = '';
+  const tries = [[OVERPASS[0], 0], [OVERPASS[0], 4000], [OVERPASS[0], 10000], [OVERPASS[1], 0]];
+  for (const [base, wait] of tries) {
+    if (wait) await new Promise(r => setTimeout(r, wait));
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 30000);
+    try {
+      const r = await fetch(base + '?data=' + encodeURIComponent(q), {signal:ac.signal});
+      if (!r.ok) throw new Error('HTTP ' + r.status + (r.status === 429 ? ' (요청 너무 많음)' : r.status >= 502 ? ' (서버 바쁨)' : ''));
+      const els = (await r.json()).elements || [];
+      diagLog(`Overpass ${what}: ${els.length}개 받음` + (base !== OVERPASS[0] ? ' (보조 서버)' : ''));
+      return els;
+    } catch (e) {
+      why += (why ? ' / ' : '') + (e.name === 'AbortError' ? '30초 응답 없음' : e.message);
+      if (!/HTTP (429|50\d)/.test(e.message) && e.name !== 'AbortError') break;   // 서버가 바쁜 경우만 다시
+    } finally { clearTimeout(to); }
+  }
+  diagLog(`Overpass ${what} 실패: ${why}`);
+  return null;
+}
+// A~B 를 감싸는 범위의 선로 그래프 (같은 범위는 다시 받지 않음)
+function railGraph(A, B){
   const pad = 0.012;
   const S = Math.min(A[0], B[0]) - pad, N = Math.max(A[0], B[0]) + pad, W = Math.min(A[1], B[1]) - pad, E = Math.max(A[1], B[1]) + pad;
-  const q = `[out:json][timeout:25];way["railway"~"^(subway|light_rail|rail)$"](${S.toFixed(4)},${W.toFixed(4)},${N.toFixed(4)},${E.toFixed(4)});out body;>;out skel qt;`;
-  let els;
-  try {
-    const r = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q));
-    if (!r.ok) return null;
-    els = (await r.json()).elements || [];
-  } catch(_) { return null; }
+  const bbox = [S, W, N, E].map(v => v.toFixed(3)).join(',');
+  if (!graphCache[bbox]) graphCache[bbox] = loadGraph(bbox).then(g => { if (!g) delete graphCache[bbox]; return g; });   // 진행 중인 요청도 같이 씀
+  return graphCache[bbox];
+}
+async function loadGraph(bbox){
+  const els = await overpass(`[out:json][timeout:25];way["railway"~"^(subway|light_rail|rail)$"](${bbox});out body;>;out skel qt;`, '선로');
+  if (!els) return null;
   const pos = new Map(), adj = new Map();
   els.forEach(e => { if (e.type === 'node') pos.set(e.id, [e.lat, e.lon]); });
   const link = (u, v, w) => { if (!adj.has(u)) adj.set(u, []); adj.get(u).push([v, w]); };
@@ -597,13 +732,15 @@ async function findRailPath(A, B){
       link(u, v, w); link(v, u, w);
     }
   });
-  if (!adj.size) return null;
+  if (!adj.size) { diagLog('선로 자료 없음 (이 범위에 지하철·철도 선로가 없음)'); return null; }
+  // 가장 가까운 선로 지점 {id, d}
   const nearest = P => { let best = null, bd = Infinity;
     for (const id of adj.keys()) { const q2 = pos.get(id), d = haversine({lat:P[0], lon:P[1]}, {lat:q2[0], lon:q2[1]}); if (d < bd) { bd = d; best = id; } }
-    return bd <= 800 ? best : null; };
-  const s0 = nearest(A), t0 = nearest(B);
-  if (s0 == null || t0 == null || s0 === t0) return null;
-  // 다익스트라 최단 경로 (이진 힙)
+    return {id:best, d:bd}; };
+  return {pos, adj, nearest};
+}
+// 다익스트라 최단 경로 (이진 힙) → {path:[[lat,lon]...], len} 또는 null
+function shortest(g, s0, t0){
   const dist = new Map([[s0, 0]]), prev = new Map(), heap = [[0, s0]];
   const push = it => { heap.push(it); let i = heap.length - 1; while (i) { const p2 = (i-1) >> 1; if (heap[p2][0] <= heap[i][0]) break; [heap[p2], heap[i]] = [heap[i], heap[p2]]; i = p2; } };
   const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0;
@@ -613,14 +750,130 @@ async function findRailPath(A, B){
     const [d, u] = pop();
     if (u === t0) break;
     if (d > (dist.get(u) ?? Infinity)) continue;
-    for (const [v, w] of adj.get(u) || []) { const nd = d + w; if (nd < (dist.get(v) ?? Infinity)) { dist.set(v, nd); prev.set(v, u); push([nd, v]); } }
+    for (const [v, w] of g.adj.get(u) || []) { const nd = d + w; if (nd < (dist.get(v) ?? Infinity)) { dist.set(v, nd); prev.set(v, u); push([nd, v]); } }
   }
-  if (!prev.has(t0)) return null;
-  const out = []; for (let u = t0; u != null; u = prev.get(u)) out.push(pos.get(u));
-  return out.reverse();
+  if (s0 !== t0 && !prev.has(t0)) return null;
+  const out = []; for (let u = t0; u != null; u = prev.get(u)) out.push(g.pos.get(u));
+  return {path:out.reverse(), len:dist.get(t0) || 0};
 }
-function trackClear(){ trackLayer.clearLayers(); seg = null; segAct = null; }
-function trackDraw(list){ trackClear(); list.forEach(p => { if (p.a !== 'stay' || p.s) trackAdd(p.ll, p.a); }); }   // list: [{ll, a, s}]
+// A → 경유 위치들 → B 선로 경로 → {path, len} 또는 {why}
+async function findRailPath(A, B, via){
+  const g = await railGraph(A, B);
+  if (!g) return {why:'선로 자료를 받지 못함'};
+  const s0 = g.nearest(A), t0 = g.nearest(B);
+  if (s0.d > 800) return {why:`출발점이 선로에서 ${Math.round(s0.d)}m (800m 넘음)`};
+  if (t0.d > 800) return {why:`도착점이 선로에서 ${Math.round(t0.d)}m (800m 넘음)`};
+  if (s0.id === t0.id) return {why:'출발·도착이 같은 선로 지점'};
+  // 경유지: 선로에서 400m 안인 것만 (대략적 위치 오차 고려)
+  const stops = [s0.id, ...(via || []).map(p => g.nearest([p.lat, p.lon])).filter(n => n.d <= 400).map(n => n.id), t0.id]
+    .filter((id, i, a) => i === 0 || id !== a[i-1]);
+  let path = [], len = 0;
+  for (let i = 1; i < stops.length; i++) {
+    const r = shortest(g, stops[i-1], stops[i]);
+    if (!r) return {why:'선로가 이어지지 않음 (다른 노선이거나 자료 빠짐)'};
+    path = path.concat(i > 1 ? r.path.slice(1) : r.path); len += r.len;
+  }
+  return {path, len};
+}
+// 근처 지하철역 {name, lat, lon, d} (역이 없으면 출입구) 또는 null. 결과는 저장해 두고 다시 씀
+function nearStation(p){
+  const key = (+p.lat).toFixed(3) + ',' + (+p.lon).toFixed(3);
+  if (!stationCache[key]) stationCache[key] = loadStation(p, key).then(r => { if (r === undefined) delete stationCache[key]; return r || null; });
+  return stationCache[key];
+}
+async function loadStation(p, key){
+  try { const c = JSON.parse(localStorage.getItem('trailog:rail:st:' + key)); if (c) return c.n ? c : null; } catch(_) {}
+  const R = TRV.SUB_STATION_R_M, at = `(around:${R},${(+p.lat).toFixed(5)},${(+p.lon).toFixed(5)})`;
+  const els = await overpass(`[out:json][timeout:20];(node${at}["railway"="station"]["station"="subway"];node${at}["railway"="station"]["subway"="yes"];`
+    + `node${at}["public_transport"="station"]["subway"="yes"];node${at}["railway"="subway_entrance"];);out body;`, `역 찾기 ${key}`);
+  if (!els) return undefined;   // 실패는 저장하지 않음 (다음에 다시 시도)
+  let best = null;
+  for (const e of els) {
+    if (e.lat == null) continue;
+    const isSt = e.tags && e.tags.railway !== 'subway_entrance';
+    const name = e.tags && (e.tags['name:ko'] || e.tags.name);
+    const d = haversine(p, {lat:e.lat, lon:e.lon});
+    const score = d + (isSt && name ? 0 : 400);   // 이름 있는 역을 우선, 없으면 출입구
+    if (!best || score < best.score) best = {score, n:name ? (/역$/.test(name) ? name : name + '역') : '출입구', lat:e.lat, lon:e.lon, d:Math.round(d), st:isSt};
+  }
+  const out = best ? {name:best.n, n:best.n, lat:best.lat, lon:best.lon, d:best.d} : null;
+  try { localStorage.setItem('trailog:rail:st:' + key, JSON.stringify(out || {n:''})); } catch(_) {}
+  return out;
+}
+// 지하철 구간 정리 (기록 중·지난 기록 공통): list 의 지점을 직접 고침 → 바뀌었으면 true
+//  - 끝점이 선로에서 SUB_OFF_RAIL_M 이상이면 근처 역 지점을 넣어 선로는 역에서 끝내고, 역 → 끝점은 걷기 추정 구간
+//  - 출발 쪽도 같은 방식 (승차역 전에 걸은 구간 분리)
+//  - 역 이름은 subsOut 에 [첫 지하철 지점 시각, 승차역, 하차역]
+async function subwayFix(list, subsOut){
+  const runs = [];
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].a !== 'subway' || list[i].k === 'est') continue;
+    if (runs.length && runs[runs.length-1].j === i - 1 && list[i].k !== 'gap') runs[runs.length-1].j = i;
+    else runs.push({i, j:i});
+  }
+  let changed = false;
+  for (const r of runs) {
+    const first = list[r.i], P = list[r.j];
+    const W = r.i > 0 && first.k !== 'gap' ? list[r.i - 1] : null, A = W || first;
+    const dAB = haversine(A, P), tag = `지하철 구간 ${hhmm(first.t)}~${hhmm(P.t)} (${(dAB/1000).toFixed(1)}km)`;
+    if (dAB < 300) { diagLog(`${tag}: 짧아서 역 맞추기 생략`); continue; }
+    const g = await railGraph([A.lat, A.lon], [P.lat, P.lon]);
+    const [sa, sb] = await Promise.all([nearStation(A), nearStation(P)]);
+    const offA = g ? g.nearest([A.lat, A.lon]).d : null, offB = g ? g.nearest([P.lat, P.lon]).d : null;
+    diagLog(`${tag}: 출발점→선로 ${offA == null ? '?' : Math.round(offA) + 'm'}, 끝점→선로 ${offB == null ? '?' : Math.round(offB) + 'm'}, `
+      + `승차역 ${sa ? sa.name + ' ' + sa.d + 'm' : '못 찾음'}, 하차역 ${sb ? sb.name + ' ' + sb.d + 'm' : '못 찾음'}`);
+    // 끝 쪽: 역 지점을 끝점 앞에 넣고 끝점은 걷기(추정)
+    if (offB != null && offB >= TRV.SUB_OFF_RAIL_M && sb && sb.d > 30) {
+      const before = r.j > r.i ? list[r.j - 1] : (W || {t:P.t - 60000});
+      const walk = haversine(sb, P), t = Math.max(before.t + 1, Math.round(P.t - walk / TRV.WALK_MS * 1000));
+      list.splice(list.indexOf(P), 0, {lat:sb.lat, lon:sb.lon, ll:[sb.lat, sb.lon], alt:P.alt, t, d:0, a:'subway', hr:null, s:null, k:null});
+      P.a = 'walk'; P.k = 'est'; changed = true;
+      diagLog(`${tag}: 선로를 ${sb.name}에서 끝냄, ${sb.name} → 끝점 ${Math.round(walk)}m 걷기(추정)`);
+    }
+    // 출발 쪽: 출발점 다음에 역 지점(걷기 추정)을 넣음
+    if (W && W.a !== 'subway' && offA != null && offA >= TRV.SUB_OFF_RAIL_M && sa && sa.d > 30) {
+      const next = list[list.indexOf(W) + 1];
+      const walk = haversine(W, sa), t = Math.min(next.t - 1, Math.round(W.t + walk / TRV.WALK_MS * 1000));
+      list.splice(list.indexOf(W) + 1, 0, {lat:sa.lat, lon:sa.lon, ll:[sa.lat, sa.lon], alt:W.alt, t, d:0, a:'walk', hr:null, s:null, k:'est'});
+      changed = true;
+      diagLog(`${tag}: 출발점 → ${sa.name} ${Math.round(walk)}m 걷기(추정), 선로는 ${sa.name}부터`);
+    }
+    if (subsOut && (sa || sb)) {
+      const t0 = first.t;
+      const old = subsOut.find(x => x[0] === t0);
+      if (old) { old[1] = sa ? sa.name : ''; old[2] = sb ? sb.name : ''; } else subsOut.push([t0, sa ? sa.name : '', sb ? sb.name : '']);
+    }
+  }
+  if (changed) recomputeD(list);
+  return changed;
+}
+// 지점 목록의 누적 거리(d) 다시 계산 (기록 공백은 거리 없음)
+function recomputeD(list){
+  let d = 0;
+  list.forEach((p, i) => { if (i && p.k !== 'gap') d += haversine(list[i-1], p); p.d = d; });
+  return d;
+}
+// 기록 중: 지하철 구간이 끝나면 (다음 수단 지점이 들어오면) 정리
+let subFixT = null;
+function scheduleSubFix(){
+  clearTimeout(subFixT);
+  subFixT = setTimeout(async () => {
+    const changed = await subwayFix(pts, subs);
+    if (!changed || viewing) { render(); return; }
+    recomputeLive(); trackDraw(drawList(pts)); render(); saveDraft();
+  }, 3000);
+}
+// 기록 중 지점 목록이 바뀐 뒤 거리·종류별 거리·칼로리 다시 계산
+function recomputeLive(){
+  dist = pts.length ? pts[pts.length-1].d : 0;
+  actDist = {};
+  for (let i = 1; i < pts.length; i++) { const x = pts[i].a; actDist[x] = (actDist[x] || 0) + (pts[i].d - pts[i-1].d); }
+  if (kind === 'travel') kcal = kcalOf(pts);   // 이동 기록은 걷기만 칼로리 (추정 구간은 직선 거리 기준)
+  bus.win = [];
+}
+function trackClear(){ trackLayer.clearLayers(); seg = null; segKey = null; lastLL = null; }
+function trackDraw(list){ trackClear(); list.forEach(p => { if (p.a !== 'stay' || p.s) trackAdd(p.ll, p.a, p.k); }); }   // list: [{ll, a, s, k}]
+const drawList = list => list.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s, k:p.k}));
 
 // ---------- 계산 도우미 ----------
 function haversine(a, b){
@@ -650,8 +903,8 @@ function onPos(p){
     const gap = fix.t - lastGoodAt;
     if (gpsLost || gap > 15000) {
       follow = true;
-      if (!viewing && map.hasLayer(me)) map.setView(lastFix, Math.max(map.getZoom(), 16));
-      if (hadGood) {
+      if (!viewing && map.hasLayer(me) && !ingesting) map.setView(lastFix, Math.max(map.getZoom(), 16));
+      if (hadGood && !ingesting) {
         const wasHidden = hiddenAt && hiddenAt < fix.t && hiddenAt > lastGoodAt - 1000;
         if (wasHidden && status === 'running') toast(`화면을 벗어난 ${Math.round(gap/1000)}초 동안 위치가 기록되지 않았습니다`);
         else if (!wasHidden) toast('GPS 신호를 다시 찾았습니다');
@@ -662,27 +915,63 @@ function onPos(p){
   $('gps').dataset.q = fix.acc <= 10 ? 'good' : fix.acc <= MAX_ACC_M ? 'ok' : 'bad';
   $('gpsTxt').textContent = 'GPS ±' + Math.round(fix.acc) + 'm';
   me.setLatLng(lastFix); accCircle.setLatLng(lastFix).setRadius(fix.acc);
-  if (fix.acc <= 1000) { maybeWeather(fix); maybeMountain(fix); }
+  if (fix.acc <= 1000 && !ingesting) { maybeWeather(fix); maybeMountain(fix); }
   if (!map.hasLayer(me)) { accCircle.addTo(map); me.addTo(map); if (!viewing) map.setView(lastFix, 16); }
   updateHeading(fix);
-  if (follow && !viewing) map.panTo(lastFix, {animate:true});
+  if (follow && !viewing && !ingesting) map.panTo(lastFix, {animate:true});
   if (fix.alt != null) altSmooth = altSmooth == null ? fix.alt : altSmooth*0.8 + fix.alt*0.2;
+  const draw = () => { if (!ingesting) render(); };
 
-  if (status !== 'running' || fix.acc > MAX_ACC_M) { render(); return; }
+  // 지하철을 고른 동안은 오차 300m 까지의 대략적 위치도 받음 (지나간 역 추정용)
+  const maxAcc = kind === 'travel' && act === 'subway' ? TRV.SUB_ACC_M : MAX_ACC_M;
+  if (status !== 'running' || fix.acc > maxAcc) { draw(); return; }
   const prev = pts[pts.length-1];
-  if (!prev) { addPoint(fix, 0); classify(fix); render(); return; }
+  if (!prev) { addPoint(fix, 0); classify(fix); draw(); return; }
+  if (fix.t <= prev.t) { draw(); return; }   // 이미 받은 시각 (파일에서 다시 읽은 위치 등)
   const d = haversine(prev, fix), dt = (fix.t - prev.t)/1000, travel = kind === 'travel';
+  // 일시정지·앱 종료 뒤 첫 위치가 멀리 떨어져 있으면 "기록 공백": 거리·칼로리에 넣지 않고 점선으로만
+  if (resumeGap) {
+    resumeGap = false;
+    if (d > TRV.RESUME_GAP_M && dt > 15) {
+      addPoint(fix, 0, act, 'gap');
+      diagLog(`기록 공백: ${hhmm(prev.t)}~${hhmm(fix.t)} ${(d/1000).toFixed(2)}km (거리·시간·칼로리 제외)`);
+      classify(fix); draw(); return;
+    }
+  }
+  // GPS 가 오래 끊겼다 다시 잡힘 (지하철 등): 그동안 가장 오래 골라 둔 수단으로 그 구간을 기록
+  if (travel && dt*1000 >= TRV.GAP_MS && prev.a !== 'stay') {
+    const a = longestMode(prev.t, fix.t);
+    diagLog(`GPS ${Math.round(dt)}초 끊겼다 잡힘 → 그동안 가장 오래 고른 ${ACT[a]}(으)로 ${(d/1000).toFixed(2)}km 기록`);
+    if (a === 'subway' || d/dt*3.6 <= TRV.MAX_KMH) { dist += d; addPoint(fix, d, a); }
+    curSpd = 0; classify(fix); draw(); return;
+  }
   const v = fix.spd != null && fix.spd >= 0 ? fix.spd : (dt > 0 ? d/dt : 0);   // m/s
-  if (v*3.6 > (travel ? TRV.MAX_KMH : 120)) { render(); return; }                // 비정상 점프 제거
+  if (v*3.6 > (travel ? TRV.MAX_KMH : 120)) { draw(); return; }                // 비정상 점프 제거
   curSpd = curSpd*0.6 + v*3.6*0.4;
-  const minStep = travel && act !== 'walk' ? TRV.VEH_STEP_M : MIN_STEP_M;
+  // 지하철의 대략적 위치는 오차만큼 움직여야 한 점 (오차 때문에 거리가 늘지 않게)
+  const minStep = travel && act === 'subway' ? Math.max(TRV.VEH_STEP_M, fix.acc) : travel && act !== 'walk' ? TRV.VEH_STEP_M : MIN_STEP_M;
   if (d >= minStep) { dist += d; addPoint(fix, d); if (curSpd > maxSpd) maxSpd = curSpd; }
   else if (dt > 5) curSpd *= 0.5;
   classify(fix);
-  if (travel) watchBus(fix);
-  render();
+  if (travel && !ingesting) watchBus(fix);
+  draw();
 }
-function addPoint(fix, d, aOverride){
+// t0~t1 동안 가장 오래 골라 둔 이동 수단 (수단 변경 이력 modeLog 기준)
+function longestMode(t0, t1, log){
+  log = log || modeLog;
+  const sum = {};
+  for (let i = 0; i < log.length; i++) {
+    const s0 = Math.max(log[i][0], t0), s1 = Math.min(i + 1 < log.length ? log[i+1][0] : Infinity, t1);
+    if (s1 > s0) sum[log[i][1]] = (sum[log[i][1]] || 0) + (s1 - s0);
+  }
+  const best = Object.keys(sum).sort((a, b) => sum[b] - sum[a])[0];
+  return best || act;
+}
+function logMode(a, t){
+  t = t || Date.now();
+  if (!modeLog.length || modeLog[modeLog.length-1][1] !== a) modeLog.push([t, a]);
+}
+function addPoint(fix, d, aOverride, k){
   const alt = altSmooth, a = aOverride || act;
   if (alt != null) {
     if (altRef == null) altRef = alt;
@@ -696,10 +985,11 @@ function addPoint(fix, d, aOverride){
     let j = pts.length - 1; while (j > 0 && pts[j-1].t >= fix.t - 30000) j--;
     const q = pts[j], dd = dist - q.d;
     const grade = (dd >= 15 && alt != null && q.alt != null) ? (alt - q.alt)/dd : 0;
-    if (dt > 0 && (kind !== 'travel' || a === 'walk')) kcal += kcalStep(a, d/dt*3.6, grade, dt, kg());   // 이동 기록은 걷기만 칼로리 반영
+    if (dt > 0 && k !== 'gap' && (kind !== 'travel' || a === 'walk')) kcal += kcalStep(a, d/dt*3.6, grade, dt, kg());   // 이동 기록은 걷기만 칼로리 반영
   }
-  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a, hr:hrLive() ? hr.bpm : null});
-  if (!viewing) trackAdd([fix.lat, fix.lon], a);
+  pts.push({lat:fix.lat, lon:fix.lon, alt, t:fix.t, d:dist, a, hr:hrLive() ? hr.bpm : null, k:k || null});
+  if (!viewing) trackAdd([fix.lat, fix.lon], a, k);
+  if (prev && prev.a === 'subway' && a !== 'subway' && kind === 'travel') scheduleSubFix();   // 지하철 구간이 끝남 → 역 맞추기
 }
 // 머무름 시작·끝 표시점 (거리 없음). start에는 실제로 멈추기 시작한 시각을 함께 저장
 function markStay(fix, start){
@@ -749,23 +1039,33 @@ function guess(kmh, cad){
   if (kmh < 13) return 'run';
   return 'bike';
 }
-// ---------- 버스 자동 전환 (이동 기록, 걷기 중일 때만) ----------
-// 탑승 후보: (a) 공식 정류장 50m 안에서 멈춰 기다림 또는 (b) 최근 15분 안에 버스 도착 정보를 검색
-// 후보 상태에서 최근 15초 평균 12km/h 이상 + 걸음 리듬 거의 없음 → 버스로 전환. 판단 과정은 진단 로그에 남김
-async function findBusStop(fix){
+// ---------- 걷기 → 차량 자동 전환 (이동 기록, 걷기 중일 때만) ----------
+// 걷는 동안 300m마다 주변 공식 정류장을 미리 받아 두고, 최근 30초 평균 12km/h 이상이면 차량 탑승으로 판단.
+// 출발 지점이 정류장 60m 안이거나 최근 15분 안에 버스를 조회했으면 버스, 아니면 알림으로 버스/택시/자동차를 물음 (답 없으면 자동차).
+// 판단 과정은 진단 로그에 남김
+const busLog = diagLog;
+let stopCache = {stops:[], at:null, busy:false}, ask = null;   // ask: 답을 기다리는 차량 질문 {from, timer}
+async function cacheStops(fix){
+  if (stopCache.busy || (stopCache.at && haversine(stopCache.at, fix) < TRV.STOP_CACHE_M)) return;
+  stopCache.busy = true; stopCache.at = {lat:fix.lat, lon:fix.lon};   // 실패해도 300m 더 가서 다시 시도
   const api = busApi(), ac = new AbortController(), to = setTimeout(() => ac.abort(), 10000);
   try {
-    const r = await fetch(`${api}/stops?lat=${fix.lat.toFixed(5)}&lon=${fix.lon.toFixed(5)}&r=${TRV.STOP_R_M}`, {signal:ac.signal});
+    const r = await fetch(`${api}/stops?lat=${fix.lat.toFixed(5)}&lon=${fix.lon.toFixed(5)}&r=${TRV.STOP_FETCH_R_M}`, {signal:ac.signal});
     const j = await r.json().catch(() => ({error:'응답 형식 오류'}));
     if (!r.ok || j.error) throw new Error('HTTP ' + r.status + (j.error ? ' ' + j.error : ''));
-    if (j.errors && j.errors.length) busLog(`정류장 조회 일부 실패: ${j.errors.join(' / ')}`);
-    const st = (j.stops || [])[0];
-    busLog(st ? `공식 정류장: ${st.name} ${st.dist}m (${st.region} ${st.no})` : `${TRV.STOP_R_M}m 안에 공식 정류장 없음`);
-    return st ? {name:st.name, dist:st.dist, region:st.region, no:st.no, lat:st.lat || fix.lat, lon:st.lon || fix.lon} : null;
+    const got = (j.stops || []).filter(x => x.lat && x.lon);
+    got.forEach(x => { if (!stopCache.stops.some(y => y.region === x.region && y.no === x.no && y.name === x.name)) stopCache.stops.push(x); });
+    if (stopCache.stops.length > 400) stopCache.stops = stopCache.stops.slice(-400);
+    busLog(`정류장 캐시: 반경 ${TRV.STOP_FETCH_R_M}m ${got.length}곳 받음 (모두 ${stopCache.stops.length}곳)`
+      + (j.errors && j.errors.length ? ` / 일부 실패: ${j.errors.join(' / ')}` : ''));
   } catch(e) {
-    busLog(`정류장 조회 실패: ${api}/stops → ${e.name === 'AbortError' ? '응답 시간 초과' : e.message}`);
-    return null;
-  } finally { clearTimeout(to); }
+    busLog(`정류장 캐시 실패: ${api}/stops → ${e.name === 'AbortError' ? '응답 시간 초과' : e.message}`);
+  } finally { clearTimeout(to); stopCache.busy = false; }
+}
+function nearestStop(p){
+  let best = null;
+  for (const x of stopCache.stops) { const d = haversine(p, x); if (!best || d < best.d) best = Object.assign({}, x, {d:Math.round(d)}); }
+  return best;
 }
 function busWinKmh(sec){
   const w = bus.win, last = w[w.length-1];
@@ -773,95 +1073,101 @@ function busWinKmh(sec){
   const span = (last.t - w[i].t)/1000;
   return span >= sec*0.6 ? (last.d - w[i].d)/span*3.6 : null;
 }
-// 지금 탑승 후보인지: {no, label(지도 위 표시), why(로그)} 또는 null
+const validSearch = () => busSearch && !busSearch.used && Date.now() - busSearch.t <= TRV.SEARCH_VALID_MS ? busSearch : null;
+// 버스 도착 정보를 조회한 뒤 15분 동안: 지도 위 "M4137 탑승 대기"
 function busCand(){
-  const now = Date.now();
-  const q = busSearch && !busSearch.used && now - busSearch.t <= TRV.SEARCH_VALID_MS ? busSearch : null;
-  if (!bus.stop && !q) return null;
-  const no = q ? q.no : '';
-  return {no,
-    label:no ? `${no} 탑승 대기` + (bus.stop ? ` · ${bus.stop.name}` : '') : bus.stop ? `${bus.stop.name} 정류장 대기` : '버스 탑승 대기',
-    why:[bus.stop && `${bus.stop.name} 정류장 ${bus.stop.dist}m`, q && `${Math.round((now - q.t)/60000)}분 전 ${q.no ? q.no + '번' : '근처 버스'} 검색`].filter(Boolean).join(' + ')};
+  const q = validSearch();
+  return q ? {no:q.no, label:`${q.no || '버스'} 탑승 대기`, why:`${Math.round((Date.now() - q.t)/60000)}분 전 ${q.no ? q.no + '번' : '근처 버스'} 조회`} : null;
 }
-function busReset(){
-  if (bus.cand) busLog('버스 후보 해제: 걷기 기록 중이 아님');
-  bus = {win:[], stillSince:null, checked:false, stop:null, cand:'', held:false};
-}
-// 버스로 고칠 시작점: 지금부터 거슬러 올라가며 속도가 DEPART_KMH 아래였던 마지막 지점 (최대 2분 전)
-function departTime(t){
+// 출발 지점: 지금부터 거슬러 올라가며 속도가 DEPART_KMH 아래였던 마지막 지점 (최대 3분 전)
+function departPoint(t){
   let i = pts.length - 1;
-  while (i > 0 && pts[i-1].t >= t - 120000) {
+  while (i > 0 && pts[i-1].t >= t - TRV.DEPART_BACK_MS) {
     const a = pts[i-1], b = pts[i], sp = (b.d - a.d) / Math.max(1, (b.t - a.t)/1000) * 3.6;
     if (sp < TRV.DEPART_KMH) break;
     i--;
   }
-  return pts[i] ? pts[i].t : t - TRV.BUS_WIN_S*1000;
+  return pts[i];
 }
 function watchBus(fix){
-  if (!TRV.AUTO_BUS || status !== 'running' || act !== 'walk') { if (bus.win.length || bus.cand) busReset(); return; }
+  if (!TRV.AUTO_BUS || status !== 'running' || act !== 'walk') { if (bus.win.length) bus.win = []; return; }
+  cacheStops(fix);
+  watchCand();
   bus.win.push({t:fix.t, d:dist});
-  while (bus.win.length > 2 && bus.win[0].t < fix.t - 60000) bus.win.shift();
-  const v = busWinKmh(20);
-  // (a) 멈춰 있으면 정류장 확인 (움직였다 다시 멈추면 다시 확인)
-  if (v != null && v < TRV.STILL_KMH) {
-    if (bus.stillSince == null) bus.stillSince = fix.t;
-    if (!bus.stop && !bus.checked && fix.t - bus.stillSince >= TRV.STOP_WAIT_MS) {
-      bus.checked = true;
-      busLog(`${Math.round((fix.t - bus.stillSince)/1000)}초 멈춤 → 공식 정류장 ${TRV.STOP_R_M}m 안 조회`);
-      findBusStop(fix).then(st => {
-        if (!st || act !== 'walk' || status !== 'running') return;
-        bus.stop = st; toast(`${st.name} 정류장에서 대기 중`); watchCand(); render();
-      });
-    }
-  } else if (v != null) {
-    bus.stillSince = null;
-    if (!bus.stop) bus.checked = false;
-    else if (v < 8 && haversine(bus.stop, fix) > TRV.STOP_LEAVE_M) {   // 걸어서 떠남
-      busLog(`${bus.stop.name} 정류장에서 걸어서 ${TRV.STOP_LEAVE_M}m 벗어남`);
-      bus.stop = null; bus.checked = false;
-    }
-  }
-  const c = watchCand();
-  if (!c) return;
-  const v15 = busWinKmh(TRV.BUS_WIN_S);
-  if (v15 == null || v15 < TRV.BUS_KMH) return;
-  const spm = motionSeen && !sim ? Math.round(stepTimes.filter(x => x > Date.now() - TRV.BUS_WIN_S*1000).length * 60 / TRV.BUS_WIN_S) : null;
+  while (bus.win.length > 2 && bus.win[0].t < fix.t - 90000) bus.win.shift();
+  const v = busWinKmh(TRV.BOARD_WIN_S);
+  if (v == null || v < TRV.BOARD_KMH) { bus.held = false; return; }
+  const spm = motionSeen && !sim ? Math.round(stepTimes.filter(x => x > Date.now() - TRV.BOARD_WIN_S*1000).length * 60 / TRV.BOARD_WIN_S) : null;
   if (spm != null && spm >= TRV.STEP_MAX_SPM) {
-    if (!bus.held) { bus.held = true; busLog(`버스 전환 보류: ${TRV.BUS_WIN_S}초 평균 ${v15.toFixed(1)}km/h 이지만 걸음 분당 ${spm}`); }
+    if (!bus.held) { bus.held = true; busLog(`차량 판단 보류: ${TRV.BOARD_WIN_S}초 평균 ${v.toFixed(1)}km/h 이지만 걸음 분당 ${spm} (${TRV.STEP_MAX_SPM} 이상)`); }
     return;
   }
-  const from = departTime(fix.t), hm = new Date(from).toLocaleTimeString('ko-KR', {hour12:false});
+  const dep = departPoint(fix.t), q = validSearch(), st = nearestStop(dep);
+  busLog(`차량 탑승 감지: ${TRV.BOARD_WIN_S}초 평균 ${v.toFixed(1)}km/h, 걸음 ${spm == null ? '센서 없음' : '분당 ' + spm}, `
+    + `출발 지점 ${hhmm(dep.t)}, 가장 가까운 정류장 ${st ? st.name + ' ' + st.d + 'm' : '없음'} (캐시 ${stopCache.stops.length}곳)`
+    + (q ? `, ${busCand().why}` : ''));
+  bus.win = []; bus.held = false;
+  if (q) toBus(dep.t, q.no, busCand().why);
+  else if (st && st.d <= TRV.STOP_NEAR_M) toBus(dep.t, '', `출발 지점이 ${st.name} 정류장 ${st.d}m`);
+  else askVehicleKind(dep.t, st);
+}
+function toBus(from, no, why){
   mode = 'bus'; act = 'bus'; setAccent('bus');
   relabelSince(from, 'bus');
-  if (c.no) rides.push([from, c.no]);
-  if (busSearch && c.no === busSearch.no) busSearch.used = true;   // 같은 검색으로 다시 전환하지 않음
-  busLog(`버스 전환: ${c.no ? c.no + '번' : '번호 모름'} (후보: ${c.why}), ${TRV.BUS_WIN_S}초 평균 ${v15.toFixed(1)}km/h, `
-    + `걸음 ${spm == null ? '센서 없음' : '분당 ' + spm}, ${hm}부터 버스로 기록`);
-  bus = {win:[], stillSince:null, checked:false, stop:null, cand:'', held:false};
-  toast(`${c.no ? '버스 ' + c.no : '버스'}에 탄 것 같아요. 아니면 걷기를 누르세요`);
+  if (no) rides.push([from, no]);
+  if (busSearch && busSearch.no === no) busSearch.used = true;   // 같은 조회로 다시 전환하지 않음
+  busLog(`결정: 버스${no ? ' ' + no : ''} (${why}), ${hhmm(from)}부터 버스로 기록`);
+  toast(`${no ? '버스 ' + no : '버스'}에 탄 것 같아요. 아니면 아래에서 수단을 고르세요`);
+  render();
 }
-// 후보 상태가 바뀌면 로그·화면 갱신
+// 정류장이 아니면: 우선 자동차로 기록하고 버스/택시/자동차를 물음 (알림 버튼 + 지도 위 버튼), 2분 안에 답이 없으면 자동차로 확정
+function askVehicleKind(from, st){
+  mode = 'car'; act = 'car'; setAccent('car');
+  relabelSince(from, 'car');
+  busLog(`결정 보류: 출발 지점이 정류장 아님 (${st ? '가장 가까운 ' + st.name + ' ' + st.d + 'm' : '받아 둔 정류장 없음'}) → 자동차로 기록하고 종류 묻기`);
+  if (ask) clearTimeout(ask.timer);
+  ask = {from, timer:setTimeout(() => answerVehicle('car', '2분 동안 응답 없음'), TRV.ASK_WAIT_MS)};
+  if (window.TrailogNative && TrailogNative.askVehicle)
+    TrailogNative.askVehicle('무엇을 탔나요?', `${hhmm(from)}부터 차량으로 이동 중입니다. 답이 없으면 자동차로 기록합니다`, m => { if (m) answerVehicle(m, '알림'); });
+  toast('차량에 탄 것 같아요. 버스·택시·자동차 중 골라 주세요');
+  render();
+}
+function answerVehicle(m, via){
+  if (!ask) return;
+  clearTimeout(ask.timer);
+  const from = ask.from; ask = null;
+  if (window.TrailogNative) TrailogNative.cancelAsk();
+  busLog(`차량 종류: ${ACT[m]} (${via})`);
+  if (m !== 'car') {
+    relabelSince(from, m, VEH);
+    if (VEH.includes(act)) { mode = m; act = m; setAccent(m); }
+  }
+  render();
+}
+// 버스 도착 정보 조회 후보 상태가 바뀌면 로그
 function watchCand(){
   const c = busCand(), label = c ? c.label : '';
   if (label !== bus.cand) {
-    busLog(c ? `버스 탑승 후보: ${c.why}` : `버스 후보 해제${busSearch && !bus.stop ? ' (검색 후 ' + Math.round(TRV.SEARCH_VALID_MS/60000) + '분 지남)' : ''}`);
-    bus.cand = label; bus.held = false;
+    busLog(c ? `버스 탑승 후보: ${c.why}` : `버스 후보 해제 (조회 후 ${Math.round(TRV.SEARCH_VALID_MS/60000)}분 지났거나 전환에 씀)`);
+    bus.cand = label;
   }
   return c;
 }
-function relabelSince(t0, a){
-  for (let i = pts.length - 1; i >= 0 && pts[i].t >= t0; i--) if (pts[i].a === 'walk') pts[i].a = a;
+function relabelSince(t0, a, from){
+  from = from || ['walk'];
+  for (let i = pts.length - 1; i >= 0 && pts[i].t >= t0; i--) if (from.includes(pts[i].a) && pts[i].k !== 'est') pts[i].a = a;
+  logMode(a);
   actDist = {};
   for (let i = 1; i < pts.length; i++) { const x = pts[i].a; actDist[x] = (actDist[x] || 0) + (pts[i].d - pts[i-1].d); }
-  if (!viewing) trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s})));
+  if (!viewing) trackDraw(drawList(pts));
 }
 
 // ---------- 임시저장 (기록 중 앱이 닫혀도 이어서 기록) ----------
 function saveDraft(){
   if (status === 'idle' || !pts.length) return;
   const d = {v:1, kind, mode, act, actKnown, dist, actDist, gain, loss, maxSpd, kcal, steps, hrSum:hr.sum, hrN:hr.n, hrMax:hr.max,
-    elapsed:nowElapsed(), savedAt:Date.now(), rides,
-    pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr, p.s || null, +p.d.toFixed(1)])};
+    elapsed:nowElapsed(), savedAt:Date.now(), st:status, rides, modeLog, subs, resumeGap,
+    pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr, p.s || null, +p.d.toFixed(1), p.k || null])};
   try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch(_) {}
 }
 const clearDraft = () => { try { localStorage.removeItem(DRAFT); } catch(_) {} };
@@ -873,21 +1179,87 @@ function restoreDraft(d){
   gain = d.gain; loss = d.loss; maxSpd = d.maxSpd; kcal = d.kcal; steps = d.steps || 0;
   hr.sum = d.hrSum || 0; hr.n = d.hrN || 0; hr.max = d.hrMax || 0;
   elapsed = d.elapsed; samples = []; cand = null; curSpd = 0; altRef = null; rides = d.rides || [];
-  pts = d.pts.map(p => ({lat:p[0], lon:p[1], alt:p[2], t:p[3], a:CODE[p[4]] || 'walk', hr:p[5], s:p[6], d:p[7]}));
+  modeLog = d.modeLog || [[d.pts[0][3], d.act]]; subs = d.subs || []; resumeGap = !!d.resumeGap;
+  pts = d.pts.map(p => ({lat:p[0], lon:p[1], alt:p[2], t:p[3], a:CODE[p[4]] || 'walk', hr:p[5], s:p[6], d:p[7], k:p[8] || null}));
   status = 'paused'; setAccent(act);
-  trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s})));
+  trackDraw(drawList(pts));
   const last = pts[pts.length-1]; if (last) map.setView([last.lat, last.lon], 16);
   startDraftTimer();
 }
-function checkDraft(){
+// 앱 서비스 파일에서 읽은 위치를 기록에 몰아 넣음 (화면 갱신·지도 이동·버스 판단 없이)
+// covered: 임시저장의 기록 시간에 이미 들어 있는 시각 → 그 뒤 구간만 기록 시간에 더함 (기록 공백은 빼고)
+function ingest(list, covered){
+  if (!list.length) return 0;
+  const was = status, n0 = pts.length;
+  ingesting = true; status = 'running';
+  try { list.forEach(p => onPos(p)); }
+  finally { ingesting = false; status = was; }
+  let add = 0;
+  for (let i = Math.max(1, n0); i < pts.length; i++)
+    if (pts[i].k !== 'gap') add += Math.max(0, pts[i].t - Math.max(pts[i-1].t, covered));
+  return add;
+}
+const hmK = t => { const x = new Date(t); return `${x.getHours()}시 ${x.getMinutes()}분`; };
+const durK = ms => { const m = Math.round(ms/60000); return m >= 60 ? `${Math.floor(m/60)}시간${m % 60 ? ' ' + (m % 60) + '분' : ''}` : `${m}분`; };
+const withTimeout = (pr, ms) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej(new Error('시간 초과')), ms))]);
+async function checkDraft(){
   let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT)); } catch(_) {}
-  if (!d || !d.pts || d.pts.length < 2) { clearDraft(); return false; }
-  const what = d.kind === 'travel' ? '이동' : '운동', when = new Date(d.savedAt).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
-  if (confirm(`끝내지 못한 ${what} 기록이 있습니다.\n(${when}까지, ${fmtTime(d.elapsed)}, ${(d.dist/1000).toFixed(2)}km)\n\n이어서 기록할까요?\n확인: 이어서 기록 (일시정지 상태로 열림)\n취소: 저장 또는 삭제 선택`)) {
-    restoreDraft(d); toast('이어서 기록합니다. 계속을 누르세요'); return true;
+  const T = window.TrailogNative && TrailogNative.track;
+  const info = T ? await withTimeout(T.info(), 3000).catch(e => { diagLog('기록 서비스 확인 실패: ' + e.message); return null; }) : null;
+  if (!d || !d.pts || d.pts.length < 2) {
+    clearDraft();
+    if (info && info.on) { diagLog('임시저장 없이 기록 서비스만 켜져 있음 → 종료'); TrailogNative.recording(false); }
+    return false;
   }
-  if (confirm('지금까지의 기록을 저장하고 끝낼까요?\n확인: 저장\n취소: 삭제')) { restoreDraft(d); finishRecording(); return true; }
-  clearDraft(); return false;
+  // 앱이 닫힌 동안 서비스가 파일에 남긴 위치 (일시정지 중에 닫혔으면 쓰지 않음: 서비스는 일시정지 중에도 위치를 받음)
+  const lastT = d.pts[d.pts.length-1][3], wasRunning = d.st !== 'paused';
+  const extra = wasRunning && T && info && info.total ? await withTimeout(T.since(lastT), 10000).catch(e => { diagLog('위치 파일 읽기 실패: ' + e.message); return []; }) : [];
+  const live = wasRunning && !!(info && info.on && info.running);   // 서비스가 지금도 기록 중
+  // 가장 긴 공백: 마지막 저장 지점 → 파일 위치들 → (서비스가 멈췄으면) 지금
+  const times = [lastT, ...extra.map(p => p.timestamp)];
+  if (!live) times.push(Date.now());
+  let gap = null;
+  if (wasRunning) for (let i = 1; i < times.length; i++) { const ms = times[i] - times[i-1]; if (ms >= TRV.GAP_MS && (!gap || ms > gap.ms)) gap = {from:times[i-1], ms}; }
+  diagLog(`임시저장 복구 확인: ${wasRunning ? '기록 중' : '일시정지 중'} 저장, 지점 ${d.pts.length}개(마지막 ${hhmm(lastT)}), 파일 위치 ${extra.length}개, 서비스 ${info && info.running ? '기록 중' : info && info.on ? '켜짐(수신 안 함)' : '꺼짐'}`
+    + (gap ? `, 공백 ${hhmm(gap.from)}부터 ${durK(gap.ms)}` : ''));
+  const what = d.kind === 'travel' ? '이동' : '운동', when = new Date(Math.max(lastT, times[times.length - (live ? 1 : 2)] || 0)).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  const info2 = (extra.length ? `\n앱이 닫힌 동안 위치 ${extra.length}개를 이어 받았습니다.` : '')
+    + (gap ? `\n\n⚠ ${hmK(gap.from)}부터 ${durK(gap.ms)} 기록이 비어 있습니다.\n(그 구간은 거리·시간·칼로리에서 빼고 지도에 점선 "기록 공백"으로 표시)` : '')
+    + (live ? '\n\n지금도 백그라운드에서 기록 중입니다.' : '');
+  const restore = () => {
+    restoreDraft(d);
+    resumeGap = true;   // 파일의 첫 위치가 마지막 저장 지점에서 멀리 떨어져 있으면 기록 공백
+    elapsed += ingest(extra, d.savedAt);   // 저장 시각까지는 임시저장의 기록 시간에 이미 들어 있음
+    resumeGap = true;   // 다음 위치가 멀리 떨어져 있으면 기록 공백
+  };
+  if (confirm(`끝내지 못한 ${what} 기록이 있습니다.\n(${when}까지, ${fmtTime(d.elapsed)}, ${(d.dist/1000).toFixed(2)}km)${info2}\n\n이어서 기록할까요?\n확인: 이어서 기록${live ? '' : ' (일시정지 상태로 열림)'}\n취소: 저장 또는 삭제 선택`)) {
+    restore();
+    if (live) {   // 서비스가 계속 기록 중이었으면 바로 이어서 기록
+      const lastP = pts[pts.length-1];
+      elapsed += Math.max(0, Date.now() - (lastP ? lastP.t : Date.now()));
+      resumeGap = false;
+      status = 'running'; resumeAt = Date.now(); keepAwake(); enableMotion();
+      clearInterval(tick); tick = setInterval(render, 1000);
+      TrailogNative.recording(true);
+      toast('백그라운드 기록을 이어 받았습니다');
+    } else toast('이어서 기록합니다. 계속을 누르세요');
+    saveDraft();
+    return true;
+  }
+  if (confirm('지금까지의 기록을 저장하고 끝낼까요?\n확인: 저장\n취소: 삭제')) { restore(); finishRecording(); return true; }
+  clearDraft();
+  if (info && (info.on || info.total)) TrailogNative.recording(false);   // 서비스·위치 파일도 정리
+  return false;
+}
+// 첫 기록 시작 때 한 번: 최근 앱에서 잠가 두라는 안내 (삼성 "모두 닫기"로 앱이 지워지는 것 방지)
+function lockTip(){
+  try { if (localStorage.getItem('trailog:lockTip')) return; localStorage.setItem('trailog:lockTip', '1'); } catch(_) { return; }
+  setTimeout(() => alert('기록이 끊기지 않게 한 번만 설정해 주세요\n\n'
+    + '1. 최근 앱 버튼(□ 또는 ≡)을 누릅니다.\n'
+    + '2. 트레일로그 화면 위쪽의 앱 아이콘을 누릅니다.\n'
+    + '3. "이 앱 잠금 유지"(또는 "앱 잠금")를 누릅니다.\n\n'
+    + '그러면 "모두 닫기"를 눌러도 트레일로그가 닫히지 않습니다.\n'
+    + '설정 → 배터리 → 백그라운드 사용 제한에서 트레일로그를 "제한 없음"으로 두면 더 안전합니다.'), 1500);
 }
 
 function classify(fix){
@@ -911,7 +1283,7 @@ function switchAct(a, notify){
   const was = actKnown;
   act = a; actKnown = true; cand = null;
   if (!was) pts.forEach(p => p.a = a);                          // 판단 전 구간은 첫 판단 종목으로
-  if (!was) { actDist = {[a]: dist}; trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a}))); }
+  if (!was) { actDist = {[a]: dist}; trackDraw(drawList(pts)); }
   if (!VEH.includes(a) && a !== 'stay') vehLabel = 'car';
   setAccent(a);
   if (notify) toast(`${ACT[a]}(으)로 바뀐 것 같아요`);
@@ -922,7 +1294,7 @@ function relabelVehicle(m){
   actDist = {};
   for (let i = 1; i < pts.length; i++) { const a = pts[i].a; actDist[a] = (actDist[a] || 0) + (pts[i].d - pts[i-1].d); }
   if (pts.length) actDist[pts[0].a] = actDist[pts[0].a] || 0;
-  if (!viewing) trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a, s:p.s})));
+  if (!viewing) trackDraw(drawList(pts));
 }
 
 // ---------- 산 지형 판단 (Open-Meteo 지형 고도, API 키 불필요) ----------
@@ -1039,6 +1411,7 @@ function onHr(bpm){
 }
 function renderHr(){
   const btn = $('btnHr'), live = $('hrLive'), v = viewing && status === 'idle';
+  renderHrView(v);
   if (v) {   // 지난 기록: 저장된 평균/최고 심박
     btn.hidden = true;
     if (!viewing.avgHr) { live.hidden = true; return; }
@@ -1065,6 +1438,78 @@ function renderHr(){
   if (!ok && !hr.ch) $('hrZone').style.background = 'var(--warn)';
   $('hrStat').innerHTML = hr.n ? `평균 ${Math.round(hr.sum/hr.n)}<br>최고 ${hr.max}` : `최대 심박<br>${hrMax()}`;
 }
+// 심박 기록 [[시각, bpm], ...]: 헬스 커넥트에서 읽은 것, 없으면 심박계(BLE)로 받은 지점별 심박
+function hrSeries(v){
+  if (v && viewing.hrs && viewing.hrs.length) return viewing.hrs;
+  const list = v ? viewing.data : pts;
+  return (list || []).filter(p => p.hr > 0).map(p => [p.t, p.hr]);
+}
+// 지난 기록: 심박 구간별 시간 + 출처 + "심박 다시 가져오기"
+function renderHrView(v){
+  const box = $('hrView'), H = window.TrailogNative && TrailogNative.health;
+  if (!v || (!H && !hrSeries(true).length)) { box.hidden = true; return; }
+  box.hidden = false;
+  $('btnHrFetch').hidden = !H;
+  const ser = hrSeries(true), zt = [0,0,0,0,0];
+  for (let i = 1; i < ser.length; i++) zt[zoneOf(ser[i][1])] += Math.min(ser[i][0] - ser[i-1][0], 60000);
+  const tot = zt.reduce((a, b) => a + b, 0);
+  $('hrZones').innerHTML = tot >= 60000 ? `<div class="mix-bar">${zt.map((ms, z) => ms ? `<span style="width:${(ms/tot*100).toFixed(1)}%;background:${ZONES[z][1]}"></span>` : '').join('')}</div>`
+    + `<div class="mix-leg">${zt.map((ms, z) => ms >= 30000 ? `<span><i style="background:${ZONES[z][1]}"></i>${z+1}구간 ${ZONES[z][0]} <b>${Math.round(ms/60000)}분</b></span>` : '').join('')}</div>` : '';
+  const src = viewing.hrSrc === 'hc' ? `헬스 커넥트 심박 ${ser.length}건` : viewing.hrSrc === 'ble' ? '심박계(블루투스)로 기록' : ser.length ? `심박 ${ser.length}건` : '심박 기록 없음';
+  $('hrSrc').textContent = viewing.hrBusy ? '헬스 커넥트에서 읽는 중…' : src + (viewing.hrTry && !ser.length ? ` (${hhmm(viewing.hrTry)} 확인)` : '');
+}
+function updateSession(id, patch){
+  const all = loadSessions(), i = all.findIndex(x => x.id === id);
+  if (i < 0) return;
+  Object.assign(all[i], patch);
+  try { localStorage.setItem(STORE, JSON.stringify(all)); } catch(_) { showNote('저장 공간이 부족해 심박을 저장하지 못했습니다.'); }
+}
+const HC_HELP = '헬스 커넥트에 이 시간대 심박이 없습니다.\n'
+  + '① 삼성 헬스 → 설정 → 헬스 커넥트에서 삼성 헬스의 "심박수" 쓰기를 켜고, 트레일로그의 "심박수" 읽기를 허용하세요.\n'
+  + '② 워치에서 운동(걷기·달리기 등)을 시작해야 촘촘한 심박이 기록됩니다 (평소에는 10분 간격).\n'
+  + '동기화가 늦을 수 있으니 몇 분 뒤 "심박 다시 가져오기"를 누르세요.';
+// 헬스 커넥트에서 기록 시간대 심박을 읽어 기록에 저장 (평균·최고, 그래프, 구간). quiet: 자동으로 부를 때 (안내 최소화)
+async function hcFetch(s, quiet){
+  const H = window.TrailogNative && TrailogNative.health;
+  if (!H || !s || !s.pts || s.pts.length < 2) { if (!quiet) toast('헬스 커넥트는 안드로이드 앱에서만 쓸 수 있습니다'); return; }
+  const mine = () => viewing && viewing.id === s.id;
+  if (mine()) { viewing.hrBusy = true; render(); }
+  try {
+    const av = await H.available();
+    if (!av.ok) { diagLog('헬스 커넥트 사용 불가: ' + av.why); if (!quiet) showNote('헬스 커넥트를 쓸 수 없습니다 (' + av.why + '). 플레이 스토어에서 헬스 커넥트를 설치·업데이트하세요.'); return; }
+    const ok = await H.allow().catch(e => { diagLog('헬스 커넥트 권한 확인 실패: ' + e.message); return false; });
+    if (!ok) { if (!quiet) showNote('헬스 커넥트 심박 읽기 권한이 없습니다. "심박 다시 가져오기"를 누르면 권한 창이 다시 뜹니다.'); return; }
+    const end = s.pts[s.pts.length-1][3];
+    const raw = await H.heartRate(s.start - 60000, end + 60000);
+    const list = raw.filter(x => x[1] > 25 && x[1] < 240);
+    const patch = {hrTry:Date.now()};
+    if (list.length) {
+      const step = Math.ceil(list.length / 900), thin = list.filter((x, i) => i % step === 0);   // 저장 공간: 최대 약 900건
+      const inRun = list.filter(x => x[0] >= s.start && x[0] <= end), use = inRun.length ? inRun : list;
+      patch.hrs = thin;
+      if (s.hrSrc !== 'ble') {   // 심박계로 직접 받은 값이 있으면 그 평균·최고를 유지
+        patch.avgHr = Math.round(use.reduce((a, x) => a + x[1], 0) / use.length);
+        patch.maxHr = Math.max(...use.map(x => x[1]));
+        patch.hrSrc = 'hc';
+      }
+      if (!quiet || mine()) toast(`헬스 커넥트 심박 ${list.length}건을 가져왔습니다`);
+    } else if (!quiet) showNote(HC_HELP);
+    else diagLog('헬스 커넥트: 이 기록 시간대 심박 없음');
+    updateSession(s.id, patch); Object.assign(s, patch);
+    if (mine()) Object.assign(viewing, patch);
+    renderHist();
+  } catch (e) {
+    diagLog('헬스 커넥트 심박 읽기 실패: ' + e.message);
+    if (!quiet) showNote('헬스 커넥트 심박을 읽지 못했습니다: ' + e.message);
+  } finally {
+    if (mine()) { viewing.hrBusy = false; render(); }
+  }
+}
+$('btnHrFetch').onclick = () => {
+  if (!viewing) return;
+  const s = loadSessions().find(x => x.id === viewing.id) || viewing;
+  hcFetch(s, false);
+};
 $('btnHr').onclick = () => { if (navigator.bluetooth) connectHr(); };
 $('btnHrOff').onclick = () => { if (confirm('심박계 연결을 해제할까요?')) disconnectHr(); };
 
@@ -1166,7 +1611,6 @@ $('busApiForm').onsubmit = e => {
   $('busApiForm').hidden = true; $('busApiIn').blur(); busHostShow();
   toast('중계 주소 저장: ' + busApi().replace(/^https:\/\//, ''));
 };
-function busLog(m){ console.warn(m); if (window.TrailogNative && TrailogNative.log) TrailogNative.log(m); }   // 앱: 진단 로그
 async function loadBus(no, quiet){
   const api = busApi(), out = $('busOut');
   if (!lastFix) { out.textContent = '현재 위치를 아직 찾지 못했습니다. 잠시 후 다시 조회하세요'; return; }
@@ -1190,13 +1634,16 @@ async function loadBus(no, quiet){
     }
     const arr = b => `<div class="bus-arr"><span class="first">${escH(b.arr1 || '도착 정보 없음')}</span>${b.arr2 ? `<span>다음 ${escH(b.arr2)}</span>` : ''}</div>`;
     const stop = b => `<div class="bus-stop"><b>${escH(b.stopName)}</b> ${b.dist}m${b.stopNo ? ' · ' + escH(b.stopNo) : ''}`;
+    busItems = j.items;
+    const go = b => rtOk(b) ? ` bus-go" data-i="${j.items.indexOf(b)}` : '';
+    const more = b => rtOk(b) ? '<span class="bus-more">노선도 ›</span>' : '';
     let html;
-    if (no) html = j.items.map(b => `<div class="bus-it">${stop(b)}${b.dest ? ' · ' + escH(b.dest) : ''}</div>${arr(b)}</div>`).join('');
+    if (no) html = j.items.map(b => `<div class="bus-it${go(b)}">${more(b)}${stop(b)}${b.dest ? ' · ' + escH(b.dest) : ''}</div>${arr(b)}</div>`).join('');
     else {   // 번호 없음: 정류장별로 묶고 줄마다 노선 번호
       const g = new Map();
       j.items.forEach(b => { const k = b.stopName + '|' + b.dist + '|' + b.stopNo; if (!g.has(k)) g.set(k, []); g.get(k).push(b); });
       html = [...g.values()].map(bs => `<div class="bus-it">${stop(bs[0])}</div>`
-        + bs.map(b => `<div class="bus-row"><span class="bus-rt">${escH(b.route)}</span><div>${arr(b)}${b.dest ? `<div class="bus-dest">${escH(b.dest)}</div>` : ''}</div></div>`).join('')
+        + bs.map(b => `<div class="bus-row${go(b)}"><span class="bus-rt">${escH(b.route)}</span><div>${arr(b)}${b.dest ? `<div class="bus-dest">${escH(b.dest)}</div>` : ''}</div>${more(b)}</div>`).join('')
         + '</div>').join('');
     }
     out.innerHTML = html   // 결과가 있으면 일부 실패(활용신청 안 된 API 등)는 숨김
@@ -1207,6 +1654,101 @@ async function loadBus(no, quiet){
     busLog(`버스 조회 실패: ${api}/bus${no ? '?no=' + no : ''} → ${why}`);   // 위치(lat·lon)는 로그에 남기지 않음
   } finally { clearTimeout(to); }
 }
+// ---------- 노선도 (카카오맵 노선 화면 형태: 정류장 순서 + 운행 중인 버스 위치) ----------
+// Worker /route (서울·경기 노선ID), 여는 순간과 새로고침 버튼을 누를 때만 조회
+let busItems = [], rtCur = null;
+const rtOk = b => b.routeId && (b.region === '서울' || b.region === '경기');
+function rtColor(type, name){   // 카카오맵과 비슷한 노선 종류별 색
+  const t = String(type || '');
+  if (/광역|직행|급행/.test(t) || (!t && /^M/i.test(name || ''))) return '#E60012';
+  if (/공항|리무진/.test(t)) return '#0098D8';
+  if (/순환/.test(t)) return '#E5A800';
+  if (/간선|좌석|시외/.test(t)) return '#3D5BAB';
+  return '#4CA332';   // 지선·일반·마을
+}
+const RT_BUS_SVG = '<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM18 11H6V6h12v5z"/></svg>';
+function openRoute(b){
+  rtCur = {region: b.region === '서울' ? 'seoul' : 'gg', id: b.routeId, ord: b.ord, stopNo: b.stopNo, stopName: b.stopName, route: b.route};
+  const v = $('rtView');
+  v.style.setProperty('--rc', rtColor('', b.route));
+  $('rtNo').textContent = b.route; $('rtType').hidden = true;
+  $('rtEnds').textContent = b.dest || ''; $('rtSub').textContent = ''; $('rtSum').textContent = '';
+  $('rtList').innerHTML = '<div class="rt-msg">노선 정보를 불러오는 중…</div>';
+  if (v.hidden) { v.hidden = false; document.body.style.overflow = 'hidden'; try { history.pushState({rt:1}, ''); } catch (e) {} }
+  loadRoute(true);
+}
+function closeRoute(){ $('rtView').hidden = true; document.body.style.overflow = ''; rtCur = null; }
+async function loadRoute(first){
+  const c = rtCur; if (!c) return;
+  const api = busApi(), ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
+  $('rtAt').textContent = '조회 중…';
+  try {
+    const r = await fetch(`${api}/route?region=${c.region}&id=${encodeURIComponent(c.id)}`, {signal:ac.signal})
+      .catch(e => { throw e.name === 'AbortError' ? e : new Error(`연결 실패 (${e.message})`); });
+    const j = await r.json().catch(() => ({error:'응답 형식 오류'}));
+    if (!r.ok || j.error) throw new Error('HTTP ' + r.status + (j.error ? ' ' + j.error : ''));
+    if (rtCur !== c) return;   // 그 사이 닫았거나 다른 노선을 엶
+    if (j.errors && j.errors.length) busLog(`노선도 일부 실패 (${c.route}): ${j.errors.join(' / ')}`);
+    renderRoute(j, first);
+  } catch (e) {
+    if (rtCur !== c) return;
+    const why = e.name === 'AbortError' ? '응답 시간 초과 (12초)' : e.message;
+    $('rtAt').textContent = '';
+    if (first) $('rtList').innerHTML = `<div class="rt-msg">노선도를 불러오지 못했습니다: ${escH(why)}</div>`;
+    else toast('새로고침 실패: ' + why);
+    busLog(`노선도 조회 실패: ${api}/route ${c.region} ${c.route} → ${why}`);
+  } finally { clearTimeout(to); }
+}
+function renderRoute(j, first){
+  const c = rtCur, i = j.info, list = $('rtList');
+  $('rtView').style.setProperty('--rc', rtColor(i && i.type, c.route));
+  if (i) {
+    $('rtNo').textContent = i.name || c.route;
+    $('rtType').hidden = !i.type; $('rtType').textContent = i.type;
+    $('rtEnds').textContent = i.start && i.end ? `${i.start} ↔ ${i.end}` : '';
+    $('rtSub').textContent = [i.first && '첫차 ' + i.first, i.last && '막차 ' + i.last, i.term && `배차 ${i.term}분`, i.company].filter(Boolean).join(' · ');
+  }
+  const stops = j.stops || [];
+  const errs = j.errors && j.errors.length ? `<div class="rt-msg">일부 조회 실패: ${escH(j.errors.join(' / '))}</div>` : '';
+  if (!stops.length) { list.innerHTML = '<div class="rt-msg">정류장 목록이 없습니다.</div>' + errs; $('rtAt').textContent = ''; $('rtSum').textContent = ''; return; }
+  // 내 정류장: 도착 정보의 정류장 순번, 없으면 정류장 번호 → 이름
+  const key = v => String(v || '').trim().replace(/^0+(?=\d)/, '');
+  let mine = stops.find(s => s.seq === c.ord && (!c.stopNo || !s.no || key(s.no) === key(c.stopNo)))
+    || stops.find(s => c.stopNo && key(s.no) === key(c.stopNo)) || stops.find(s => s.name === c.stopName);
+  const buses = j.buses || [], at = new Map();
+  buses.forEach(b => { const k = b.seq + (b.at ? 'a' : 'g'); if (!at.has(k)) at.set(k, []); at.get(k).push(b); });
+  const plate = b => {
+    const n = (/(\d{4})$/.exec(b.plate) || [])[1] || b.plate;
+    const ex = [b.seats != null && `<em>${b.seats}석</em>`, b.crowd, b.low && '저상', b.last && '막차'].filter(Boolean).join(' · ');
+    return `<span class="rt-plate">${escH(n)}${ex ? '<br>' + ex : ''}</span>`;
+  };
+  const marks = (seq, k) => (at.get(seq + k) || []).map((b, n) =>
+    `<div class="rt-bus ${k === 'a' ? 'at' : 'go'}"${n ? ` style="margin-top:${n * 30}px"` : ''}>${plate(b)}${RT_BUS_SVG}</div>`).join('');
+  list.innerHTML = stops.map(s => {
+    const me = mine && s === mine;
+    return `<div class="rt-stop${me ? ' rt-mine' : ''}${s.turn ? ' rt-turn' : ''}"${me ? ' id="rtMine"' : ''}>`
+      + `<div></div><div class="rt-rail"><i></i></div>`
+      + `<div class="rt-txt"><b>${escH(s.name)}${me ? '<span class="rt-chip me">내 정류장</span>' : ''}${s.turn ? '<span class="rt-chip">회차</span>' : ''}</b>`
+      + `${s.no ? `<small>${escH(s.no)}</small>` : ''}</div>${marks(s.seq, 'a')}${marks(s.seq, 'g')}</div>`;
+  }).join('') + errs;
+  // 요약: 운행 대수, 내 정류장까지 남은 정류장 수 (가까운 순 2대)
+  let sum = `운행 중 ${buses.length}대`;
+  if (mine) {
+    const near = buses.map(b => { const n = mine.seq - b.seq; return n > 0 || (n === 0 && b.at) ? n : -1; }).filter(n => n >= 0).sort((a, b) => a - b).slice(0, 2);
+    sum += ` · <b>${escH(mine.name)}</b> ` + (near.length ? near.map(n => n === 0 ? '도착' : `${n}정류장 전`).join(', ') : '오는 버스 없음');
+  }
+  $('rtSum').innerHTML = sum;
+  $('rtAt').textContent = new Date(j.at).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+  if (first) { const m = $('rtMine'); if (m) m.scrollIntoView({block:'center'}); else list.scrollTop = 0; }
+}
+$('busOut').addEventListener('click', e => {
+  const el = e.target.closest('.bus-go'); if (!el) return;
+  const b = busItems[+el.dataset.i]; if (b) openRoute(b);
+});
+$('rtBack').onclick = () => { if (history.state && history.state.rt) history.back(); else closeRoute(); };
+window.addEventListener('popstate', () => { if (!$('rtView').hidden) closeRoute(); });   // 안드로이드 뒤로 가기
+$('rtRef').onclick = () => loadRoute(false);
+
 function startBus(no){
   busSearch = {no:no.replace(/[^0-9A-Z가-힣-]/g, ''), t:Date.now(), used:false};   // 15분간 버스 탑승 후보 (이동 기록 걷기 중)
   if (kind === 'travel' && status === 'running' && act === 'walk') { busLog(`버스 도착 정보 검색: ${busSearch.no || '전체'}`); watchCand(); render(); }
@@ -1234,11 +1776,13 @@ $('btnMain').onclick = () => {
     closeView(true); reset();
     status = 'running'; resumeAt = Date.now(); follow = true;
     startWatch(); keepAwake(); clearInterval(tick); tick = setInterval(render, 1000); clearDraft(); startDraftTimer();
-    if (window.TrailogNative) TrailogNative.recording(true);   // 앱: 화면 꺼져도 위치 기록
+    logMode(act);
+    if (window.TrailogNative) { TrailogNative.recording(true, true); lockTip(); }   // 앱: 화면 꺼지거나 앱을 닫아도 위치 기록
     if (lastFix) map.setView(lastFix, Math.max(map.getZoom(), 16));
   } else if (status === 'running') { elapsed += Date.now() - resumeAt; status = 'paused'; curSpd = 0; samples = []; bus.win = []; saveDraft(); }
   else {
     enableMotion(); status = 'running'; resumeAt = Date.now(); keepAwake(); startWatch();
+    resumeGap = true; logMode(act);   // 다시 잡힌 첫 위치가 멀면 기록 공백
     if (window.TrailogNative) TrailogNative.recording(true);
     if (!tick) tick = setInterval(render, 1000);
   }
@@ -1250,7 +1794,9 @@ $('btnStop').onclick = () => {
 };
 function finishRecording(){
   if (status === 'running') elapsed += Date.now() - resumeAt;
-  status = 'idle'; clearInterval(tick); tick = null; clearInterval(draftTimer); curSpd = 0; bus.stop = null; bus.win = []; bus.cand = '';
+  status = 'idle'; clearInterval(tick); tick = null; clearInterval(draftTimer); curSpd = 0; bus.win = []; bus.cand = '';
+  if (ask) { clearTimeout(ask.timer); ask = null; if (window.TrailogNative) TrailogNative.cancelAsk(); }
+  clearTimeout(subFixT);
   if (window.TrailogNative) TrailogNative.recording(false);
   if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
   const saved = pts.length > 1 ? saveSession() : null;
@@ -1258,13 +1804,13 @@ function finishRecording(){
   if (sim) { clearInterval(sim.timer); sim = null; startWatch(); if (!hr.ch) { hr.dev = null; hr.bpm = null; } }
   renderHist();
   clearDraft();
-  if (saved) { toast('기록을 저장했습니다'); openView(saved); }
+  if (saved) { toast('기록을 저장했습니다'); openView(saved); hcFetch(saved, true); }
   else { toast('이동 거리가 없어 저장하지 않았습니다'); render(); }
 }
 function reset(){
   kcal = 0; hr.sum = 0; hr.n = 0; hr.max = 0; pts = []; samples = []; dist = 0; actDist = {}; gain = 0; loss = 0; maxSpd = 0; curSpd = 0; altRef = null; elapsed = 0;
   steps = 0; stepTimes = []; gAvg = null; sm = 0; above = false; stillFrom = null; vehLabel = 'car';
-  act = mode === 'auto' ? 'walk' : mode; actKnown = mode !== 'auto'; cand = null; rides = []; setAccent(act);
+  act = mode === 'auto' ? 'walk' : mode; actKnown = mode !== 'auto'; cand = null; rides = []; modeLog = []; subs = []; resumeGap = false; setAccent(act);
   if (mode !== 'auto') actDist = {};
   trackClear();
 }
@@ -1320,7 +1866,7 @@ function render(){
   });
   $('paceBox').hidden = actKnown && !FOOT.includes(act);
   renderMix($('mix'), actDist, dist);
-  renderTimeline(kind === 'travel' ? pts : null, rides);
+  renderTimeline(kind === 'travel' ? pts : null, rides, subs);
   drawChart(pts);
   syncFs();
 }
@@ -1352,12 +1898,18 @@ function renderChrome(){
   else if (mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '직접 선택'; }
   else if (!actKnown) { chip.dataset.s = 'detecting'; $('actName').textContent = '확인 중'; $('actSub').textContent = '15초 정도 움직여 주세요'; }
   else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (!tv && terrain ? `, ${terrain}` : ''); }
-  // 버스 탑승 후보: "○○ 정류장 대기" / "M4137 탑승 대기"
+  // 차량 종류 묻기 (버스/택시/자동차) 또는 버스 탑승 후보 "M4137 탑승 대기"
+  const bw = $('busWait');
   const bc = !v && kind === 'travel' && status === 'running' && act === 'walk' && TRV.AUTO_BUS ? busCand() : null;
-  $('busWait').hidden = !bc; if (bc) $('busWait').textContent = '🚌 ' + bc.label;
+  if (ask && !v) {
+    bw.hidden = false;
+    if (bw.dataset.mode !== 'ask') { bw.dataset.mode = 'ask'; bw.innerHTML = '무엇을 탔나요?<button data-v="bus">버스</button><button data-v="taxi">택시</button><button data-v="car">자동차</button>'; }
+  } else if (bc) { bw.hidden = false; bw.dataset.mode = 'wait'; bw.textContent = '🚌 ' + bc.label; }
+  else { bw.hidden = true; bw.dataset.mode = ''; }
 }
 
 let modesSig = '';
+$('busWait').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.v) answerVehicle(b.dataset.v, '화면'); };
 function renderModes(){
   const el = $('modes'), list = MODES[kind][status === 'idle' ? 'idle' : 'active'];
   el.hidden = !list.length;
@@ -1378,10 +1930,11 @@ function renderModes(){
   });
 }
 // 지점 목록을 같은 종류끼리 묶어 타임라인으로
-function timelineOf(list, rid){
+function timelineOf(list, rid, sb){
   const out = [];
   for (let i = 0; i < list.length; i++) {
     const p = list[i], dd = i ? p.d - list[i-1].d : 0, last = out[out.length-1];
+    if (p.k === 'gap' && last) { out.push({a:'gap', s:last.e, e:p.t, dist:0}); out.push({a:p.a, s:p.t, e:p.t, dist:0}); continue; }
     if (last && last.a === p.a) { last.e = p.t; last.dist += dd; }
     else {
       const start = p.a === 'stay' && p.s ? p.s : (last ? last.e : p.t);
@@ -1391,31 +1944,70 @@ function timelineOf(list, rid){
   }
   // 자동 전환한 버스 번호: 그 버스 구간 안(시작 1분 전부터)에 탑승 시각이 있으면
   for (const g of out) if (g.a === 'bus') { const r = (rid || []).filter(x => x[0] >= g.s - 60000 && x[0] <= g.e).pop(); if (r) g.no = r[1]; }
-  return out.filter(g => g.e - g.s >= 30000 || g.dist >= 50);   // 아주 짧은 조각은 생략
+  // 지하철 역 이름: "강남역 → 서울역"
+  for (const g of out) if (g.a === 'subway') { const r = (sb || []).filter(x => x[0] >= g.s - 60000 && x[0] <= g.e).pop(); if (r && (r[1] || r[2])) g.no = `${r[1] || '?'} → ${r[2] || '?'}`; }
+  return out.filter(g => g.a === 'gap' || g.e - g.s >= 30000 || g.dist >= 50);   // 아주 짧은 조각은 생략
 }
-function renderTimeline(list, rid){
+function renderTimeline(list, rid, sb){
   const card = $('tlCard');
   if (!list) { card.hidden = true; return; }
   card.hidden = false;
-  const tl = timelineOf(list, rid), live = status !== 'idle' && !viewing;
+  const tl = timelineOf(list, rid, sb), live = status !== 'idle' && !viewing;
   if (live && tl.length) tl[tl.length-1].e = Date.now();
   const hm = t => new Date(t).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', hour12:false});
   const dur = ms => { const m = Math.round(ms/60000); return m >= 60 ? `${Math.floor(m/60)}시간 ${m%60}분` : `${m}분`; };
-  $('tlList').innerHTML = tl.length ? tl.map(g => `<li><i style="background:var(--${g.a})"></i><span class="tm">${hm(g.s)}–${hm(g.e)}</span><b>${ACT[g.a]}${g.no ? ' ' + g.no : ''}</b>`
-    + `<span class="r">${g.a === 'stay' ? '' : (g.dist/1000).toFixed(1) + 'km, '}${dur(g.e - g.s)}</span></li>`).join('')
+  $('tlList').innerHTML = tl.length ? tl.map(g => `<li><i style="background:${g.a === 'gap' ? '#8FA2AC' : 'var(--' + g.a + ')'}"></i><span class="tm">${hm(g.s)}–${hm(g.e)}</span>`
+    + `<b>${g.a === 'gap' ? '기록 공백' : ACT[g.a]}${g.no ? ' ' + escH(g.no) : ''}</b>`
+    + `<span class="r">${g.a === 'stay' || g.a === 'gap' ? '' : (g.dist/1000).toFixed(1) + 'km, '}${dur(g.e - g.s)}</span></li>`).join('')
     : '<li class="empty-tl">움직이기 시작하면 구간별로 기록됩니다</li>';
 }
 
 // 그래프 종류: 고도(거리 기준) / 속도(시간 기준, 멈춘 구간이 보이도록). 선택은 다음 접속 때도 유지
-let chartKind = localStorage.getItem('trailog:chart') === 'spd' ? 'spd' : 'alt';
+let chartKind = ['spd', 'hr'].includes(localStorage.getItem('trailog:chart')) ? localStorage.getItem('trailog:chart') : 'alt';
 $('chartSeg').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   chartKind = b.dataset.c; localStorage.setItem('trailog:chart', chartKind); render();
 };
 function drawChart(src){
-  $('chartTitle').textContent = chartKind === 'spd' ? '속도 프로필' : '고도 프로필';
+  $('chartTitle').textContent = {spd:'속도 프로필', hr:'심박 그래프', alt:'고도 프로필'}[chartKind];
   document.querySelectorAll('#chartSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.c === chartKind));
-  return chartKind === 'spd' ? drawSpeed(src) : drawAlt(src);
+  return chartKind === 'spd' ? drawSpeed(src) : chartKind === 'hr' ? drawHr(hrSeries(viewing && status === 'idle'), src) : drawAlt(src);
+}
+// 심박 그래프: 시간(분) 기준, 뒤 배경은 심박 구간 색
+function drawHr(ser, src){
+  const cv = $('chart'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w*dpr; cv.height = h*dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0,0,w,h);
+  const muted = cssVar('--muted'), line = cssVar('--line');
+  ctx.font = '12px "Noto Sans KR", sans-serif';
+  if (ser.length < 2) {
+    ctx.fillStyle = muted; ctx.textAlign = 'center';
+    ctx.fillText(window.TrailogNative && TrailogNative.health ? '심박 기록이 없습니다 (심박계 연결 또는 헬스 커넥트)' : '심박계를 연결하면 심박 변화가 그려집니다', w/2, h/2+4);
+    return;
+  }
+  const t0 = src && src.length ? Math.min(src[0].t, ser[0][0]) : ser[0][0], t1 = Math.max(ser[ser.length-1][0], src && src.length ? src[src.length-1].t : 0);
+  const maxM = Math.max((t1 - t0)/60000, 0.1), mx = hrMax();
+  let lo = Math.min(...ser.map(x => x[1])), hi = Math.max(...ser.map(x => x[1]));
+  lo = Math.max(30, Math.floor((lo - 5)/10)*10); hi = Math.ceil((hi + 5)/10)*10;
+  const L0 = 40, B = 18, x = t => L0 + ((t - t0)/60000/maxM)*(w-L0-4), y = v => h-B - ((v-lo)/(hi-lo))*(h-B-8);
+  // 구간 배경 (최대 심박의 60/70/80/90%)
+  [[0,.6],[.6,.7],[.7,.8],[.8,.9],[.9,2]].forEach(([a, b], z) => {
+    const ya = y(Math.max(lo, Math.min(hi, a*mx))), yb = y(Math.max(lo, Math.min(hi, b*mx)));
+    if (ya - yb < 1) return;
+    ctx.globalAlpha = .1; ctx.fillStyle = ZONES[z][1]; ctx.fillRect(L0, yb, w-L0-4, ya-yb); ctx.globalAlpha = 1;
+  });
+  ctx.strokeStyle = line; ctx.lineWidth = 1;
+  [lo, (lo+hi)/2, hi].forEach(v => { ctx.beginPath(); ctx.moveTo(L0, y(v)); ctx.lineTo(w, y(v)); ctx.stroke(); });
+  ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  for (let i = 1; i < ser.length; i++) {
+    if (ser[i][0] - ser[i-1][0] > 5*60000) continue;   // 5분 넘게 비면 끊음
+    ctx.beginPath(); ctx.moveTo(x(ser[i-1][0]), y(ser[i-1][1])); ctx.lineTo(x(ser[i][0]), y(ser[i][1]));
+    ctx.strokeStyle = ZONES[zoneOf(ser[i][1])][1]; ctx.stroke();
+  }
+  ctx.fillStyle = muted; ctx.textAlign = 'right';
+  ctx.fillText(hi + '', L0-6, y(hi)+4); ctx.fillText(lo + '', L0-6, y(lo)+4); ctx.fillText('bpm', L0-6, y((lo+hi)/2)+4);
+  ctx.textAlign = 'left'; ctx.fillText('0분', L0, h-3);
+  ctx.textAlign = 'right'; ctx.fillText(Math.round(maxM) + '분', w-2, h-3);
 }
 function drawSpeed(src){
   const cv = $('chart'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
@@ -1493,14 +2085,14 @@ function drawAlt(src){
 function openView(s){
   if (status !== 'idle' || !s || !s.pts || s.pts.length < 2) return;
   closeView(true);
-  let d = 0, maxAlt = null;
-  const data = s.pts.map((p, i) => {
-    if (i) d += haversine({lat:s.pts[i-1][0], lon:s.pts[i-1][1]}, {lat:p[0], lon:p[1]});
+  let maxAlt = null;
+  const data = s.pts.map(p => {
     if (p[2] != null && (maxAlt == null || p[2] > maxAlt)) maxAlt = p[2];
     const a = p[4] != null ? CODE[p[4]] : s.act;
-    return {alt:p[2], d, t:p[3], a, ll:[p[0], p[1]], s:p[6] || null};
+    return {lat:p[0], lon:p[1], alt:p[2], d:0, t:p[3], a, ll:[p[0], p[1]], s:p[6] || null, k:p[7] || null, hr:p[5]};
   });
-  viewing = Object.assign({}, s, {data, maxAlt, mix:s.mix || {[s.act]: s.dist}, kcal:s.kcal != null ? s.kcal : kcalOf(data)});
+  recomputeD(data);   // 기록 공백은 거리 없음
+  viewing = Object.assign({}, s, {data, maxAlt, mix:s.mix || {[s.act]: s.dist}, kcal:s.kcal != null ? s.kcal : kcalOf(data), subs:(s.subs || []).slice()});
   setAccent(s.act);
   trackDraw(data);
   const ll = data.map(p => p.ll);
@@ -1515,13 +2107,38 @@ function openView(s){
   $('viewBar').hidden = false;
   document.querySelectorAll('#histList li').forEach(li => li.classList.toggle('on', li.dataset.id == s.id));
   render();
+  if (s.kind === 'travel') viewSubway(viewing);
+  if (!s.hrs && !(s.hrTry && Date.now() - s.hrTry < 10*60000) && Date.now() - s.start < 30*86400000) hcFetch(s, true);
+}
+// 지난 기록의 지하철 구간 다시 그리기: GPS 끊긴 구간을 그동안 고른 수단으로 (예전 기록은 앞 지점이 지하철이면 지하철로) → 역 맞추기
+async function viewSubway(v){
+  const data = v.data;
+  if (!data.some(p => p.a === 'subway')) return;
+  let changed = false;
+  for (let i = 1; i < data.length; i++) {
+    const p = data[i], q = data[i-1];
+    if (p.k === 'gap' || p.a === 'subway' || p.a === 'stay' || p.t - q.t < TRV.GAP_MS) continue;
+    const a = v.modeLog ? longestMode(q.t, p.t, v.modeLog) : (q.a === 'subway' ? 'subway' : p.a);
+    if (a === 'subway') { p.a = 'subway'; changed = true; diagLog(`지난 기록: ${hhmm(q.t)}~${hhmm(p.t)} GPS 끊긴 구간을 지하철로`); }
+  }
+  const apply = () => {
+    if (viewing !== v) return;
+    const mix = {}; for (let i = 1; i < data.length; i++) mix[data[i].a] = (mix[data[i].a] || 0) + (data[i].d - data[i-1].d);
+    for (const a in mix) if (mix[a] < 1) delete mix[a]; else mix[a] = Math.round(mix[a]);
+    v.mix = mix; v.dist = data[data.length-1].d; v.kcal = kcalOf(data);
+    trackDraw(data); render();
+  };
+  if (changed) apply();   // 지하철로 바꾼 것 먼저 보여 주고
+  const n = (v.subs || []).length;
+  if (await subwayFix(data, v.subs)) apply();   // 역 맞추기 (Overpass 응답 뒤)
+  else if (viewing === v && (v.subs || []).length !== n) render();
 }
 function closeView(silent){
   if (!viewing) return;
   viewing = null;
   viewMarks.forEach(m => map.removeLayer(m)); viewMarks = [];
   setAccent(act);
-  trackDraw(pts.map(p => ({ll:[p.lat, p.lon], a:p.a})));
+  trackDraw(drawList(pts));
   $('viewBar').hidden = true;
   document.querySelectorAll('#histList li').forEach(li => li.classList.remove('on'));
   if (silent) { applyBearing(true); return; }
@@ -1543,7 +2160,7 @@ function renderView(){
   });
   $('paceBox').hidden = !FOOT.includes(s.act);
   renderMix($('mix'), s.mix, s.dist);
-  renderTimeline(s.kind === 'travel' ? s.data : null, s.rides);
+  renderTimeline(s.kind === 'travel' ? s.data : null, s.rides, s.subs);
   drawChart(s.data);
   syncFs();
 }
@@ -1554,8 +2171,9 @@ function loadSessions(){ try { return JSON.parse(localStorage.getItem(STORE)) ||
 function saveSession(){
   const mix = {}; for (const a in actDist) if (actDist[a] >= 1) mix[a] = Math.round(actDist[a]);
   const s = {id:Date.now(), kind, act:mainAct(actDist), mix, start:pts[0].t, ms:elapsed, dist, gain, loss, maxSpd, steps:shownSteps(), kcal:Math.round(kcal), weight:kg(),
-             avgHr:hr.n ? Math.round(hr.sum/hr.n) : null, maxHr:hr.n ? hr.max : null, rides:rides.length ? rides : undefined,
-             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr, p.s || null])};
+             avgHr:hr.n ? Math.round(hr.sum/hr.n) : null, maxHr:hr.n ? hr.max : null, hrSrc:hr.n ? 'ble' : undefined, rides:rides.length ? rides : undefined,
+             modeLog:kind === 'travel' && modeLog.length ? modeLog : undefined, subs:subs.length ? subs : undefined,
+             pts:pts.map(p => [+p.lat.toFixed(6), +p.lon.toFixed(6), p.alt == null ? null : +p.alt.toFixed(1), p.t, CODE.indexOf(p.a), p.hr, p.s || null, p.k || null])};
   const all = loadSessions(); all.unshift(s);
   try { localStorage.setItem(STORE, JSON.stringify(all.slice(0, 30))); return s; }
   catch(_) { showNote('저장 공간이 부족해 기록을 저장하지 못했습니다. 오래된 기록을 삭제한 뒤 다시 시도하세요.'); return null; }
@@ -1612,7 +2230,10 @@ $('modes').onclick = e => {
   if (status !== 'idle') {
     cand = null;
     if (m === 'auto') { samples = []; toast('자동 인식으로 바꿨습니다'); }
-    else { act = m; actKnown = true; setAccent(m); toast(`${ACT[m]}(으)로 바꿨습니다`); }
+    else {
+      act = m; actKnown = true; setAccent(m); logMode(m); toast(`${ACT[m]}(으)로 바꿨습니다`);
+      if (ask && VEH.includes(m)) answerVehicle(m, '수단 버튼');
+    }
   }
   render();
 };
@@ -1664,8 +2285,8 @@ if (localStorage.getItem('trailog:full') === '1') setFull(true);
 setAccent('walk');
 renderHist();
 const last = loadSessions()[0];
-if (!checkDraft()) { if (last) openView(last); else render(); } else render();
-startWatch();
+checkDraft().catch(e => { diagLog('임시저장 확인 오류: ' + e.message); return false; })
+  .then(r => { if (!r) { if (last) openView(last); else render(); } else render(); startWatch(); });
 })();
 </script>
 </body>
