@@ -67,6 +67,21 @@ body.full .fsbar{display:flex}
 .buswait{top:58px;left:50%;transform:translateX(-50%);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis;background:var(--bus);color:#fff}
 .buswait[hidden]{display:none}
 .buswait[data-mode="ask"]{background:var(--car);white-space:normal;text-align:center}
+.bus-pick{margin-left:auto;flex:0 0 auto;border:1px solid var(--bus);background:none;color:var(--bus);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700}
+.bus-arr .bus-pick{margin-left:auto}
+.bus-nav{display:inline-block;margin-top:4px;border:0;background:none;color:#03C75A;font-size:12px;font-weight:700;padding:2px 0;text-decoration:underline}
+/* 길찾기 (네이버지도) */
+.nav-dest{font-size:14px;color:var(--ink);margin-top:2px}
+.nav-dest small{display:block;color:var(--muted);font-size:12px}
+.nav-favs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.nav-favs button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:13px}
+.nav-favs button.on{border-color:#03C75A;color:#03C75A;font-weight:700}
+.nav-favs button .x{margin-left:6px;color:var(--muted)}
+.nav-btns{display:flex;gap:8px;margin-top:10px}
+.nav-btns button{flex:1;border:0;border-radius:10px;padding:10px 6px;background:#03C75A;color:#fff;font-weight:700;font-size:13px}
+.nav-btns button.sub{background:none;border:1px solid #03C75A;color:#03C75A}
+.nav-btns button:disabled{opacity:.4}
+.nav-card[hidden]{display:none}
 .buswait button{margin-left:6px;border:0;border-radius:999px;padding:3px 10px;background:#fff;color:var(--ink);font-weight:700;font-size:13px}
 .viewbar{top:62px;left:12px;right:12px;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 6px 6px 12px;font-size:13px;border-left:4px solid var(--accent)}
 .viewbar[hidden]{display:none}
@@ -407,6 +422,20 @@ h2{font-size:14px;font-weight:700;margin:0 0 8px}
     <div class="wx-meta" id="wxMeta">위치를 찾으면 날씨를 불러옵니다</div>
   </section>
 
+  <section class="card nav-card" id="navCard" aria-label="길찾기">
+    <div class="chart-head"><h2>길찾기</h2><button class="bus-cfg" id="navFavAdd" type="button">즐겨찾기에 추가</button></div>
+    <div class="nav-dest" id="navDest">목적지: 지도를 길게 누르거나 즐겨찾기를 고르세요</div>
+    <form class="bus-form" id="navFavForm" autocomplete="off" hidden style="margin-top:8px">
+      <input id="navFavName" type="text" maxlength="12" placeholder="이름 (예: 집, 회사)" aria-label="즐겨찾기 이름">
+      <button type="submit">저장</button>
+    </form>
+    <div class="nav-favs" id="navFavs"></div>
+    <div class="nav-btns">
+      <button type="button" id="navPublic">네이버지도 대중교통 길찾기</button>
+      <button type="button" class="sub" id="navWalk">네이버지도 도보 길찾기</button>
+    </div>
+  </section>
+
   <section class="card" aria-label="버스 도착 정보">
     <div class="chart-head"><h2>버스 도착 정보</h2><button class="bus-cfg" id="busCfg" type="button">중계 주소</button></div>
     <form class="bus-form bus-api" id="busApiForm" autocomplete="off" hidden>
@@ -518,15 +547,20 @@ const TRV = {
   STEP_MAX_SPM:80,   // 버스 진동이 걸음으로 잡힐 수 있어 분당 80걸음 미만이면 통과 (가속도 센서가 있을 때만)
   DEPART_KMH:7,      // 거슬러 올라가 속도가 이 아래였던 마지막 지점 = 출발 지점 (여기부터 소급 적용)
   DEPART_BACK_MS:180000, // 출발 지점은 최대 3분 전까지
-  STOP_NEAR_M:60,    // 출발 지점이 공식 정류장 이 거리 안이면 버스
-  SEARCH_VALID_MS:15*60000, // 최근 15분 안에 버스 도착 정보를 조회했으면 정류장 판단 없이 버스 (조회한 번호 기록)
+  STOP_NEAR_M:60,    // 출발 지점이 공식 정류장 이 거리 안이면 버스 (번호 모름)
+  // 버스 조회 후 탑승: 이동 중 → 탑승 대기 → 탑승 / 취소 (조회만으로 버스로 보지는 않음)
+  RIDE_WAIT_M:50,    // 목표 정류장 이 거리 안에 들어오면 "탑승 대기" (멈춰 있을 필요 없음)
+  RIDE_BOARD_M:60,   // 탑승 대기 중 출발 지점이 목표 정류장 이 거리 안 + 30초 평균 BOARD_KMH 이상 → 버스(조회한 번호)
+  RIDE_LEAVE_M:150,  // 탑승 대기 중 정류장에서 걸어서 이만큼 멀어지면 취소
+  RIDE_MAX_MS:30*60000, // 목표를 정한 뒤 30분이 지나면 취소
+  WALK_KMH:4.5,      // 남은 도보 시간 계산용
   ASK_WAIT_MS:120000 // 정류장이 아니면 알림으로 버스/택시/자동차를 묻고, 2분 안에 답이 없으면 자동차로 확정
 };
 
 // ---------- 상태 ----------
 const DRAFT = 'trailog:draft';
 let bus = {win:[], cand:'', held:false}, draftTimer = null;
-let busSearch = null, rides = [];   // 최근 버스 도착 정보 검색 {no, t, used} / 자동 전환한 버스 [[시작 시각, 번호], ...]
+let ride = null, rides = [];   // 버스 조회로 정한 탑승 목표 (아래 "버스 조회 후 탑승") / 자동 전환한 버스 [[시작 시각, 번호], ...]
 let modeLog = [], subs = [];        // 수단 변경 이력 [[시각, 수단], ...] / 지하철 구간 역 이름 [[첫 지하철 지점 시각, 승차역, 하차역], ...]
 let resumeGap = false, ingesting = false;   // 다음 위치가 일시정지·앱 종료 뒤 첫 위치인지 / 파일에서 몰아 넣는 중인지
 let kind = localStorage.getItem('trailog:kind') === 'travel' ? 'travel' : 'exercise', vehLabel = 'car', stillFrom = null, stayAt = null;
@@ -541,7 +575,7 @@ let wxAt = 0, wxPos = null, mtn = {is:false, relief:null, pos:null, busy:false};
 
 // ---------- 지도 ----------
 const canRotate = typeof L.Map.prototype.setBearing === 'function';   // 지도 회전 플러그인
-const map = L.map('map', {zoomControl:false, rotate:canRotate, touchRotate:false, shiftKeyRotate:false, rotateControl:false, bearing:0}).setView([37.5665, 126.978], 15);
+const map = L.map('map', {zoomControl:false, tapHold:true, rotate:canRotate, touchRotate:false, shiftKeyRotate:false, rotateControl:false, bearing:0}).setView([37.5665, 126.978], 15);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap'}).addTo(map);
 const cssVar = n => getComputedStyle(document.body).getPropertyValue(n).trim();
 const actColor = a => cssVar('--' + a) || '#7C4DDB';
@@ -921,6 +955,7 @@ function onPos(p){
   if (follow && !viewing && !ingesting) map.panTo(lastFix, {animate:true});
   if (fix.alt != null) altSmooth = altSmooth == null ? fix.alt : altSmooth*0.8 + fix.alt*0.2;
   const draw = () => { if (!ingesting) render(); };
+  if (!ingesting && fix.acc <= MAX_ACC_M) watchRide(fix);
 
   // 지하철을 고른 동안은 오차 300m 까지의 대략적 위치도 받음 (지나간 역 추정용)
   const maxAcc = kind === 'travel' && act === 'subway' ? TRV.SUB_ACC_M : MAX_ACC_M;
@@ -1045,8 +1080,8 @@ function guess(kmh, cad){
 // 판단 과정은 진단 로그에 남김
 const busLog = diagLog;
 let stopCache = {stops:[], at:null, busy:false}, ask = null;   // ask: 답을 기다리는 차량 질문 {from, timer}
-async function cacheStops(fix){
-  if (stopCache.busy || (stopCache.at && haversine(stopCache.at, fix) < TRV.STOP_CACHE_M)) return;
+async function cacheStops(fix, force){
+  if (stopCache.busy || (!force && stopCache.at && haversine(stopCache.at, fix) < TRV.STOP_CACHE_M)) return;
   stopCache.busy = true; stopCache.at = {lat:fix.lat, lon:fix.lon};   // 실패해도 300m 더 가서 다시 시도
   const api = busApi(), ac = new AbortController(), to = setTimeout(() => ac.abort(), 10000);
   try {
@@ -1073,11 +1108,73 @@ function busWinKmh(sec){
   const span = (last.t - w[i].t)/1000;
   return span >= sec*0.6 ? (last.d - w[i].d)/span*3.6 : null;
 }
-const validSearch = () => busSearch && !busSearch.used && Date.now() - busSearch.t <= TRV.SEARCH_VALID_MS ? busSearch : null;
-// 버스 도착 정보를 조회한 뒤 15분 동안: 지도 위 "M4137 탑승 대기"
-function busCand(){
-  const q = validSearch();
-  return q ? {no:q.no, label:`${q.no || '버스'} 탑승 대기`, why:`${Math.round((Date.now() - q.t)/60000)}분 전 ${q.no ? q.no + '번' : '근처 버스'} 조회`} : null;
+// ---------- 버스 조회 후 탑승: 이동 중 → 탑승 대기 → 탑승 / 취소 ----------
+// 번호로 조회하면 목표 정류장 설정 (방면을 고르면 그 정류장, 안 고르면 결과에 나온 정류장 모두 = 양방향 후보)
+//  이동 중: 걷기로 계속 기록, 지도 위에 남은 거리·도보 시간
+//  탑승 대기: 목표 정류장 50m 안에 들어옴 (멈출 필요 없음). 도착 시간은 새로고침 버튼으로만 조회
+//  탑승: 대기 중 출발 지점이 정류장 60m 안 + 30초 평균 12km/h 이상 → 버스(번호 포함), 출발 지점부터 소급 (watchBus)
+//  취소: 대기 중 정류장에서 걸어서 150m 이상 멀어짐, 또는 목표를 정한 뒤 30분 경과
+const RIDE_TXT = {go:'이동 중', wait:'탑승 대기'};
+const stopKey = v => String(v || '').trim().replace(/^0+(?=\d)/, '');
+const stopLabel = c => c.name + (c.dest ? ` (${c.dest})` : '');
+function rideSet(no, cands, how){
+  const old = ride;
+  ride = {no, state:'go', cands, stop:null, t:Date.now(), d:null, arr:''};
+  busLog(`버스 상태: 이동 중 (${no}번, ${how}) 후보 ${cands.map(stopLabel).join(' / ')}` + (old ? `, 이전 목표 ${old.no}번(${RIDE_TXT[old.state]}) 대체` : ''));
+  if (lastFix) watchRide({lat:lastFix[0], lon:lastFix[1], spd:null});
+  render();
+}
+function rideEnd(why){
+  if (!ride) return;
+  busLog(`버스 상태: ${RIDE_TXT[ride.state]} → 취소 (${ride.no}번, ${why})`);
+  ride = null; render();
+}
+function watchRide(fix){
+  if (!ride) return;
+  if (Date.now() - ride.t > TRV.RIDE_MAX_MS) { rideEnd(`목표를 정한 뒤 ${Math.round(TRV.RIDE_MAX_MS/60000)}분 경과`); return; }
+  let near = null;
+  for (const c of ride.cands) { const d = haversine(fix, c); if (!near || d < near.d) near = {c, d}; }
+  ride.d = near.d; ride.near = near.c;
+  if (ride.state === 'go' && near.d <= TRV.RIDE_WAIT_M) {
+    ride.state = 'wait'; ride.stop = near.c;
+    busLog(`버스 상태: 이동 중 → 탑승 대기 (${ride.no}번, ${stopLabel(near.c)} ${Math.round(near.d)}m)`);
+    toast(`${near.c.name} 정류장 도착. 도착 시간은 새로고침으로 확인하세요`);
+  } else if (ride.state === 'wait') {
+    const d = haversine(fix, ride.stop), kmh = fix.spd != null && fix.spd >= 0 ? fix.spd*3.6 : curSpd;
+    ride.d = d;
+    if (d >= TRV.RIDE_LEAVE_M && kmh < TRV.BOARD_KMH) rideEnd(`${ride.stop.name} 정류장에서 걸어서 ${Math.round(d)}m 멀어짐`);
+  }
+}
+// 조회 결과의 정류장 → 목표 후보 (Worker 가 예전 버전이라 좌표가 없으면 /stops 로 찾아 맞춤)
+async function rideFromItems(no, items, how){
+  const seen = new Set(), cands = [];
+  for (const b of items) {
+    const k = b.region + '|' + (stopKey(b.stopNo) || b.stopName);
+    if (seen.has(k)) continue; seen.add(k);
+    cands.push({name:b.stopName, no:b.stopNo, dest:b.dest || '', lat:b.lat, lon:b.lon, region:b.region});
+  }
+  if (cands.some(c => c.lat == null) && lastFix) {
+    await cacheStops({lat:lastFix[0], lon:lastFix[1]}, true);
+    for (const c of cands) if (c.lat == null) {
+      const m = stopCache.stops.find(x => stopKey(c.no) && stopKey(x.no) === stopKey(c.no)) || stopCache.stops.find(x => x.name === c.name);
+      if (m) { c.lat = m.lat; c.lon = m.lon; }
+    }
+  }
+  const ok = cands.filter(c => c.lat != null && c.lon != null);
+  if (!ok.length) { busLog(`버스 탑승 목표를 정하지 못함: ${no}번 정류장 좌표 없음 (Worker 다시 배포 필요)`); toast('정류장 위치를 몰라 탑승 목표를 정하지 못했습니다'); return; }
+  rideSet(no, ok, how);
+}
+// 탑승 대기 중 "새로고침": 그 정류장의 도착 시간만 조회 (자동 조회는 안 함)
+async function rideRefresh(){
+  if (!ride) return;
+  const r = ride, items = await loadBus(r.no);
+  if (!items || ride !== r) return;
+  const st = r.stop || r.near;
+  const it = st && items.find(b => (stopKey(st.no) && stopKey(b.stopNo) === stopKey(st.no)) || b.stopName === st.name);
+  r.arr = it ? (it.arr1 || '도착 정보 없음') : '';
+  busLog(`버스 도착 시간 새로고침: ${r.no}번 ${st ? st.name : ''} → ${r.arr || '이 정류장 결과 없음'}`);
+  toast(it ? `${r.no} ${st.name}: ${r.arr}` : `${r.no}번 결과에 ${st ? st.name : '목표'} 정류장이 없습니다`);
+  render();
 }
 // 출발 지점: 지금부터 거슬러 올라가며 속도가 DEPART_KMH 아래였던 마지막 지점 (최대 3분 전)
 function departPoint(t){
@@ -1092,7 +1189,6 @@ function departPoint(t){
 function watchBus(fix){
   if (!TRV.AUTO_BUS || status !== 'running' || act !== 'walk') { if (bus.win.length) bus.win = []; return; }
   cacheStops(fix);
-  watchCand();
   bus.win.push({t:fix.t, d:dist});
   while (bus.win.length > 2 && bus.win[0].t < fix.t - 90000) bus.win.shift();
   const v = busWinKmh(TRV.BOARD_WIN_S);
@@ -1102,20 +1198,26 @@ function watchBus(fix){
     if (!bus.held) { bus.held = true; busLog(`차량 판단 보류: ${TRV.BOARD_WIN_S}초 평균 ${v.toFixed(1)}km/h 이지만 걸음 분당 ${spm} (${TRV.STEP_MAX_SPM} 이상)`); }
     return;
   }
-  const dep = departPoint(fix.t), q = validSearch(), st = nearestStop(dep);
-  busLog(`차량 탑승 감지: ${TRV.BOARD_WIN_S}초 평균 ${v.toFixed(1)}km/h, 걸음 ${spm == null ? '센서 없음' : '분당 ' + spm}, `
-    + `출발 지점 ${hhmm(dep.t)}, 가장 가까운 정류장 ${st ? st.name + ' ' + st.d + 'm' : '없음'} (캐시 ${stopCache.stops.length}곳)`
-    + (q ? `, ${busCand().why}` : ''));
+  const dep = departPoint(fix.t), st = nearestStop(dep);
+  const rd = ride && ride.state === 'wait' ? Math.round(haversine(dep, ride.stop)) : null;
+  busLog(`차량 탑승 감지: ${TRV.BOARD_WIN_S}초 평균 ${v.toFixed(1)}km/h, 걸음 ${spm == null ? '센서 없음' : '분당 ' + spm}, 출발 지점 ${hhmm(dep.t)}, `
+    + (ride ? `목표 ${ride.no}번 ${RIDE_TXT[ride.state]}${rd != null ? ` (출발 지점→${ride.stop.name} ${rd}m)` : ''}, ` : '')
+    + `가장 가까운 정류장 ${st ? st.name + ' ' + st.d + 'm' : '없음'} (캐시 ${stopCache.stops.length}곳)`);
   bus.win = []; bus.held = false;
-  if (q) toBus(dep.t, q.no, busCand().why);
-  else if (st && st.d <= TRV.STOP_NEAR_M) toBus(dep.t, '', `출발 지점이 ${st.name} 정류장 ${st.d}m`);
+  if (rd != null && rd <= TRV.RIDE_BOARD_M) {
+    const r = ride; ride = null;
+    busLog(`버스 상태: 탑승 대기 → 탑승 (${r.no}번, ${r.stop.name})`);
+    toBus(dep.t, r.no, `${stopLabel(r.stop)}에서 탑승 대기 중 출발, 출발 지점 ${rd}m`);
+    return;
+  }
+  if (ride) rideEnd(ride.state === 'wait' ? `출발 지점이 목표 정류장에서 ${rd}m (${TRV.RIDE_BOARD_M}m 넘음)` : '목표 정류장에 가기 전에 차량 탑승');
+  if (st && st.d <= TRV.STOP_NEAR_M) toBus(dep.t, '', `출발 지점이 ${st.name} 정류장 ${st.d}m`);
   else askVehicleKind(dep.t, st);
 }
 function toBus(from, no, why){
   mode = 'bus'; act = 'bus'; setAccent('bus');
   relabelSince(from, 'bus');
   if (no) rides.push([from, no]);
-  if (busSearch && busSearch.no === no) busSearch.used = true;   // 같은 조회로 다시 전환하지 않음
   busLog(`결정: 버스${no ? ' ' + no : ''} (${why}), ${hhmm(from)}부터 버스로 기록`);
   toast(`${no ? '버스 ' + no : '버스'}에 탄 것 같아요. 아니면 아래에서 수단을 고르세요`);
   render();
@@ -1143,15 +1245,6 @@ function answerVehicle(m, via){
     if (VEH.includes(act)) { mode = m; act = m; setAccent(m); }
   }
   render();
-}
-// 버스 도착 정보 조회 후보 상태가 바뀌면 로그
-function watchCand(){
-  const c = busCand(), label = c ? c.label : '';
-  if (label !== bus.cand) {
-    busLog(c ? `버스 탑승 후보: ${c.why}` : `버스 후보 해제 (조회 후 ${Math.round(TRV.SEARCH_VALID_MS/60000)}분 지났거나 전환에 씀)`);
-    bus.cand = label;
-  }
-  return c;
 }
 function relabelSince(t0, a, from){
   from = from || ['walk'];
@@ -1613,7 +1706,7 @@ $('busApiForm').onsubmit = e => {
 };
 async function loadBus(no, quiet){
   const api = busApi(), out = $('busOut');
-  if (!lastFix) { out.textContent = '현재 위치를 아직 찾지 못했습니다. 잠시 후 다시 조회하세요'; return; }
+  if (!lastFix) { out.textContent = '현재 위치를 아직 찾지 못했습니다. 잠시 후 다시 조회하세요'; return null; }
   const what = no ? `${no}번 버스` : '근처 모든 버스';
   if (!quiet) out.textContent = `${what} 도착 정보를 찾는 중…`;
   const ac = new AbortController(), to = setTimeout(() => ac.abort(), 12000);
@@ -1630,28 +1723,32 @@ async function loadBus(no, quiet){
       const near = j.stops.length ? '근처 정류장: ' + j.stops.map(s => `${escH(s.name)} ${s.dist}m`).join(', ') : '반경 400m 안에 정류장이 없습니다';
       out.innerHTML = (no ? `${escH(no)}번 버스가 근처 정류장에 서지 않거나 운행 정보가 없습니다.` : '근처 정류장에 도착 예정인 버스가 없습니다.')
         + `<div class="bus-meta">${near}</div>${err}`;
-      return;
+      return j.items;
     }
     const arr = b => `<div class="bus-arr"><span class="first">${escH(b.arr1 || '도착 정보 없음')}</span>${b.arr2 ? `<span>다음 ${escH(b.arr2)}</span>` : ''}</div>`;
     const stop = b => `<div class="bus-stop"><b>${escH(b.stopName)}</b> ${b.dist}m${b.stopNo ? ' · ' + escH(b.stopNo) : ''}`;
     busItems = j.items;
     const go = b => rtOk(b) ? ` bus-go" data-i="${j.items.indexOf(b)}` : '';
     const more = b => rtOk(b) ? '<span class="bus-more">노선도 ›</span>' : '';
+    const pick = b => `<button type="button" class="bus-pick" data-ride="${j.items.indexOf(b)}">여기서 탈게요</button>`;   // 방면 선택 → 목표 정류장
+    const walk = b => b.lat != null ? `<button type="button" class="bus-nav" data-walk="${j.items.indexOf(b)}">네이버지도 도보 길찾기</button>` : '';
     let html;
-    if (no) html = j.items.map(b => `<div class="bus-it${go(b)}">${more(b)}${stop(b)}${b.dest ? ' · ' + escH(b.dest) : ''}</div>${arr(b)}</div>`).join('');
+    if (no) html = j.items.map(b => `<div class="bus-it${go(b)}">${more(b)}${stop(b)}${b.dest ? ' · ' + escH(b.dest) : ''}</div>${arr(b).replace(/<\/div>$/, pick(b) + '</div>')}${walk(b)}</div>`).join('');
     else {   // 번호 없음: 정류장별로 묶고 줄마다 노선 번호
       const g = new Map();
       j.items.forEach(b => { const k = b.stopName + '|' + b.dist + '|' + b.stopNo; if (!g.has(k)) g.set(k, []); g.get(k).push(b); });
-      html = [...g.values()].map(bs => `<div class="bus-it">${stop(bs[0])}</div>`
-        + bs.map(b => `<div class="bus-row${go(b)}"><span class="bus-rt">${escH(b.route)}</span><div>${arr(b)}${b.dest ? `<div class="bus-dest">${escH(b.dest)}</div>` : ''}</div>${more(b)}</div>`).join('')
+      html = [...g.values()].map(bs => `<div class="bus-it">${stop(bs[0])}</div>${walk(bs[0])}`
+        + bs.map(b => `<div class="bus-row${go(b)}"><span class="bus-rt">${escH(b.route)}</span><div>${arr(b)}${b.dest ? `<div class="bus-dest">${escH(b.dest)}</div>` : ''}</div>${pick(b)}${more(b)}</div>`).join('')
         + '</div>').join('');
     }
     out.innerHTML = html   // 결과가 있으면 일부 실패(활용신청 안 된 API 등)는 숨김
-      + `<div class="bus-meta">${no ? escH(j.no) + '번' : '모든 버스'} · ${t} 기준 · 다시 보려면 조회 · 공공데이터포털</div>`;
+      + `<div class="bus-meta">${no ? escH(j.no) + '번' : '모든 버스'} · ${t} 기준 · 다시 보려면 조회 · "여기서 탈게요"로 방면 선택 · 공공데이터포털</div>`;
+    return j.items;
   } catch (e) {
     const why = e.name === 'AbortError' ? '응답 시간 초과 (12초)' : e.message;
     out.textContent = '버스 정보를 불러오지 못했습니다: ' + why;
     busLog(`버스 조회 실패: ${api}/bus${no ? '?no=' + no : ''} → ${why}`);   // 위치(lat·lon)는 로그에 남기지 않음
+    return null;
   } finally { clearTimeout(to); }
 }
 // ---------- 노선도 (카카오맵 노선 화면 형태: 정류장 순서 + 운행 중인 버스 위치) ----------
@@ -1742,6 +1839,14 @@ function renderRoute(j, first){
   if (first) { const m = $('rtMine'); if (m) m.scrollIntoView({block:'center'}); else list.scrollTop = 0; }
 }
 $('busOut').addEventListener('click', e => {
+  const wk = e.target.closest('[data-walk]');
+  if (wk) { const b = busItems[+wk.dataset.walk]; if (b) naverRoute('walk', {name:b.stopName + ' 정류장', lat:b.lat, lon:b.lon}); return; }
+  const pk = e.target.closest('[data-ride]');
+  if (pk) {   // 방면 선택: 이 정류장만 목표
+    const b = busItems[+pk.dataset.ride];
+    if (b) { rideFromItems(routeNo(b.route), [b], '방면 선택'); toast(`${b.stopName}${b.dest ? ' (' + b.dest + ')' : ''}에서 ${b.route} 탑승으로 정했습니다`); }
+    return;
+  }
   const el = e.target.closest('.bus-go'); if (!el) return;
   const b = busItems[+el.dataset.i]; if (b) openRoute(b);
 });
@@ -1749,10 +1854,12 @@ $('rtBack').onclick = () => { if (history.state && history.state.rt) history.bac
 window.addEventListener('popstate', () => { if (!$('rtView').hidden) closeRoute(); });   // 안드로이드 뒤로 가기
 $('rtRef').onclick = () => loadRoute(false);
 
-function startBus(no){
-  busSearch = {no:no.replace(/[^0-9A-Z가-힣-]/g, ''), t:Date.now(), used:false};   // 15분간 버스 탑승 후보 (이동 기록 걷기 중)
-  if (kind === 'travel' && status === 'running' && act === 'walk') { busLog(`버스 도착 정보 검색: ${busSearch.no || '전체'}`); watchCand(); render(); }
-  loadBus(no);   // 조회 버튼을 누를 때만 (자동 갱신 없음)
+// 서울시 결과의 지역 이름 꼬리 떼기 ("7770화성" → "7770")
+const routeNo = r => String(r || '').replace(/\s+/g, '').toUpperCase().replace(/([0-9A-Z)])[가-힣]+$/, '$1').replace(/[^0-9A-Z가-힣-]/g, '');
+async function startBus(no){
+  const items = await loadBus(no);   // 조회 버튼을 누를 때만 (자동 갱신 없음)
+  // 번호로 조회하면 결과 정류장 모두를 목표 후보로 (방면은 "여기서 탈게요"로 고름)
+  if (no && items && items.length) rideFromItems(routeNo(no), items, `방면 미선택, 양방향 후보 ${new Set(items.map(b => b.stopName + b.stopNo)).size}곳`);
 }
 $('busNo').value = localStorage.getItem(BUS_NO) || '';
 $('busForm').onsubmit = e => {
@@ -1763,6 +1870,78 @@ $('busForm').onsubmit = e => {
 };
 $('busCfg').onclick = busApiEdit;
 busHostShow();
+
+// ---------- 길찾기 (네이버지도: 앱 nmap://, 안드로이드 웹 intent://, 그 밖의 웹은 네이버지도 웹) ----------
+// 목적지: 지도 길게 누르기 또는 즐겨찾기(localStorage trailog:places [{name, lat, lon}])
+const PLACES = 'trailog:places';
+let navDest = null, navMark = null;
+const loadPlaces = () => { try { return JSON.parse(localStorage.getItem(PLACES)) || []; } catch(_) { return []; } };
+const savePlaces = a => { try { localStorage.setItem(PLACES, JSON.stringify(a)); } catch(_) { toast('저장 공간이 부족합니다'); } };
+function naverRoute(type, d){   // type: walk | public, d: {name, lat, lon}
+  if (!lastFix) { toast('현재 위치를 아직 찾지 못했습니다'); return; }
+  if (!d || d.lat == null) { toast('목적지를 먼저 고르세요'); return; }
+  const e = encodeURIComponent, sname = '현재 위치';
+  const q = `slat=${lastFix[0].toFixed(6)}&slng=${lastFix[1].toFixed(6)}&sname=${e(sname)}&dlat=${(+d.lat).toFixed(6)}&dlng=${(+d.lon).toFixed(6)}&dname=${e(d.name)}&appname=com.kaira.trailog`;
+  diagLog(`네이버지도 ${type === 'walk' ? '도보' : '대중교통'} 길찾기 요청: ${d.name}`);   // 위치는 로그에 남기지 않음
+  if (window.TrailogNative && TrailogNative.openNaver) { TrailogNative.openNaver(`nmap://route/${type}?${q}`); return; }
+  if (/Android/i.test(navigator.userAgent)) {   // 안드로이드 웹: 앱이 있으면 앱, 없으면 플레이 스토어
+    location.href = `intent://route/${type}?${q}#Intent;scheme=nmap;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.nhn.android.nmap;end`;
+    return;
+  }
+  const web = `https://map.naver.com/p/directions/${lastFix[1].toFixed(6)},${lastFix[0].toFixed(6)},${e(sname)},,ADDRESS_POI/`
+    + `${(+d.lon).toFixed(6)},${(+d.lat).toFixed(6)},${e(d.name)},,ADDRESS_POI/-/${type === 'walk' ? 'walk' : 'transit'}`;
+  if (/iPhone|iPad/i.test(navigator.userAgent)) {   // 아이폰 웹: 앱을 열어 보고 1.5초 안에 안 열리면 웹
+    const t0 = Date.now(); location.href = `nmap://route/${type}?${q}`;
+    setTimeout(() => { if (Date.now() - t0 < 2000 && document.visibilityState === 'visible') location.href = web; }, 1500);
+    return;
+  }
+  window.open(web, '_blank', 'noopener');
+}
+function setNavDest(d, how){
+  navDest = d;
+  if (navMark) map.removeLayer(navMark);
+  navMark = L.marker([d.lat, d.lon], {title:d.name}).bindTooltip(d.name, {permanent:true, direction:'top', offset:[-15,-12], className:'pin-tip'}).addTo(map);
+  diagLog(`길찾기 목적지: ${d.name} (${how})`);
+  renderNav();
+}
+function renderNav(){
+  $('navCard').hidden = kind !== 'travel' || !!(viewing && status === 'idle');
+  const d = navDest, km = d && lastFix ? haversine({lat:lastFix[0], lon:lastFix[1]}, d) : null;
+  $('navDest').innerHTML = d ? `목적지: <b>${escH(d.name)}</b>${km != null ? ` <small>직선 ${km >= 1000 ? (km/1000).toFixed(1) + 'km' : Math.round(km) + 'm'}</small>` : ''}`
+    : '목적지: 지도를 길게 누르거나 즐겨찾기를 고르세요';
+  const places = loadPlaces();
+  $('navFavs').innerHTML = places.map((p, i) => `<button type="button" data-i="${i}" class="${d && d.lat === p.lat && d.lon === p.lon ? 'on' : ''}">${escH(p.name)}<span class="x" data-del="${i}" aria-label="삭제">×</span></button>`).join('');
+  $('navPublic').disabled = $('navWalk').disabled = !d;
+  $('navFavAdd').hidden = !d;
+}
+map.on('contextmenu', e => {   // 길게 누르기 (PC 는 오른쪽 클릭)
+  if (kind !== 'travel' || (viewing && status === 'idle')) return;
+  setNavDest({name:'지도에서 고른 곳', lat:+e.latlng.lat.toFixed(6), lon:+e.latlng.lng.toFixed(6)}, '지도 길게 누르기');
+  toast('목적지로 정했습니다. 아래 길찾기 카드에서 네이버지도를 여세요');
+});
+$('navFavs').onclick = e => {
+  const del = e.target.closest('[data-del]'), places = loadPlaces();
+  if (del) {
+    const p = places[+del.dataset.del];
+    if (p && confirm(`즐겨찾기 "${p.name}"을(를) 지울까요?`)) { places.splice(+del.dataset.del, 1); savePlaces(places); renderNav(); }
+    return;
+  }
+  const b = e.target.closest('[data-i]'); if (!b) return;
+  const p = places[+b.dataset.i]; if (p) setNavDest(Object.assign({}, p), '즐겨찾기');
+};
+$('navFavAdd').onclick = () => { const f = $('navFavForm'); f.hidden = !f.hidden; if (!f.hidden) { $('navFavName').value = navDest && navDest.name !== '지도에서 고른 곳' ? navDest.name : ''; $('navFavName').focus(); } };
+$('navFavForm').onsubmit = e => {
+  e.preventDefault();
+  const name = $('navFavName').value.trim();
+  if (!name || !navDest) { toast('이름을 입력하세요'); return; }
+  const places = loadPlaces().filter(p => p.name !== name);   // 같은 이름은 덮어씀
+  places.push({name, lat:navDest.lat, lon:navDest.lon}); savePlaces(places.slice(-20));
+  navDest.name = name; $('navFavForm').hidden = true; $('navFavName').blur();
+  if (navMark) navMark.setTooltipContent(name);
+  toast(`즐겨찾기 "${name}" 저장`); renderNav();
+};
+$('navPublic').onclick = () => naverRoute('public', navDest);
+$('navWalk').onclick = () => naverRoute('walk', navDest);
 
 // ---------- 화면 꺼짐 방지 ----------
 async function keepAwake(){ try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(_) {} }
@@ -1872,6 +2051,7 @@ function render(){
 }
 function renderChrome(){
   paintLocate();
+  renderNav();
   renderHr();
   $('profileLbl').textContent = age ? `체중 kg, ${age}세` : '체중 kg, 나이 입력';
   const v = viewing && status === 'idle', s = v ? 'view' : status;
@@ -1898,18 +2078,37 @@ function renderChrome(){
   else if (mode !== 'auto') { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '직접 선택'; }
   else if (!actKnown) { chip.dataset.s = 'detecting'; $('actName').textContent = '확인 중'; $('actSub').textContent = '15초 정도 움직여 주세요'; }
   else { chip.dataset.s = 'known'; $('actName').textContent = ACT[act]; $('actSub').textContent = '자동 인식' + (!tv && terrain ? `, ${terrain}` : ''); }
-  // 차량 종류 묻기 (버스/택시/자동차) 또는 버스 탑승 후보 "M4137 탑승 대기"
+  // 차량 종류 묻기 (버스/택시/자동차) 또는 버스 조회 후 목표 정류장 (이동 중: 남은 거리·도보 시간 / 탑승 대기)
   const bw = $('busWait');
-  const bc = !v && kind === 'travel' && status === 'running' && act === 'walk' && TRV.AUTO_BUS ? busCand() : null;
   if (ask && !v) {
     bw.hidden = false;
     if (bw.dataset.mode !== 'ask') { bw.dataset.mode = 'ask'; bw.innerHTML = '무엇을 탔나요?<button data-v="bus">버스</button><button data-v="taxi">택시</button><button data-v="car">자동차</button>'; }
-  } else if (bc) { bw.hidden = false; bw.dataset.mode = 'wait'; bw.textContent = '🚌 ' + bc.label; }
-  else { bw.hidden = true; bw.dataset.mode = ''; }
+  } else if (ride && !v) {
+    bw.hidden = false;
+    const m = 'ride-' + ride.state;
+    if (bw.dataset.mode !== m) {
+      bw.dataset.mode = m;
+      bw.innerHTML = '<span class="bw-t"></span>' + (ride.state === 'wait' ? '<button data-r="ref">새로고침</button>' : '<button data-r="nav">길찾기</button>') + '<button data-r="x">취소</button>';
+    }
+    let t;
+    if (ride.state === 'wait') t = `🚌 ${ride.stop.name} 도착 · ${ride.no} 탑승 대기 · ` + (ride.arr ? ride.arr : '새로고침으로 도착 시간 확인');
+    else {
+      const c = ride.near || ride.cands[0], d = ride.d;
+      t = `🚌 ${ride.no} · ${c.name}${ride.cands.length > 1 ? ` 외 ${ride.cands.length - 1}곳` : c.dest ? ` (${c.dest})` : ''}`
+        + (d != null ? ` ${d >= 1000 ? (d/1000).toFixed(1) + 'km' : Math.round(d) + 'm'} · 도보 ${Math.max(1, Math.round(d / (TRV.WALK_KMH/3.6) / 60))}분` : '');
+    }
+    bw.querySelector('.bw-t').textContent = t;
+  } else { bw.hidden = true; bw.dataset.mode = ''; }
 }
 
 let modesSig = '';
-$('busWait').onclick = e => { const b = e.target.closest('button'); if (b && b.dataset.v) answerVehicle(b.dataset.v, '화면'); };
+$('busWait').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.v) answerVehicle(b.dataset.v, '화면');
+  else if (b.dataset.r === 'ref') rideRefresh();
+  else if (b.dataset.r === 'nav' && ride) { const c = ride.near || ride.cands[0]; naverRoute('walk', {name:c.name + ' 정류장', lat:c.lat, lon:c.lon}); }
+  else if (b.dataset.r === 'x') rideEnd('취소 버튼');
+};
 function renderModes(){
   const el = $('modes'), list = MODES[kind][status === 'idle' ? 'idle' : 'active'];
   el.hidden = !list.length;
