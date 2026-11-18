@@ -664,6 +664,36 @@ function trackAdd(ll, a, k){
   }
   lastLL = ll;
   if (a === 'subway' && k !== 'est') scheduleSubwayRoute(seg);
+  if (k === 'est') { clearTimeout(seg._wk); seg._wk = setTimeout(() => routeWalkSeg(seg), 800); }
+}
+// ---------- 추정 구간(역 ↔ 실제 위치)을 걷는 길로 그리기 (지도 표시만, 거리·칼로리는 그대로) ----------
+// GPS 가 없던 구간이라 실제로 걸은 길은 모름 → OpenStreetMap 도보 경로(FOSSGIS OSRM foot)로 그럴듯한 길을 옅은 점선으로
+const walkCache = {};
+async function routeWalkSeg(sg){
+  const raw = sg._raw; if (!raw || raw.length < 2) return;
+  const A = raw[0], B = raw[raw.length-1], dAB = haversine({lat:A[0], lon:A[1]}, {lat:B[0], lon:B[1]});
+  if (dAB < 80 || dAB > 5000) return;   // 아주 가깝거나 너무 멀면 직선 그대로
+  const key = llKey(A) + '|' + llKey(B);
+  let path = walkCache[key];
+  if (!path) { try { path = JSON.parse(localStorage.getItem('trailog:walk:' + key)); } catch(_) {} }
+  if (!path) {
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 15000);
+    try {
+      const r = await fetch(`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${A[1]},${A[0]};${B[1]},${B[0]}?overview=full&geometries=geojson`, {signal:ac.signal});
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json(), rt = j.routes && j.routes[0];
+      if (!rt) throw new Error(j.code || '경로 없음');
+      if (rt.distance > dAB * 3) { diagLog(`추정 구간 도보 경로: ${Math.round(rt.distance)}m 로 직선(${Math.round(dAB)}m)의 3배 넘어 직선 유지`); return; }
+      path = rt.geometry.coordinates.map(c => [+c[1].toFixed(6), +c[0].toFixed(6)]);
+      walkCache[key] = path; try { localStorage.setItem('trailog:walk:' + key, JSON.stringify(path)); } catch(_) {}
+      diagLog(`추정 구간 도보 경로: 직선 ${Math.round(dAB)}m → 걷는 길 ${Math.round(rt.distance)}m (${path.length}점)`);
+    } catch (e) {
+      diagLog(`추정 구간 도보 경로 실패: ${e.name === 'AbortError' ? '15초 응답 없음' : e.message} → 직선 유지`);
+      return;
+    } finally { clearTimeout(to); }
+  }
+  if (!trackLayer.hasLayer(sg)) return;
+  sg.setLatLngs([A, ...path, B]); sg._routed = true;
 }
 
 // ---------- 지하철 구간을 실제 노선 모양으로 그리기 (지도 표시) ----------
