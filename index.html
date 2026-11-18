@@ -71,6 +71,7 @@ body.full .fsbar{display:flex}
 .bus-arr .bus-pick{margin-left:auto}
 .near-walk{margin-top:2px;font-size:13px;color:var(--ink)}
 .near-walk small{color:var(--muted)}
+.near-why{margin:0 0 8px;color:var(--warn);font-weight:600}
 .near-tip{margin-top:2px;font-size:12px;font-weight:700}
 .near-tip.ok{color:var(--good)} .near-tip.hurry{color:var(--warn)} .near-tip.late{color:var(--bad)}
 .bus-nav{display:inline-block;margin-top:4px;border:0;background:none;color:#03C75A;font-size:12px;font-weight:700;padding:2px 0;text-decoration:underline}
@@ -1863,7 +1864,19 @@ const routeNo = r => String(r || '').replace(/\s+/g, '').toUpperCase().replace(/
 // 정류장마다 방면, 도보 거리(직선×1.3)·시간(분속 70m), 도착 예정, 탈 수 있는지, 네이버지도 도보 길찾기
 const WALK_K = 1.3, WALK_MPM = 70;
 const walkMin = m => Math.max(1, Math.round(m * WALK_K / WALK_MPM));
+let nearWhy = '';   // 가까운 정류장 5곳을 못 찾은 이유 (반경 400m 결과 위에 보여 줌)
+// Worker 오류 문구 → 사용자가 할 일 (어느 API 활용신청이 필요한지)
+function nearReason(errors){
+  const need = [];
+  for (const e of errors || []) {
+    const notReg = /returnReasonCode=(20|30)|SERVICE_KEY_IS_NOT_REGISTERED|유효하지 않은 서비스키|등록되지 않은 서비스키|SERVICE_ACCESS_DENIED/.test(e);
+    if (/^경기 노선/.test(e)) need.push(notReg ? '경기도_버스노선 조회 (활용신청 안 됨 또는 승인 반영 전)' : '경기 노선 조회 오류');
+    else if (/^서울 노선/.test(e)) need.push(notReg ? '서울특별시_노선정보조회 서비스 (활용신청 안 됨 또는 승인 반영 전)' : '서울 노선 조회 오류');
+  }
+  return need.length ? need.join(', ') : '';
+}
 async function loadNear(no){
+  nearWhy = '';
   const api = busApi(), out = $('busOut');
   if (!lastFix) { out.textContent = '현재 위치를 아직 찾지 못했습니다. 잠시 후 다시 조회하세요'; return null; }
   out.textContent = `${no}번 버스가 서는 가까운 정류장을 찾는 중…`;
@@ -1871,12 +1884,14 @@ async function loadNear(no){
   try {
     const r = await fetch(`${api}/near?lat=${lastFix[0].toFixed(5)}&lon=${lastFix[1].toFixed(5)}&no=${encodeURIComponent(no)}&n=5`, {signal:ac.signal})
       .catch(e => { throw e.name === 'AbortError' ? e : new Error(`연결 실패 (${e.message})`); });
-    if (r.status === 404) { busLog(`가까운 정류장 조회 안 됨: Worker 에 /near 없음 → Worker 다시 배포 필요, 반경 400m 조회로 대신함`); return null; }
+    if (r.status === 404) { nearWhy = 'Worker 를 다시 배포해야 합니다 (/near 없음)'; busLog(`가까운 정류장 조회 안 됨: Worker 에 /near 없음 → Worker 다시 배포 필요, 반경 400m 조회로 대신함`); return null; }
     const j = await r.json().catch(() => ({error:'응답 형식 오류'}));
     if (!r.ok || j.error) throw new Error('HTTP ' + r.status + (j.error ? ' ' + j.error : ''));
     if (j.errors && j.errors.length) busLog(`가까운 정류장 조회 일부 실패: ${j.errors.join(' / ')}`);
     if (!j.stops || !j.stops.length) {
-      busLog(`가까운 정류장 조회: ${no}번 노선을 찾지 못함 (노선정보 API 활용신청 확인) → 반경 400m 조회로 대신함`);
+      const why = nearReason(j.errors);
+      nearWhy = why ? `노선 정보를 못 받았습니다. data.go.kr 활용신청 필요: ${why}` : `${no}번 노선을 찾지 못했습니다 (서울·경기 노선이 아니거나 번호가 다름)`;
+      busLog(`가까운 정류장 조회: ${no}번 노선 없음 (${why || '노선 목록에 없음'}) → 반경 400m 조회로 대신함`);
       return null;
     }
     const items = j.stops.map(x => ({region:x.region, route:x.route, routeId:x.routeId, ord:x.ord, stopName:x.name, stopNo:x.no, dest:x.dest,
@@ -1902,6 +1917,7 @@ async function loadNear(no){
     return items;
   } catch (e) {
     const why = e.name === 'AbortError' ? '응답 시간 초과 (15초)' : e.message;
+    nearWhy = '가까운 정류장 조회 실패: ' + why;
     busLog(`가까운 정류장 조회 실패: ${api}/near?no=${no} → ${why}, 반경 400m 조회로 대신함`);
     return null;
   } finally { clearTimeout(to); }
@@ -1909,7 +1925,9 @@ async function loadNear(no){
 // 번호가 있으면 가까운 정류장 5곳, 안 되면(예전 Worker·노선 API 미신청) 반경 400m 정류장 도착 정보
 async function searchBus(no){
   if (no) { const items = await loadNear(no); if (items) return items; }
-  return loadBus(no);
+  const items = await loadBus(no);
+  if (no && nearWhy) $('busOut').insertAdjacentHTML('afterbegin', `<div class="bus-meta near-why">가까운 정류장 5곳 대신 반경 400m만 찾았습니다. ${escH(nearWhy)}</div>`);
+  return items;
 }
 async function startBus(no){
   const items = await searchBus(no);   // 조회 버튼을 누를 때만 (자동 갱신 없음)
