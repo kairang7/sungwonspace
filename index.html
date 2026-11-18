@@ -703,7 +703,7 @@ async function routeSubway(sg){
     path = r.path;
     if (path) {
       railCache[key] = path; try { localStorage.setItem('trailog:rail:' + key, JSON.stringify(path)); } catch(_) {}
-      diagLog(`${tag}: 경로 찾음, 선로 ${(r.len/1000).toFixed(1)}km (${path.length}점)`);
+      diagLog(`${tag}: 경로 찾음, 선로 ${(r.len/1000).toFixed(1)}km (${path.length}점)${r.note ? ', ' + r.note : ''}`);
     } else diagLog(`${tag}: 실패 → ${r.why}`);
     if (sg._again) { sg._again = false; scheduleSubwayRoute(sg); return; }
   }
@@ -746,38 +746,90 @@ async function overpassNow(q, what){
   diagLog(`Overpass ${what} 실패: ${why}`);
   return null;
 }
-// A~B 를 감싸는 범위의 선로 그래프 (같은 범위는 다시 받지 않음)
-function railGraph(A, B){
-  const pad = 0.012;
+// 선로 그래프: OSM 은 노선마다, 또 상·하행 선로마다 따로 그려져 있어 서로 이어지지 않음 → 역에서 350m 안의 선로(way)마다
+// 가장 가까운 지점을 서로 이음. 같은 노선(상·하행 바꾸기)은 50m, 다른 노선(환승)은 600m 를 더해 되도록 갈아타지 않게
+const RAIL = {HUB_R:350, SAME_LINE_M:50, TRANSFER_M:600, SNAP_M:800, VIA_SNAP_M:400, VIA_MAX:1.25, CELL:0.005};
+// ways: [{wid, line, k(일반철도 1.3), nodes:[{key, lat, lon}]}], stations: [{lat, lon, name}]
+function makeGraph(ways, stations, label){
+  const pos = new Map(), adj = new Map(), nodeWays = new Map(), grid = new Map();
+  const cellKey = (la, lo) => Math.floor(la / RAIL.CELL) + ',' + Math.floor(lo / RAIL.CELL);
+  const link = (u, v, w) => { if (!adj.has(u)) adj.set(u, []); adj.get(u).push([v, w]); };
+  for (const w of ways) for (let i = 0; i < w.nodes.length; i++) {
+    const n = w.nodes[i];
+    if (!pos.has(n.key)) { pos.set(n.key, [n.lat, n.lon]); const c = cellKey(n.lat, n.lon); if (!grid.has(c)) grid.set(c, []); grid.get(c).push(n.key); }
+    if (!nodeWays.has(n.key)) nodeWays.set(n.key, []);
+    nodeWays.get(n.key).push(w);
+    if (i) { const m = w.nodes[i-1], d = haversine(m, n) * w.k; link(m.key, n.key, d); link(n.key, m.key, d); }
+  }
+  if (!adj.size) return null;
+  // 반경 r 안의 선로 지점 (격자 칸으로 빨리 찾기)
+  const around = (P, r) => {
+    const out = [], span = Math.ceil(r / 111000 / RAIL.CELL) + 1, ci = Math.floor(P[0] / RAIL.CELL), cj = Math.floor(P[1] / RAIL.CELL);
+    for (let i = ci - span; i <= ci + span; i++) for (let j = cj - span; j <= cj + span; j++)
+      for (const key of grid.get(i + ',' + j) || []) { const q = pos.get(key), d = haversine({lat:P[0], lon:P[1]}, {lat:q[0], lon:q[1]}); if (d <= r) out.push({key, d}); }
+    return out;
+  };
+  let hubs = 0;
+  for (const st of stations) {
+    const best = new Map();   // way → {key, d}
+    for (const n of around([st.lat, st.lon], RAIL.HUB_R))
+      for (const w of nodeWays.get(n.key) || []) { const b = best.get(w); if (!b || n.d < b.d) best.set(w, {key:n.key, d:n.d, line:w.line}); }
+    const ns = [...best.values()];
+    for (let i = 0; i < ns.length; i++) for (let j = i + 1; j < ns.length; j++) {
+      if (ns[i].key === ns[j].key) continue;
+      const w = (ns[i].line && ns[i].line === ns[j].line ? RAIL.SAME_LINE_M : RAIL.TRANSFER_M) + ns[i].d + ns[j].d;
+      link(ns[i].key, ns[j].key, w); link(ns[j].key, ns[i].key, w); hubs++;
+    }
+  }
+  diagLog(`선로 그래프(${label}): 선로 지점 ${adj.size}개, 역 ${stations.length}곳, 역에서 이은 선로 ${hubs}쌍`);
+  // 가장 가까운 선로 지점 {id, d}: 가까운 칸부터 넓혀 가며
+  const nearest = P => {
+    for (const r of [200, 800, 3000]) { const c = around(P, r); if (c.length) { const b = c.reduce((x, y) => y.d < x.d ? y : x); return {id:b.key, d:b.d}; } }
+    return {id:null, d:Infinity};
+  };
+  return {pos, adj, nearest, stations};
+}
+// 수도권은 앱에 넣어 둔 선로 자료(www/rail-capital.json, scripts/build-rail.mjs 로 만듦)로 → Overpass 없이 바로
+let capRail = null;
+function capitalRail(){
+  if (!capRail) capRail = fetch('rail-capital.json').then(r => r.ok ? r.json() : null).then(d => {
+    if (!d) { diagLog('내장 선로 자료 없음 (rail-capital.json)'); return null; }
+    const ways = d.ways.map((row, wi) => {
+      const nodes = []; let la = 0, lo = 0;
+      for (let i = 2; i < row.length; i += 2) { la += row[i]; lo += row[i+1]; nodes.push({key:la + ',' + lo, lat:la / 1e5, lon:lo / 1e5}); }
+      return {wid:wi, line:d.lines[row[0]], k:row[1] ? 1.3 : 1, nodes};
+    });
+    const g = makeGraph(ways, d.st.map(x => ({lat:x[0] / 1e5, lon:x[1] / 1e5, name:x[2]})), '내장 수도권');
+    if (g) g.bbox = d.bbox;
+    return g;
+  }).catch(e => { diagLog('내장 선로 자료 읽기 실패: ' + e.message); return null; });
+  return capRail;
+}
+const inBox = (p, bb) => p[0] >= bb[0] && p[0] <= bb[2] && p[1] >= bb[1] && p[1] <= bb[3];
+// A~B 를 감싸는 선로 그래프: 둘 다 수도권이면 내장 자료, 아니면 그 범위를 Overpass 로 (같은 범위는 다시 받지 않음, 먼 구간은 범위를 넓힘)
+async function railGraph(A, B){
+  const cap = await capitalRail();
+  if (cap && inBox(A, cap.bbox) && inBox(B, cap.bbox)) return cap;
+  const pad = Math.max(0.012, 0.25 * Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1])));
   const S = Math.min(A[0], B[0]) - pad, N = Math.max(A[0], B[0]) + pad, W = Math.min(A[1], B[1]) - pad, E = Math.max(A[1], B[1]) + pad;
   const bbox = [S, W, N, E].map(v => v.toFixed(3)).join(',');
   if (!graphCache[bbox]) graphCache[bbox] = loadGraph(bbox).then(g => { if (!g) delete graphCache[bbox]; return g; });   // 진행 중인 요청도 같이 씀
   return graphCache[bbox];
 }
 async function loadGraph(bbox){
-  const els = await overpass(`[out:json][timeout:25];way["railway"~"^(subway|light_rail|rail)$"](${bbox});out body;>;out skel qt;`, '선로');
+  const els = await overpass(`[out:json][timeout:25];(way["railway"~"^(subway|light_rail|rail)$"](${bbox});node["railway"="station"](${bbox}););out body;>;out skel qt;`, '선로');
   if (!els) return null;
-  const pos = new Map(), adj = new Map();
-  els.forEach(e => { if (e.type === 'node') pos.set(e.id, [e.lat, e.lon]); });
-  const link = (u, v, w) => { if (!adj.has(u)) adj.set(u, []); adj.get(u).push([v, w]); };
-  els.forEach(e => {
-    if (e.type !== 'way' || !e.nodes) return;
-    const k = e.tags && e.tags.railway === 'rail' ? 1.3 : 1;   // 일반 철도보다 지하철 선로를 우선
-    for (let i = 1; i < e.nodes.length; i++) {
-      const u = e.nodes[i-1], v = e.nodes[i], pu = pos.get(u), pv = pos.get(v);
-      if (!pu || !pv) continue;
-      const w = haversine({lat:pu[0], lon:pu[1]}, {lat:pv[0], lon:pv[1]}) * k;
-      link(u, v, w); link(v, u, w);
-    }
-  });
-  if (!adj.size) { diagLog('선로 자료 없음 (이 범위에 지하철·철도 선로가 없음)'); return null; }
-  // 가장 가까운 선로 지점 {id, d}
-  const nearest = P => { let best = null, bd = Infinity;
-    for (const id of adj.keys()) { const q2 = pos.get(id), d = haversine({lat:P[0], lon:P[1]}, {lat:q2[0], lon:q2[1]}); if (d < bd) { bd = d; best = id; } }
-    return {id:best, d:bd}; };
-  return {pos, adj, nearest};
+  const pos = new Map();
+  els.forEach(e => { if (e.type === 'node') pos.set(e.id, e); });
+  const ways = els.filter(e => e.type === 'way' && e.nodes && !['yard', 'siding', 'spur'].includes(e.tags && e.tags.service)).map(e => ({
+    wid:e.id, line:(e.tags && (e.tags.name || e.tags.ref)) || '', k:e.tags && e.tags.railway === 'rail' ? 1.3 : 1,
+    nodes:e.nodes.filter(id => pos.has(id)).map(id => ({key:id, lat:pos.get(id).lat, lon:pos.get(id).lon}))}));
+  const stations = els.filter(e => e.type === 'node' && e.tags && e.tags.railway === 'station').map(e => ({lat:e.lat, lon:e.lon, name:e.tags['name:ko'] || e.tags.name || ''}));
+  const g = makeGraph(ways, stations, 'Overpass');
+  if (!g) diagLog('선로 자료 없음 (이 범위에 지하철·철도 선로가 없음)');
+  return g;
 }
-// 다익스트라 최단 경로 (이진 힙) → {path:[[lat,lon]...], len} 또는 null
+// 다익스트라 최단 경로 (이진 힙) → {path:[[lat,lon]...], len(환승 비용 포함)} 또는 null
 function shortest(g, s0, t0){
   const dist = new Map([[s0, 0]]), prev = new Map(), heap = [[0, s0]];
   const push = it => { heap.push(it); let i = heap.length - 1; while (i) { const p2 = (i-1) >> 1; if (heap[p2][0] <= heap[i][0]) break; [heap[p2], heap[i]] = [heap[i], heap[p2]]; i = p2; } };
@@ -794,24 +846,31 @@ function shortest(g, s0, t0){
   const out = []; for (let u = t0; u != null; u = prev.get(u)) out.push(g.pos.get(u));
   return {path:out.reverse(), len:dist.get(t0) || 0};
 }
-// A → 경유 위치들 → B 선로 경로 → {path, len} 또는 {why}
+const pathKm = path => { let m = 0; for (let i = 1; i < path.length; i++) m += haversine({lat:path[i-1][0], lon:path[i-1][1]}, {lat:path[i][0], lon:path[i][1]}); return m; };
+// A → (경유 위치들) → B 선로 경로 → {path, len(실제 선로 길이 m), note} 또는 {why}
+// 경유 위치(지하에서 받은 대략적 위치)는 그걸 거치는 길이 바로 가는 길보다 25% 넘게 길지 않을 때만 씀 (오차 때문에 엉뚱한 노선을 타지 않게)
 async function findRailPath(A, B, via){
   const g = await railGraph(A, B);
   if (!g) return {why:'선로 자료를 받지 못함'};
   const s0 = g.nearest(A), t0 = g.nearest(B);
-  if (s0.d > 800) return {why:`출발점이 선로에서 ${Math.round(s0.d)}m (800m 넘음)`};
-  if (t0.d > 800) return {why:`도착점이 선로에서 ${Math.round(t0.d)}m (800m 넘음)`};
+  if (s0.d > RAIL.SNAP_M) return {why:`출발점이 선로에서 ${Math.round(s0.d)}m (${RAIL.SNAP_M}m 넘음)`};
+  if (t0.d > RAIL.SNAP_M) return {why:`도착점이 선로에서 ${Math.round(t0.d)}m (${RAIL.SNAP_M}m 넘음)`};
   if (s0.id === t0.id) return {why:'출발·도착이 같은 선로 지점'};
-  // 경유지: 선로에서 400m 안인 것만 (대략적 위치 오차 고려)
-  const stops = [s0.id, ...(via || []).map(p => g.nearest([p.lat, p.lon])).filter(n => n.d <= 400).map(n => n.id), t0.id]
-    .filter((id, i, a) => i === 0 || id !== a[i-1]);
-  let path = [], len = 0;
-  for (let i = 1; i < stops.length; i++) {
-    const r = shortest(g, stops[i-1], stops[i]);
-    if (!r) return {why:'선로가 이어지지 않음 (다른 노선이거나 자료 빠짐)'};
-    path = path.concat(i > 1 ? r.path.slice(1) : r.path); len += r.len;
+  const direct = shortest(g, s0.id, t0.id);
+  if (!direct) return {why:'선로가 이어지지 않음 (역 자료가 빠졌거나 범위 밖으로 돌아감)'};
+  const vs = (via || []).map(p => g.nearest([p.lat, p.lon])).filter(n => n.d <= RAIL.VIA_SNAP_M).map(n => n.id);
+  if (vs.length) {
+    const stops = [s0.id, ...vs, t0.id].filter((id, i, a) => i === 0 || id !== a[i-1]);
+    let path = [], len = 0, ok = true;
+    for (let i = 1; i < stops.length && ok; i++) {
+      const r = shortest(g, stops[i-1], stops[i]);
+      if (!r) ok = false; else { path = path.concat(i > 1 ? r.path.slice(1) : r.path); len += r.len; }
+    }
+    if (ok && len <= direct.len * RAIL.VIA_MAX) return {path, len:pathKm(path), note:`경유 위치 ${vs.length}곳 반영`};
+    const note = ok ? `경유 위치를 거치면 ${Math.round((len / direct.len - 1) * 100)}% 길어져 무시` : '경유 위치가 이어지지 않아 무시';
+    return {path:direct.path, len:pathKm(direct.path), note};
   }
-  return {path, len};
+  return {path:direct.path, len:pathKm(direct.path)};
 }
 // 근처 지하철역 {name, lat, lon, d} (역이 없으면 출입구) 또는 null. 결과는 저장해 두고 다시 씀
 function nearStation(p){
@@ -820,6 +879,14 @@ function nearStation(p){
   return stationCache[key];
 }
 async function loadStation(p, key){
+  const cap = await capitalRail();
+  if (cap && inBox([p.lat, p.lon], cap.bbox)) {   // 수도권: 내장 역 자료에서 가장 가까운 역
+    let best = null;
+    for (const st of cap.stations) { const d = haversine(p, st); if (d <= TRV.SUB_STATION_R_M && (!best || d < best.d)) best = {st, d}; }
+    if (!best) return null;
+    const n = /역$/.test(best.st.name) ? best.st.name : best.st.name + '역';
+    return {name:n, n, lat:best.st.lat, lon:best.st.lon, d:Math.round(best.d)};
+  }
   try { const c = JSON.parse(localStorage.getItem('trailog:rail:st:' + key)); if (c) return c.n ? c : null; } catch(_) {}
   const R = TRV.SUB_STATION_R_M, at = `(around:${R},${(+p.lat).toFixed(5)},${(+p.lon).toFixed(5)})`;
   const els = await overpass(`[out:json][timeout:20];(node${at}["railway"="station"]["station"="subway"];node${at}["railway"="station"]["subway"="yes"];`
@@ -2388,10 +2455,12 @@ async function viewSubway(v){
   const data = v.data;
   if (!data.some(p => p.a === 'subway')) return;
   let changed = false;
+  const orig = data.map(p => p.a);   // 원래 표시로 판단 (바꾼 지점 때문에 뒤 걷기 지점까지 줄줄이 지하철이 되지 않게)
   for (let i = 1; i < data.length; i++) {
     const p = data[i], q = data[i-1];
     if (p.k === 'gap' || p.a === 'subway' || p.a === 'stay' || p.t - q.t < TRV.GAP_MS) continue;
-    const a = v.modeLog ? longestMode(q.t, p.t, v.modeLog) : (q.a === 'subway' ? 'subway' : p.a);
+    // 예전 기록(수단 이력 없음): 앞 지점이 원래 지하철이고 300m 넘게 점프한 곳만 (GPS 가 지하에서 끊겼다 잡힌 곳)
+    const a = v.modeLog ? longestMode(q.t, p.t, v.modeLog) : (orig[i-1] === 'subway' && haversine(q, p) >= 300 ? 'subway' : p.a);
     if (a === 'subway') { p.a = 'subway'; changed = true; diagLog(`지난 기록: ${hhmm(q.t)}~${hhmm(p.t)} GPS 끊긴 구간을 지하철로`); }
   }
   const apply = () => {
